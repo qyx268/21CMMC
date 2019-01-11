@@ -1,7 +1,7 @@
 # C compiler and flags
-CPPFLAGS = -I/opt/local/include
-LDFLAGS = -L/opt/local/lib -lgsl -lgslcblas -lfftw3f_omp -lfftw3f -lm
-CC      = /usr/local/bin/gcc -fopenmp -Ofast
+CPPFLAGS = -I$(HOME)/3rd_party/include
+LDFLAGS = -L/$(HOME)/3rd_party/lib -lgsl -lgslcblas -lfftw3f_omp -lfftw3f -lm
+CC      = gcc -fopenmp -O3
 
 # Directory hosting the non-project specific code
 COSMO_DIR = ../Cosmo_c_files

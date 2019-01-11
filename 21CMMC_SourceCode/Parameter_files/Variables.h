@@ -46,7 +46,7 @@ fftwf_complex *HIRES_box, *HIRES_box_saved;
 
 float *LOWRES_density, *LOWRES_vx, *LOWRES_vy, *LOWRES_vz, *LOWRES_vx_2LPT, *LOWRES_vy_2LPT, *LOWRES_vz_2LPT, *LOWRES_density_REDSHIFT, *LOWRES_velocity_REDSHIFT, *HIRES_density;
 
-float *xH, *deltax, *Fcoll, *delta_T, *v, *vel_gradient, *zpp_growth, *inverse_diff, *Tk_box, *x_e_box, *Ts, *SFR_timescale_factor;
+float *xH, *deltax, *Fcoll, *Fcollm, *delta_T, *v, *vel_gradient, *zpp_growth, *inverse_diff, *Tk_box, *x_e_box, *Ts, *SFR_timescale_factor;
 //float *delNL0_bw,*zpp_for_evolve_list,*R_values,*delNL0_Offset,*delNL0_LL,*delNL0_UL,*SingleVal_float,*delNL0_ibw,*log10delNL0_diff,*log10delNL0_diff_UL;
 float *zpp_for_evolve_list,*R_values,*SingleVal_float;
 float *delNL0_bw,*delNL0_Offset,*delNL0_LL,*delNL0_UL,*delNL0_ibw,*log10delNL0_diff,*log10delNL0_diff_UL;
@@ -120,8 +120,8 @@ double F_STAR10, ALPHA_STAR, F_ESC10, ALPHA_ESC, M_TURN, M_MIN;
 //float *Overdense_high_table, *Fcollz_SFR_high_table, *zpp_table;
 float *zpp_table;
 double *log10_overdense_spline_SFR;
-float *log10_Fcoll_spline_SFR;
-float *Overdense_spline_SFR, *Fcoll_spline_SFR;
+float *log10_Fcoll_spline_SFR, *log10_Fcollm_spline_SFR;
+float *Overdense_spline_SFR, *Fcoll_spline_SFR, *Fcollm_spline_SFR,;
 float **fcoll_Xray_SFR_array, *fcoll_SFR_array;
 double *lnMhalo_param, *Muv_param, *Mhalo_param, *log10phi;
 gsl_interp_accel *LF_spline_acc;
@@ -129,8 +129,8 @@ gsl_spline *LF_spline;
 float *z_LF;
 
 float *overdense_Xray_low_table;
-float *log10_overdense_Xray_low_table, ***log10_Fcollz_SFR_Xray_low_table;
-float *Overdense_Xray_high_table, ***Fcollz_SFR_Xray_high_table;
+float *log10_overdense_Xray_low_table, ***log10_Fcollz_SFR_Xray_low_table, ***log10_Fcollmz_SFR_Xray_low_table;
+float *Overdense_Xray_high_table, ***Fcollz_SFR_Xray_high_table, ***Fcollmz_SFR_Xray_high_table;
 
 
 
@@ -149,6 +149,18 @@ unsigned long long DIM_MOCK_OBS_CUBIC,DIM_MOCK_OBS,DIM_MOCK_OBS_MID,DIM_MOCK_OBS
 float *z_re, *Gamma12;
 fftwf_complex *N_rec_unfiltered, *N_rec_filtered;
 
-
-
-
+// Mini halos
+#ifdef MINI_HALO
+double X_RAY_SPEC_INDEX_MINI;
+double **freq_int_heat_tbl_MINI,**freq_int_ion_tbl_MINI,**freq_int_lya_tbl_MINI,**freq_int_heat_tbl_diff_MINI,**freq_int_ion_tbl_diff_MINI,**freq_int_lya_tbl_diff_MINI;
+double *dxheat_dt_box_MINI, *dxion_source_dt_box_MINI, *dxlya_dt_box_MINI, *dstarlya_dt_box_MINI;
+double *sum_lyn_MINI, *sum_lyLWn, *sum_lyLWn_MINI;
+double *dstarlya_dt_prefactor_MINI;
+double F_STAR10_MINI, F_ESC10_MINI, L_X_MINI, ION_EFF_FACTOR_MINI;
+double log10_Mcrit_LW_ave;
+double *ST_over_PS_MINI;
+float *J_21_LW, log10_Mcrit_mol;
+fftwf_complex *log10_Mcrit_LW_unfiltered=NULL, *log10_Mcrit_LW_filtered=NULL;
+float *log10_Mturn_interp_table;
+float *Mcrit_atom_interp_table;
+#endif

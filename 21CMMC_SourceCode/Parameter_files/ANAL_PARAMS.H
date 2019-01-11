@@ -25,6 +25,7 @@
   NOTE: In 21CMMC all these parameters are free parameters except N_GAMMA_UV.
 */
 #define N_GAMMA_UV (float) (5000) // number of ionizing photons per stellar baryon
+#define N_GAMMA_UV_MINI (float) (5000) // number of ionizing photons per stellar baryon
 /* Parameters below are free parameters in 21CMMC
 #define STELLAR_BARYON_FRAC (double) (0.05) // defined for 10^10 Msun halos
 #define STELLAR_BARYON_PL (double) (0.4) //power law index w/ halo mass
@@ -43,6 +44,11 @@ define M_TURNOVER (double) (5e8) // Halo mass threshold for efficient star forma
 */
 #define SHARP_CUTOFF (int) (0)
 
+/*
+  New in v1.5 
+  Flag set to 1 if halos are considered into two populations, namely mini/molecular-cooling and atomic-cooling halos
+*/
+#define MINI_HALO (int) (1)
 
 /*
   Maximum horizon for ionizing photons, in comoving Mpc.
