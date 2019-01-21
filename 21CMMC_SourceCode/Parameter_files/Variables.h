@@ -151,25 +151,33 @@ fftwf_complex *N_rec_unfiltered, *N_rec_filtered;
 
 // Mini halos
 #ifdef MINI_HALO
+#define NMTURN 100
 float *log10_Fcoll_spline_SFR_MINI;
 float *Fcoll_spline_SFR_MINI;
 float *prev_log10_Fcoll_spline_SFR_MINI;
-float *prevFcoll_spline_SFR_MINI;
+float *prev_Fcoll_spline_SFR_MINI;
 float *prev_log10_Fcoll_spline_SFR;
-float *prevFcoll_spline_SFR;
+float *prev_Fcoll_spline_SFR;
 float **prev_Fcoll, **prev_Fcoll_MINI;
+float *SFR_for_integrals_Rct_MINI;
+float ***log10_Fcollz_SFR_Xray_low_table_MINI;
+float ***Fcollz_SFR_Xray_high_table_MINI;
 fftwf_complex **deltax_prev_filtered;
 float prev_mean_f_coll_st, prev_mean_f_coll_st_MINI;
 double X_RAY_SPEC_INDEX_MINI;
 double **freq_int_heat_tbl_MINI,**freq_int_ion_tbl_MINI,**freq_int_lya_tbl_MINI,**freq_int_heat_tbl_diff_MINI,**freq_int_ion_tbl_diff_MINI,**freq_int_lya_tbl_diff_MINI;
 double *dxheat_dt_box_MINI, *dxion_source_dt_box_MINI, *dxlya_dt_box_MINI, *dstarlya_dt_box_MINI;
+double *dstarlyLW_dt_box, *dstarlyLW_dt_box_MINI;
 double *sum_lyn_MINI, *sum_lyLWn, *sum_lyLWn_MINI;
 double *dstarlya_dt_prefactor_MINI;
+double *dstarlyLW_dt_prefactor, *dstarlyLW_dt_prefactor_MINI;
 double F_STAR10_MINI, F_ESC10_MINI, L_X_MINI, ION_EFF_FACTOR_MINI;
 double log10_Mcrit_LW_ave;
 double *ST_over_PS_MINI;
 float *J_21_LW, log10_Mcrit_mol;
-fftwf_complex *log10_Mcrit_LW_unfiltered=NULL, *log10_Mcrit_LW_filtered=NULL;
+fftwf_complex *log10_Mcrit_LW_unfiltered, *log10_Mcrit_LW_filtered;
 float *log10_Mturn_interp_table;
 float *Mcrit_atom_interp_table;
+float *Fcoll_MINI;
+fftwf_complex *log10_Mmin_unfiltered, *log10_Mmin_filtered, *log10_Mmin_MINI_unfiltered, *log10_Mmin_MINI_filtered;
 #endif

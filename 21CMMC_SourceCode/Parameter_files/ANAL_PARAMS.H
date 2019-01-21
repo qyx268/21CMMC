@@ -25,7 +25,7 @@
   NOTE: In 21CMMC all these parameters are free parameters except N_GAMMA_UV.
 */
 #define N_GAMMA_UV (float) (5000) // number of ionizing photons per stellar baryon
-#define N_GAMMA_UV_MINI (float) (5000) // number of ionizing photons per stellar baryon
+#define N_GAMMA_UV_MINI (float) (50000) // number of ionizing photons per stellar baryon
 /* Parameters below are free parameters in 21CMMC
 #define STELLAR_BARYON_FRAC (double) (0.05) // defined for 10^10 Msun halos
 #define STELLAR_BARYON_PL (double) (0.4) //power law index w/ halo mass

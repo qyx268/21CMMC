@@ -3,6 +3,7 @@
 
 #include <math.h>
 #include "Variables.h"
+#include "ANAL_PARAMS.H"
 
 /****** New in v1.1. ******/
 /*** WDM parameters ***/
@@ -113,4 +114,14 @@
 #define T21 (double) 0.0628 /* temperature corresponding to the 21cm photon */
 #define A10_HYPERFINE (double) 2.85e-15 /* spontaneous emission coefficient in s^-1 */
 
+#ifdef MINI_HALO
+  // use Sobacchi & Mesinger 2013a; 2014 prescription for reionization
+     #define HALO_BIAS     (double) 2.0
+     #define REION_SM13_M0 (double) 3e9
+     #define REION_SM13_A  (double) 0.17
+     #define REION_SM13_B  (double) -2.1
+     #define REION_SM13_C  (double) 2.0
+     #define REION_SM13_D  (double) 2.5
+#endif
+  
 #endif

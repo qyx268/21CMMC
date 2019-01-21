@@ -669,6 +669,26 @@ double HI_ion_crosssec(double nu){
     * pow(E, 4-(4*atan(epsilon)/epsilon)) / (1-pow(E, -2*PI/epsilon));
 }
 
+#ifdef MINI_HALO
+double atomic_cooling_threshold(float z){
+	return TtoM(z, 1e4, 0.59);
+}
+
+double molecular_cooling_threshold(float z){
+	return 3.314e7 * pow( 1.+z, -1.5);
+}
+
+double lyman_werner_threshold(float z, float J_21_LW){
+	return  molecular_cooling_threshold(z) * (1. + 22.8685 * pow(J_21_LW, 0.47));
+}
+
+double reionization_feedback(float z, float Gamma_halo_HII, float z_IN){
+	if (z_IN<0)
+		return 1e-40;
+	return REION_SM13_M0 * pow(HALO_BIAS * Gamma_halo_HII, REION_SM13_A) * pow((1.+z)/10, REION_SM13_B) *
+		pow(1 - pow((1.+z)/(1.+z_IN), REION_SM13_C), REION_SM13_D);
+}
+#endif
 #endif  /* end _COSMO_PROGS_ */
 
 

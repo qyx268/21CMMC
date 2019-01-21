@@ -83,4 +83,4 @@ Createfcoll_ionisation_LC: Createfcoll_ionisation_LC.c \
 	${CC} ${CPPFLAGS} -o Createfcoll_ionisation_LC Createfcoll_ionisation_LC.c ${LDFLAGS}
 
 clean:
-	rm ${OBJ_FILES} *~
+	rm ${OBJ_FILES} init *~

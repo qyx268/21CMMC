@@ -47,10 +47,11 @@ float *second_derivs_Fcoll_zpp[NUM_FILTER_STEPS_FOR_Ts];
 float *redshift_interp_table;
 gsl_interp_accel *FcollLow_zpp_spline_acc[NUM_FILTER_STEPS_FOR_Ts];
 gsl_spline *FcollLow_zpp_spline[NUM_FILTER_STEPS_FOR_Ts];
-// New in v1.5
-float *second_derivs_Fcollm_zpp[NUM_FILTER_STEPS_FOR_Ts];
-gsl_interp_accel *FcollmLow_zpp_spline_acc[NUM_FILTER_STEPS_FOR_Ts];
-gsl_spline *FcollmLow_zpp_spline[NUM_FILTER_STEPS_FOR_Ts];
+#ifdef MINI_HALO
+float *second_derivs_Fcoll_zpp_MINI[NUM_FILTER_STEPS_FOR_Ts];
+gsl_interp_accel *FcollLow_zpp_spline_acc_MINI[NUM_FILTER_STEPS_FOR_Ts];
+gsl_spline *FcollLow_zpp_spline_MINI[NUM_FILTER_STEPS_FOR_Ts];
+#endif
 
 
 /* initialization routine */
@@ -668,7 +669,7 @@ double integrand_in_nu_heat_integral_MINI(double nu, void * params){
 
   return species_sum * pow(nu/NU_X_THRESH, -X_RAY_SPEC_INDEX_MINI-1);
 }
-double integrand_in_nu_ion_integral(double nu, void * params){
+double integrand_in_nu_ion_integral_MINI(double nu, void * params){
   double species_sum, F_i;
   float x_e = *(double *) params;
 
@@ -692,7 +693,7 @@ double integrand_in_nu_ion_integral(double nu, void * params){
 
   return species_sum * pow(nu/NU_X_THRESH, -X_RAY_SPEC_INDEX-1);
 }
-double integrand_in_nu_lya_integral(double nu, void * params){
+double integrand_in_nu_lya_integral_MINI(double nu, void * params){
   double species_sum;
   float x_e = *(double *) params;
 
@@ -896,9 +897,9 @@ double tauX_integrand_approx(double zhat, void *params){
 #ifdef MINI_HALO
 		log10_Mcrit_LW_ave_int_fcollz = (int)floor( ( log10_Mcrit_LW_ave - (5 - 9e-8 )) / (5+1.8e-7) * NMTURN);
 		log10_Mcrit_LW_ave_table_fcollz = 5 - 9e-8 + (5+1.8e-7) / NMTURN * (float)log10_Mcrit_LW_ave_int_fcollz;
-		fcoll_MINI_left = Fcollz_val_MINI[redshift_int_fcollz + zpp_interp_points_SFR * log10_Mcrit_LW_ave_int_fcollz] + ( zp - redshift_table_fcollz ) / zpp_bin_width *
+		fcoll_MINI_left = Fcollz_val_MINI[redshift_int_fcollz + zpp_interp_points_SFR * log10_Mcrit_LW_ave_int_fcollz] + ( zhat - redshift_table_fcollz ) / zpp_bin_width *
 			( Fcollz_val_MINI[redshift_int_fcollz+1 + zpp_interp_points_SFR * log10_Mcrit_LW_ave_int_fcollz] - Fcollz_val_MINI[redshift_int_fcollz + zpp_interp_points_SFR * log10_Mcrit_LW_ave_int_fcollz] );
-		fcoll_MINI_right = Fcollz_val_MINI[redshift_int_fcollz + zpp_interp_points_SFR * (log10_Mcrit_LW_ave_int_fcollz + 1)] + ( zp - redshift_table_fcollz ) / zpp_bin_width *
+		fcoll_MINI_right = Fcollz_val_MINI[redshift_int_fcollz + zpp_interp_points_SFR * (log10_Mcrit_LW_ave_int_fcollz + 1)] + ( zhat - redshift_table_fcollz ) / zpp_bin_width *
 			( Fcollz_val_MINI[redshift_int_fcollz+1 + zpp_interp_points_SFR * (log10_Mcrit_LW_ave_int_fcollz+1)] - Fcollz_val_MINI[redshift_int_fcollz + zpp_interp_points_SFR * (log10_Mcrit_LW_ave_int_fcollz+1)] );
 		fcoll_MINI = fcoll_MINI_left + (log10_Mcrit_LW_ave - log10_Mcrit_LW_ave_table_fcollz) / ((5+1.8e-7) / NMTURN) * ( fcoll_MINI_right - fcoll_MINI_left );
 #endif

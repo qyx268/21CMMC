@@ -104,7 +104,7 @@ gsl_spline *FcollLow_spline;
 void initialiseGL_FcollSFR(int n, float M_Min, float M_Max);
 void FcollSpline_SFR(float Overdensity, float *splined_value);
 #ifdef MINI_HALO
-void initialiseFcollSFR_spline(float z, float min_density, float max_density, float Mmin, float Mmax, float log10_Mturn[], float Alpha_star, float Alpha_esc, float Fstar10, float Fesc10, float Mlim_Fstar, float Mlim_Fesc);
+void initialiseFcollSFR_spline(float z, float min_density, float max_density, float Mmin, float Mmax, float log10_Mturn[], float Alpha_star, float Alpha_esc, float Fstar10, float Fesc10, float Mlim_Fstar, float Mlim_Fesc, float Fstar10_MINI, float Mlim_Fstar_MINI);
 #else
 void initialiseFcollSFR_spline(float z, float min_density, float max_density, float Mmax, float MassTurnover, float Alpha_star, float Alpha_esc, float Fstar10, float Fesc10, float Mlim_Fstar, float Mlim_Fesc);
 #endif
@@ -124,13 +124,13 @@ static double Fcollz_val_MINI[zpp_interp_points_SFR*NMTURN];
 static double FcollzX_val_MINI[zpp_interp_points_SFR*NMTURN];
 void initialise_FgtrM_st_SFR_spline(int Nbin, float zmin, float zmax, float Alpha_star, float Alpha_esc, float Fstar10, float Fesc10, float Fstar10_MINI, float Fesc10_MINI);
 void initialise_Xray_FgtrM_st_SFR_spline(int Nbin, float zmin, float zmax, float Alpha_star, float Fstar10, float Fstar10_MINI);
-void initialise_Xray_Fcollz_SFR_Conditional_table(int Nfilter, float min_density[], float max_density[], float growthf[], float R[], float Alpha_star, float Fstar10, float Fstar10_MINI);
+void initialise_Xray_Fcollz_SFR_Conditional_table(int Nfilter, float min_density[], float max_density[], float growthf[], float R[], float Mcrit_atom[], float Alpha_star, float Fstar10, float Fstar10_MINI);
 #else
 static double Fcollz_val[zpp_interp_points_SFR]; // For Ts.c
 static double FcollzX_val[zpp_interp_points_SFR];
 void initialise_FgtrM_st_SFR_spline(int Nbin, float zmin, float zmax, float MassTurn, float Alpha_star, float Alpha_esc, float Fstar10, float Fesc10);
 void initialise_Xray_FgtrM_st_SFR_spline(int Nbin, float zmin, float zmax, float MassTurn, float Alpha_star, float Fstar10);
-void initialise_Xray_Fcollz_SFR_Conditional_table(int Nfilter, float min_density[], float max_density[], float growthf[], float R[], float Mcrit_atom[], float Alpha_star, float Fstar10, float Fstar10_MINI);
+void initialise_Xray_Fcollz_SFR_Conditional_table(int Nfilter, float min_density[], float max_density[], float growthf[], float R[], float Alpha_star, float Fstar10, float Fstar10_MINI);
 #endif
 static gsl_interp_accel *Fcollz_spline_acc;
 static gsl_spline *Fcollz_spline;
@@ -1797,7 +1797,7 @@ float FgtrConditionallnM_GL_SFR_MINI(float lnM, struct parameters_gsl_SFR_con_in
     
     return M*exp(-MassTurnover/M)*exp(-M/MassTurnover2)*Fstar*dNdM_conditional_second_quicker(growthf,log(M),M2,del1,del2,sigma2)/sqrt(2.*PI);
 }
-float FgtrConditionallnM_GL_SFR_Xray_MINI(float lnM, struct parameters_gsl_SFR_con_int_ parameters_gsl_SFR_con){
+float FgtrConditionallnM_GL_SFR_Xray_MINI(float lnM, struct parameters_gsl_SFR_con_int_MINI_ parameters_gsl_SFR_con){
     float M = exp(lnM);
     float growthf = parameters_gsl_SFR_con.gf_obs;
     float M2 = parameters_gsl_SFR_con.Mval;
@@ -2038,7 +2038,7 @@ double FgtrConditionalM_SFR(double growthf, double M1, double M2, double sigma2,
 
 #ifdef MINI_HALO
 double dFgtrConditionallnM_SFR_MINI(double lnM, void *params) {
-    struct parameters_gsl_SFR_con_int_MINI_ vals = *(struct parameters_gsl_SFR_con_int_ *)params;
+    struct parameters_gsl_SFR_con_int_MINI_ vals = *(struct parameters_gsl_SFR_con_int_MINI_ *)params;
     double M = exp(lnM); // linear scale
     double growthf = vals.gf_obs;
     double M2 = vals.Mval; // natural log scale
@@ -2103,7 +2103,7 @@ double FgtrConditionalM_SFR_MINI(double growthf, double M1, double M2, double si
 #endif
 
 #ifdef MINI_HALO
-void initialiseFcollSFR_spline(float z, float min_density, float max_density, float Mmin, float Mmax, float log10_Mturn[], float Alpha_star, float Alpha_esc, float Fstar10, float Fesc10, float Mlim_Fstar, float Mlim_Fesc){
+void initialiseFcollSFR_spline(float z, float min_density, float max_density, float Mmin, float Mmax, float log10_Mturn[], float Alpha_star, float Alpha_esc, float Fstar10, float Fesc10, float Mlim_Fstar, float Mlim_Fesc, float Fstar10_MINI, float Mlim_Fstar_MINI){
     double overdense_val, growthf, sigma2;
     double overdense_large_high = Deltac, overdense_large_low = 1.5*0.999;
 //    double overdense_small_high = 1.5*1.001, overdense_small_low = -1. + 9e-8;
@@ -2431,7 +2431,7 @@ double FgtrConditionalM_SFR_Xray(double growthf, double M1, double M2, double si
     }
     
 }
-#ifdef 
+#ifdef MINI_HALO
 double FgtrConditionalM_SFR_Xray_MINI(double growthf, double M1, double M2, double sigma2, double delta1, double delta2, double MassTurnover, double MassTurnover2, double Alpha_star, double Fstar10, double Mlim_Fstar) {
     double result, error, lower_limit, upper_limit;
     gsl_function F;
@@ -2470,6 +2470,7 @@ double FgtrConditionalM_SFR_Xray_MINI(double growthf, double M1, double M2, doub
     }
     
 }
+#endif
 
 
 
