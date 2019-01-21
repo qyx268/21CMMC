@@ -121,7 +121,7 @@ double F_STAR10, ALPHA_STAR, F_ESC10, ALPHA_ESC, M_TURN, M_MIN;
 float *zpp_table;
 double *log10_overdense_spline_SFR;
 float *log10_Fcoll_spline_SFR, *log10_Fcollm_spline_SFR;
-float *Overdense_spline_SFR, *Fcoll_spline_SFR, *Fcollm_spline_SFR,;
+float *Overdense_spline_SFR, *Fcoll_spline_SFR; 
 float **fcoll_Xray_SFR_array, *fcoll_SFR_array;
 double *lnMhalo_param, *Muv_param, *Mhalo_param, *log10phi;
 gsl_interp_accel *LF_spline_acc;
@@ -151,7 +151,15 @@ fftwf_complex *N_rec_unfiltered, *N_rec_filtered;
 
 // Mini halos
 #ifdef MINI_HALO
-fftwf_complex *deltax_prev_unfiltered, *deltax_prev_filtered;
+float *log10_Fcoll_spline_SFR_MINI;
+float *Fcoll_spline_SFR_MINI;
+float *prev_log10_Fcoll_spline_SFR_MINI;
+float *prevFcoll_spline_SFR_MINI;
+float *prev_log10_Fcoll_spline_SFR;
+float *prevFcoll_spline_SFR;
+float **prev_Fcoll, **prev_Fcoll_MINI;
+fftwf_complex **deltax_prev_filtered;
+float prev_mean_f_coll_st, prev_mean_f_coll_st_MINI;
 double X_RAY_SPEC_INDEX_MINI;
 double **freq_int_heat_tbl_MINI,**freq_int_ion_tbl_MINI,**freq_int_lya_tbl_MINI,**freq_int_heat_tbl_diff_MINI,**freq_int_ion_tbl_diff_MINI,**freq_int_lya_tbl_diff_MINI;
 double *dxheat_dt_box_MINI, *dxion_source_dt_box_MINI, *dxlya_dt_box_MINI, *dstarlya_dt_box_MINI;
