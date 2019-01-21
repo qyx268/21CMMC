@@ -343,6 +343,17 @@ int main(int argc, char ** argv){
         return 0;
     }   
     
+#ifdef MINI_HALO
+    if(USE_FCOLL_IONISATION_TABLE==1 || GenerateNewICs==1 || SHORTEN_FCOLL==1 || USE_MASS_DEPENDENT_ZETA==0 || INHOMO_RECO==0 || USE_TS_FLUCT==0) {
+        printf("\n");
+        printf("ifdef MINI_HALO, you need to set USE_FCOLL_IONISATION_TABLE=0, GenerateNewICs=0, SHORTEN_FCOLL=0, USE_MASS_DEPENDENT_ZETA=1, INHOMO_RECO=1, and USE_TS_FLUCT=1. \n");
+        printf("\n");
+        printf("Exiting...");
+        printf("\n");
+        // Probably should do free the memory properly here...
+        return 0;
+    }
+#endif
     
     ///////////////// Hard coded assignment of parameters, but can't do much about it (problem of merging C and Python code) //////////////////////////////////
     // Constant ionizing efficiency parameter
@@ -1504,8 +1515,8 @@ void ComputeTsBoxes() {
 #ifdef MINI_HALO
 	                Splined_Fcollzpp_X_mean_MINI_left = FcollzX_val_MINI[redshift_int_fcollz_Xray + zpp_interp_points_SFR * log10_Mcrit_LW_ave_int_fcollz] + ( zpp - redshift_table_fcollz_Xray ) / zpp_bin_width * 
 													 ( FcollzX_val_MINI[redshift_int_fcollz_Xray+1 + zpp_interp_points_SFR * log10_Mcrit_LW_ave_int_fcollz] - FcollzX_val_MINI[redshift_int_fcollz_Xray + zpp_interp_points_SFR * log10_Mcrit_LW_ave_int_fcollz] );
-        	        Splined_Fcollzpp_X_mean_MINI_right = FcollzX_val_MINI[redshift_int_fcollz + zpp_interp_points_SFR * (log10_Mcrit_LW_ave_int_fcollz + 1)] + ( zp - redshift_table_fcollz ) / zpp_bin_width * 
-													 ( FcollzX_val_MINI[redshift_int_fcollz_Xray+1 + zpp_interp_points_SFR * (log10_Mcrit_LW_ave_int_fcollz+1)] - FcollzX_val_MINI[redshift_int_fcollz_Xray + zpp_interp_points_SFR * (log10_Mcrit_LW_ave_int_fcollz+1)] );
+        	        Splined_Fcollzpp_X_mean_MINI_right = FcollzX_val_MINI[redshift_int_fcollz_Xray + zpp_interp_points_SFR * (log10_Mcrit_LW_ave_int_fcollz + 1)] + ( zpp - redshift_table_fcollz_Xray ) / zpp_bin_width * 
+													 ( FcollzX_val_MINI[redshift_int_fcollz_Xray+1 + zpp_interp_points_SFR * (log10_Mcrit_LW_ave_int_fcollz + 1)] - FcollzX_val_MINI[redshift_int_fcollz_Xray + zpp_interp_points_SFR * (log10_Mcrit_LW_ave_int_fcollz + 1)] );
 					Splined_Fcollzpp_X_mean_MINI = Splined_Fcollzpp_X_mean_MINI_left + (log10_Mcrit_LW_ave - log10_Mcrit_LW_ave_table_fcollz) / ((5+1.8e-7) / NMTURN) * 
 				    	                        ( Splined_Fcollzpp_X_mean_MINI_right - Splined_Fcollzpp_X_mean_MINI_left );
                     ST_over_PS_MINI[R_ct] = pow(1+zpp, -X_RAY_SPEC_INDEX_MINI)*fabs(dzpp_for_evolve);
@@ -2352,6 +2363,9 @@ void ComputeIonisationBoxes(int sample_index, float REDSHIFT_SAMPLE, float PREV_
     float d1_low, d1_high, d2_low, d2_high, gradient_component, min_gradient_component, subcell_width, x_val1, x_val2, subcell_displacement;
     float RSD_pos_new, RSD_pos_new_boundary_low,RSD_pos_new_boundary_high, fraction_within, fraction_outside, cell_distance;
     float Mlim_Fstar, Mlim_Fesc; // New in v1.4
+#ifdef MINI_HALO
+	float Mlim_Fstar_MINI;
+#endif
 
     float min_density, max_density;
     
@@ -2492,6 +2506,10 @@ void ComputeIonisationBoxes(int sample_index, float REDSHIFT_SAMPLE, float PREV_
         for (i=0; i<HII_DIM; i++){
             for (j=0; j<HII_DIM; j++){
                 for (k=0; k<HII_DIM; k++){
+#ifdef MINI_HALO
+					if (sample_index > 0)
+						(float *)deltax_prev_unfiltered +  HII_R_FFT_INDEX(i,j,k) = (float *)deltax_unfiltered +  HII_R_FFT_INDEX(i,j,k);
+#endif
                     if (fread((float *)deltax_unfiltered + HII_R_FFT_INDEX(i,j,k), sizeof(float), 1, F)!=1){
                         printf("Read error occured while reading deltax box.\n");
                     }
@@ -2517,9 +2535,16 @@ void ComputeIonisationBoxes(int sample_index, float REDSHIFT_SAMPLE, float PREV_
     
     //set the minimum source mass
     if (USE_MASS_DEPENDENT_ZETA) {
+#ifdef MINI_HALO
+        M_MIN = 1e5;
+        Mlim_Fstar = Mass_limit_bisection(M_MIN, 1e16,  ALPHA_STAR, F_STAR10);
+        Mlim_Fesc = Mass_limit_bisection(M_MIN, 1e16, ALPHA_ESC, F_ESC10);
+        Mlim_Fstar_MINI = Mass_limit_bisection(M_MIN, 1e16,  ALPHA_STAR, F_STAR10_MINI);
+#else
         M_MIN = M_TURN/50.;
         Mlim_Fstar = Mass_limit_bisection(M_MIN, 1e16,  ALPHA_STAR, F_STAR10);
         Mlim_Fesc = Mass_limit_bisection(M_MIN, 1e16, ALPHA_ESC, F_ESC10);
+#endif
     }    
     else {
         M_MIN = M_TURNOVER;
@@ -2556,6 +2581,17 @@ void ComputeIonisationBoxes(int sample_index, float REDSHIFT_SAMPLE, float PREV_
             
             f_coll_min = Fcollz_val[redshift_int_fcollz] + ( Z_HEAT_MAX - redshift_table_fcollz )*( Fcollz_val[redshift_int_fcollz+1] - Fcollz_val[redshift_int_fcollz] )/(zpp_bin_width);
             
+#ifdef MINI_HALO
+			log10_Mmin_MINI_ave_int_fcollz = (int)floor( ( log10_Mmin_MINI_ave - (5 - 9e-8 )) / (5+1.8e-7) * NMTURN);
+
+			log10_Mmin_MINI_ave_table_fcollz = 5 - 9e-8 + (5+1.8e-7) / NMTURN * (float)log10_Mmin_MINI_ave_int_fcollz;
+
+	        mean_f_coll_st_MINI_left = Fcollz_val_MINI[redshift_int_fcollz + zpp_interp_points_SFR * log10_Mmin_MINI_ave_int_fcollz] + ( REDSHIFT_SAMPLE - redshift_table_fcollz ) / zpp_bin_width * 
+											 ( Fcollz_val_MINI[redshift_int_fcollz+1 + zpp_interp_points_SFR * log10_Mmin_MINI_ave_int_fcollz] - Fcollz_val_MINI[redshift_int_fcollz + zpp_interp_points_SFR * log10_Mmin_MINI_ave_int_fcollz] );
+        	mean_f_coll_st_MINI_right = Fcollz_val_MINI[redshift_int_fcollz + zpp_interp_points_SFR * (log10_Mmin_MINI_ave_int_fcollz + 1)] + ( REDSHIFT_SAMPLE - redshift_table_fcollz ) / zpp_bin_width * 
+											 ( Fcollz_val_MINI[redshift_int_fcollz+1 + zpp_interp_points_SFR * (log10_Mmin_MINI_ave_int_fcollz+1)] - Fcollz_val_MINI[redshift_int_fcollz + zpp_interp_points_SFR * (log10_Mmin_MINI_ave_int_fcollz+1)] );
+			mean_f_coll_st_MINI = mean_f_coll_st_MINI_left + (log10_Mmin_MINI_ave - log10_Mmin_MINI_ave_table_fcollz) / ((5+1.8e-7) / NMTURN) * ( mean_f_coll_st_MINI_right - mean_f_coll_st_MINI_left );
+#endif
             }
         else {
             mean_f_coll_st = FgtrM_st_SFR(growth_factor,M_TURN,ALPHA_STAR,ALPHA_ESC,F_STAR10,F_ESC10,Mlim_Fstar,Mlim_Fesc);
@@ -5081,6 +5117,10 @@ void init_21cmMC_HII_arrays() {
     deltax_unfiltered = (fftwf_complex *) fftwf_malloc(sizeof(fftwf_complex)*HII_KSPACE_NUM_PIXELS);
     deltax_unfiltered_original = (fftwf_complex *) fftwf_malloc(sizeof(fftwf_complex)*HII_KSPACE_NUM_PIXELS);
     deltax_filtered = (fftwf_complex *) fftwf_malloc(sizeof(fftwf_complex)*HII_KSPACE_NUM_PIXELS);
+#ifdef MINI_HALO
+    deltax_prev_unfiltered = (fftwf_complex *) fftwf_malloc(sizeof(fftwf_complex)*HII_KSPACE_NUM_PIXELS);
+    deltax_prev_filtered = (fftwf_complex *) fftwf_malloc(sizeof(fftwf_complex)*HII_KSPACE_NUM_PIXELS);
+#endif
     xe_unfiltered = (fftwf_complex *) fftwf_malloc(sizeof(fftwf_complex)*HII_KSPACE_NUM_PIXELS);
     xe_filtered = (fftwf_complex *) fftwf_malloc(sizeof(fftwf_complex)*HII_KSPACE_NUM_PIXELS);
     deldel_T = (fftwf_complex *) fftwf_malloc(sizeof(fftwf_complex)*HII_KSPACE_NUM_PIXELS);
@@ -5378,6 +5418,10 @@ void destroy_21cmMC_HII_arrays(int skip_deallocate) {
     fftwf_free(deltax_unfiltered);
     fftwf_free(deltax_unfiltered_original);
     fftwf_free(deltax_filtered);
+#ifdef MINI_HALO
+    fftwf_free(deltax_prev_unfiltered);
+    fftwf_free(deltax_prev_filtered);
+#endif
     fftwf_free(deldel_T);
     fftwf_free(deldel_T_LC);
     fftwf_free(xe_unfiltered);

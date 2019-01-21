@@ -151,6 +151,7 @@ fftwf_complex *N_rec_unfiltered, *N_rec_filtered;
 
 // Mini halos
 #ifdef MINI_HALO
+fftwf_complex *deltax_prev_unfiltered, *deltax_prev_filtered;
 double X_RAY_SPEC_INDEX_MINI;
 double **freq_int_heat_tbl_MINI,**freq_int_ion_tbl_MINI,**freq_int_lya_tbl_MINI,**freq_int_heat_tbl_diff_MINI,**freq_int_ion_tbl_diff_MINI,**freq_int_lya_tbl_diff_MINI;
 double *dxheat_dt_box_MINI, *dxion_source_dt_box_MINI, *dxlya_dt_box_MINI, *dstarlya_dt_box_MINI;
