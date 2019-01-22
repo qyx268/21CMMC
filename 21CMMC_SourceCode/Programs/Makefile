@@ -1,5 +1,5 @@
 # C compiler and flags
-CPPFLAGS = -I$(HOME)/3rd_party/include
+CPPFLAGS = -I$(HOME)/3rd_party/include -I/usr/local/include
 LDFLAGS = -L/$(HOME)/3rd_party/lib -lgsl -lgslcblas -lfftw3f_omp -lfftw3f -lm
 CC      = gcc -fopenmp -O3
 

@@ -346,6 +346,7 @@ double spectral_emissivity(double nu_norm, int flag)
   FILE *F;
 
   switch(flag) {
+#ifdef MINI_HALO
   case 3:
     // For LW calculateion. New in v1.5, see...
     for (i=1;i<(NSPEC_MAX-1);i++) {
@@ -361,6 +362,7 @@ double spectral_emissivity(double nu_norm, int flag)
         }
       }
     }
+#endif
 
   case 2:
     // used for destruct_heat

@@ -48,7 +48,7 @@ define M_TURNOVER (double) (5e8) // Halo mass threshold for efficient star forma
   New in v1.5 
   Flag set to 1 if halos are considered into two populations, namely mini/molecular-cooling and atomic-cooling halos
 */
-#define MINI_HALO (int) (1)
+//#define MINI_HALO (int) (1)
 
 /*
   Maximum horizon for ionizing photons, in comoving Mpc.
