@@ -2013,7 +2013,9 @@ void ComputeTsBoxes() {
                             else {
                                 dxlya_dt_box[box_ct] += 0.;
                                 dstarlya_dt_box[box_ct] += 0.;
+#ifdef MINI_HALO
 								dstarlyLW_dt_box[box_ct] += 0.;
+#endif
                             }
                         }
 #ifdef MINI_HALO
@@ -2375,8 +2377,11 @@ void ComputeTsBoxes() {
         
         destroy_21cmMC_Ts_arrays();
         destruct_heat();
-	    for (R_ct=0; R_ct<NUM_FILTER_STEPS_FOR_Ts; R_ct++)
+#ifdef MINI_HALO
+	    for (R_ct=0; R_ct<NUM_FILTER_STEPS_FOR_Ts; R_ct++){
 		    free(log10_Mcrit_LW[ct]); 
+		}
+#endif
     }
     
     if(!USE_MASS_DEPENDENT_ZETA) {
@@ -3538,9 +3543,11 @@ void ComputeIonisationBoxes(int sample_index, float REDSHIFT_SAMPLE, float PREV_
                             
                             if (ave_N_min_cell < N_POISSON){
                                 N_min_cell = (int) gsl_ran_poisson(r, ave_N_min_cell);
-                                f_coll = N_min_cell * M_MIN / (pixel_mass*(1. + curr_dens)) * ((f_coll / (f_coll + f_coll_MINI)));
 #ifdef MINI_HALO
+                                f_coll = N_min_cell * M_MIN / (pixel_mass*(1. + curr_dens)) * ((f_coll / (f_coll + f_coll_MINI)));
                                 f_coll_MINI = N_min_cell * M_MIN / (pixel_mass*(1. + curr_dens)) - f_coll;
+#else
+                                f_coll = N_min_cell * M_MIN / (pixel_mass*(1. + curr_dens));
 #endif
                             }
                                 
