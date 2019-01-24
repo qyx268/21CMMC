@@ -151,7 +151,6 @@ fftwf_complex *N_rec_unfiltered, *N_rec_filtered;
 
 // Mini halos
 #ifdef MINI_HALO
-#define NMTURN 100
 float *log10_Fcoll_spline_SFR_MINI;
 float *Fcoll_spline_SFR_MINI;
 float *prev_log10_Fcoll_spline_SFR_MINI;

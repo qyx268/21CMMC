@@ -633,7 +633,7 @@ int main(int argc, char ** argv){
         counter += 1;
     }
 
-    N_RSTEPS = counter;
+    N_RSTEPS = counter + 1;
 	deltax_prev_filtered = (fftwf_complex**)fftwf_malloc(N_RSTEPS*sizeof(fftwf_complex *));
 	prev_Fcoll           = (float**) calloc(N_RSTEPS,sizeof(float *));
 	prev_Fcoll_MINI      = (float**) calloc(N_RSTEPS,sizeof(float *));
@@ -3168,7 +3168,7 @@ void ComputeIonisationBoxes(int sample_index, float REDSHIFT_SAMPLE, float PREV_
                 
                             curr_dens = *((float *)deltax_filtered + HII_R_FFT_INDEX(x,y,z));
 #ifdef MINI_HALO
-                            prev_dens = *((float *)deltax_prev_filtered + HII_R_FFT_INDEX(x,y,z));
+                            prev_dens = *((float *)deltax_prev_filtered[counter_R] + HII_R_FFT_INDEX(x,y,z));
 							log10_Mmin_val = ( *((float *)log10_Mmin_filtered + HII_R_FFT_INDEX(x,y,z)) - (5 - 9e-8 )) / (5+1.8e-7) * NMTURN;
 							log10_Mmin_int = (int)floorf( log10_Mmin_val );
 							log10_Mmin_MINI_val = ( *((float *)log10_Mmin_MINI_filtered + HII_R_FFT_INDEX(x,y,z)) - (5 - 9e-8 )) / (5+1.8e-7) * NMTURN;

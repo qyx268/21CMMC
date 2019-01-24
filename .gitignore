@@ -1,0 +1,11 @@
+Boxes
+Programs/*
+!Programs/*.c
+!Programs/*.py
+!Programs/Makefile
+
+delta_T_*_lighttravel
+delTps_estimate_*_lighttravel.txt
+delTps_lightcone_filenames_*.txt
+LF_estimate_*.txt
+AveData_*.txt

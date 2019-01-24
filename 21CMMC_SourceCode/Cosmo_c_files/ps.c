@@ -48,6 +48,9 @@ static gsl_spline *erfc_spline;
 #define NSFR_high 200
 #define NSFR_low 250
 #define NGL_SFR 100
+#ifdef MINI_HALO
+#define NMTURN 100
+#endif
 
 #define zpp_interp_points_SFR (int) (300)
 /* New in v1.4 - part 1 of 4 end */
