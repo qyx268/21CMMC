@@ -6111,7 +6111,7 @@ void destroy_21cmMC_Ts_arrays() {
 #ifdef MINI_HALO
     free(dstarlya_dt_prefactor_MINI);
 
-    free(ST_over_PS);
+    free(ST_over_PS_MINI);
     free(sum_lyn_MINI);
     free(sum_lyLWn);
     free(sum_lyLWn_MINI);
