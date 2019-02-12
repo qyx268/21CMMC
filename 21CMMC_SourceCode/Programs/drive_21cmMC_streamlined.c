@@ -626,6 +626,7 @@ int main(int argc, char ** argv){
     R=fmax(R_BUBBLE_MIN, (L_FACTOR*BOX_LEN/(float)HII_DIM));
     
     int N_RSTEPS, counter_R, ii, x, y, z;
+	float *prev_Fcoll_R, *prev_Fcoll_MINI_R, *deltax_prev_filtered_R;
     
     counter = 0;
     while ((R - fmin(R_BUBBLE_MAX, L_FACTOR*BOX_LEN)) <= FRACT_FLOAT_ERR ) {
@@ -642,12 +643,16 @@ int main(int argc, char ** argv){
 		prev_Fcoll[ii]           = (float *) calloc(HII_TOT_NUM_PIXELS,sizeof(float));
 		prev_Fcoll_MINI[ii]      = (float *) calloc(HII_TOT_NUM_PIXELS,sizeof(float));
 
+		prev_Fcoll_R = prev_Fcoll[ii];
+		prev_Fcoll_MINI_R = prev_Fcoll_MINI[ii];
+		deltax_prev_filtered_R = deltax_prev_filtered[ii];
+
 		for (x=0; x<HII_DIM; x++){
 			for (y=0; y<HII_DIM; y++){
 				for (z=0; z<HII_DIM; z++){
-					*((float *)deltax_prev_filtered[ii] + HII_R_FFT_INDEX(x,y,z)) = -1.01;
-					prev_Fcoll[ii][HII_R_INDEX(x,y,z)] = 0.0;
-					prev_Fcoll_MINI[ii][HII_R_INDEX(x,y,z)] = 0.0;
+					*((float *)deltax_prev_filtered_R + HII_R_FFT_INDEX(x,y,z)) = -1.01;
+					prev_Fcoll_R[HII_R_INDEX(x,y,z)] = 0.0;
+					prev_Fcoll_MINI_R[HII_R_INDEX(x,y,z)] = 0.0;
 				}
 			}
 		}
@@ -2381,9 +2386,7 @@ void ComputeTsBoxes() {
             
         } // end main integral loop over z'
         
-		printf("0,0,1,0\n");
         destroy_21cmMC_Ts_arrays();
-		printf("0,0,2,0\n");
         destruct_heat();
 #ifdef MINI_HALO
 	    for (R_ct=0; R_ct<NUM_FILTER_STEPS_FOR_Ts; R_ct++){
@@ -2444,6 +2447,7 @@ void ComputeIonisationBoxes(int sample_index, float REDSHIFT_SAMPLE, float PREV_
 	float log10_Mmin_ave_table_fcollz, log10_Mmin_MINI_ave_table_fcollz;
 	int log10_Mmin_ave_int_fcollz, log10_Mmin_MINI_ave_int_fcollz;
 	double Mcrit_atom, Mcrit_RE, Mcrit_LW, log10_Mcrit_atom, log10_Mcrit_mol, Mmin, Mmin_MINI;
+	float *deltax_prev_filtered_R;
 #endif
     
     float ln_10;
@@ -2980,6 +2984,9 @@ void ComputeIonisationBoxes(int sample_index, float REDSHIFT_SAMPLE, float PREV_
 #ifdef MINI_HALO
             memcpy(log10_Mmin_filtered, log10_Mmin_unfiltered, sizeof(fftwf_complex)*HII_KSPACE_NUM_PIXELS);
             memcpy(log10_Mmin_MINI_filtered, log10_Mmin_MINI_unfiltered, sizeof(fftwf_complex)*HII_KSPACE_NUM_PIXELS);
+			deltax_prev_filtered_R = deltax_prev_filtered[counter_R];
+			prev_Fcoll_R = prev_Fcoll[counter_R];
+			prev_Fcoll_MINI_R = prev_Fcoll_MINI[counter_R];
 #endif
             
             if (!LAST_FILTER_STEP || (R > cell_length_factor*BOX_LEN/(double)HII_DIM) ){
@@ -3170,7 +3177,7 @@ void ComputeIonisationBoxes(int sample_index, float REDSHIFT_SAMPLE, float PREV_
                 
                             curr_dens = *((float *)deltax_filtered + HII_R_FFT_INDEX(x,y,z));
 #ifdef MINI_HALO
-                            prev_dens = *((float *)deltax_prev_filtered[counter_R] + HII_R_FFT_INDEX(x,y,z));
+                            prev_dens = *((float *)deltax_prev_filtered_R + HII_R_FFT_INDEX(x,y,z));
 							log10_Mmin_val = ( *((float *)log10_Mmin_filtered + HII_R_FFT_INDEX(x,y,z)) - (5 - 9e-8 )) / (5+1.8e-7) * NMTURN;
 							log10_Mmin_int = (int)floorf( log10_Mmin_val );
 							log10_Mmin_MINI_val = ( *((float *)log10_Mmin_MINI_filtered + HII_R_FFT_INDEX(x,y,z)) - (5 - 9e-8 )) / (5+1.8e-7) * NMTURN;
@@ -3323,7 +3330,7 @@ void ComputeIonisationBoxes(int sample_index, float REDSHIFT_SAMPLE, float PREV_
                         
                             // save the value of the collasped fraction into the Fcoll array
 #ifdef MINI_HALO
-                            Fcoll[HII_R_INDEX(x,y,z)] = prev_Fcoll[counter_R][HII_R_INDEX(x,y,z)] + Splined_Fcoll - prev_Splined_Fcoll;
+                            Fcoll[HII_R_INDEX(x,y,z)] = prev_Fcoll_R[HII_R_INDEX(x,y,z)] + Splined_Fcoll - prev_Splined_Fcoll;
                             f_coll += Fcoll[HII_R_INDEX(x,y,z)];
                             Fcoll_MINI[HII_R_INDEX(x,y,z)] = prev_Fcoll_MINI[counter_R][HII_R_INDEX(x,y,z)] + Splined_Fcoll_MINI - prev_Splined_Fcoll_MINI;
                             f_coll_MINI += Fcoll_MINI[HII_R_INDEX(x,y,z)];
@@ -3346,8 +3353,8 @@ void ComputeIonisationBoxes(int sample_index, float REDSHIFT_SAMPLE, float PREV_
 				for (x=0; x<HII_DIM; x++){
 					for (y=0; y<HII_DIM; y++){
 						for (z=0; z<HII_DIM; z++){
-							prev_Fcoll[counter_R][HII_R_INDEX(x,y,z)] = Fcoll[HII_R_INDEX(x,y,z)];
-							prev_Fcoll_MINI[counter_R][HII_R_INDEX(x,y,z)] = Fcoll_MINI[HII_R_INDEX(x,y,z)];
+							prev_Fcoll_R[HII_R_INDEX(x,y,z)] = Fcoll[HII_R_INDEX(x,y,z)];
+							prev_Fcoll_MINI_R[HII_R_INDEX(x,y,z)] = Fcoll_MINI[HII_R_INDEX(x,y,z)];
 						}
 					}
 				}
@@ -3594,7 +3601,7 @@ void ComputeIonisationBoxes(int sample_index, float REDSHIFT_SAMPLE, float PREV_
             for (x=0; x<HII_DIM; x++){
                 for (y=0; y<HII_DIM; y++){
                     for (z=0; z<HII_DIM; z++){
-                        *((float *)deltax_prev_filtered[counter_R] + HII_R_FFT_INDEX(x,y,z)) = *((float *)deltax_filtered + HII_R_FFT_INDEX(x,y,z)); 
+                        *((float *)deltax_prev_filtered_R + HII_R_FFT_INDEX(x,y,z)) = *((float *)deltax_filtered + HII_R_FFT_INDEX(x,y,z)); 
 					}
 				}
 			}
