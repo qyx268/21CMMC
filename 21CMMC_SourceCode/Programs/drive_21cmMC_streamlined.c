@@ -2381,7 +2381,9 @@ void ComputeTsBoxes() {
             
         } // end main integral loop over z'
         
+		printf("0,0,1,0\n");
         destroy_21cmMC_Ts_arrays();
+		printf("0,0,2,0\n");
         destruct_heat();
 #ifdef MINI_HALO
 	    for (R_ct=0; R_ct<NUM_FILTER_STEPS_FOR_Ts; R_ct++){
@@ -6111,7 +6113,7 @@ void destroy_21cmMC_Ts_arrays() {
 #ifdef MINI_HALO
     free(dstarlya_dt_prefactor_MINI);
 
-    free(ST_over_PS);
+    free(ST_over_PS_MINI);
     free(sum_lyn_MINI);
     free(sum_lyLWn);
     free(sum_lyLWn_MINI);
