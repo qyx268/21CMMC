@@ -626,7 +626,8 @@ int main(int argc, char ** argv){
     R=fmax(R_BUBBLE_MIN, (L_FACTOR*BOX_LEN/(float)HII_DIM));
     
     int N_RSTEPS, counter_R, ii, x, y, z;
-	float *prev_Fcoll_R, *prev_Fcoll_MINI_R, *deltax_prev_filtered_R;
+	float *prev_Fcoll_R, *prev_Fcoll_MINI_R;
+	fftwf_complex *deltax_prev_filtered_R;
     
     counter = 0;
     while ((R - fmin(R_BUBBLE_MAX, L_FACTOR*BOX_LEN)) <= FRACT_FLOAT_ERR ) {
@@ -2447,7 +2448,8 @@ void ComputeIonisationBoxes(int sample_index, float REDSHIFT_SAMPLE, float PREV_
 	float log10_Mmin_ave_table_fcollz, log10_Mmin_MINI_ave_table_fcollz;
 	int log10_Mmin_ave_int_fcollz, log10_Mmin_MINI_ave_int_fcollz;
 	double Mcrit_atom, Mcrit_RE, Mcrit_LW, log10_Mcrit_atom, log10_Mcrit_mol, Mmin, Mmin_MINI;
-	float *deltax_prev_filtered_R;
+	fftwf_complex *deltax_prev_filtered_R;
+	float *prev_Fcoll_R, *prev_Fcoll_MINI_R;
 #endif
     
     float ln_10;
