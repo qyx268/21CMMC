@@ -37,19 +37,19 @@ static gsl_spline *erfc_spline;
 #define NGaussLegendre 40  //defines the number of points in the Gauss-Legendre quadrature integration
 
 #define SPLINE_NPTS (int) 250
-#define NGLhigh 100
-#define NGLlow 100
+#define NGLhigh (int) 100
+#define NGLlow (int) 100
 
-#define Nhigh 200
-#define Nlow 100
-#define NMass 200
+#define Nhigh (int) 200
+#define Nlow (int) 100
+#define NMass (int) 200
 
 /* New in v1.4 - part 1 of 4 start */
-#define NSFR_high 200
-#define NSFR_low 250
-#define NGL_SFR 100
+#define NSFR_high (int) 200
+#define NSFR_low (int) 250
+#define NGL_SFR (int) 100
 #ifdef MINI_HALO
-#define NMTURN 100
+#define NMTURN (int) 100
 #endif
 
 #define zpp_interp_points_SFR (int) (300)

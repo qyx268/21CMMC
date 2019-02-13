@@ -14,7 +14,7 @@
 #define TOTAL_COSMOLOGY_FILEPARAMS (int)7
 
 /* Allows the output of the global averaged quantities in the computation of the IGM spin temperature. Used for de-bugging purposes only */
-#define OUTPUT_AVE  0
+#define OUTPUT_AVE  1
 
 /* Whether or not to print the text files containing the neutral fraction or 21cm PS files */
 #define PRINT_FILES (int)1
@@ -163,6 +163,8 @@ float ***log10_Fcollz_SFR_Xray_low_table_MINI;
 float ***Fcollz_SFR_Xray_high_table_MINI;
 fftwf_complex **deltax_prev_filtered;
 float prev_mean_f_coll_st, prev_mean_f_coll_st_MINI;
+float prev_overdense_small_min, prev_overdense_small_bin_width_inv, prev_overdense_large_min, prev_overdense_large_bin_width_inv;
+
 double X_RAY_SPEC_INDEX_MINI;
 double **freq_int_heat_tbl_MINI,**freq_int_ion_tbl_MINI,**freq_int_lya_tbl_MINI,**freq_int_heat_tbl_diff_MINI,**freq_int_ion_tbl_diff_MINI,**freq_int_lya_tbl_diff_MINI;
 double *dxheat_dt_box_MINI, *dxion_source_dt_box_MINI, *dxlya_dt_box_MINI, *dstarlya_dt_box_MINI;
@@ -179,4 +181,5 @@ float *log10_Mturn_interp_table;
 float *Mcrit_atom_interp_table;
 float *Fcoll_MINI;
 fftwf_complex *log10_Mmin_unfiltered, *log10_Mmin_filtered, *log10_Mmin_MINI_unfiltered, *log10_Mmin_MINI_filtered;
+
 #endif
