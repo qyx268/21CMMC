@@ -2487,7 +2487,7 @@ void initialiseGL_FcollSFR_Xray(int n, float M_Min, float M_Max){
 #ifdef MINI_HALO
 void initialise_FgtrM_st_SFR_spline(int Nbin, float zmin, float zmax, float Alpha_star, float Alpha_esc, float Fstar10, float Fesc10, float Fstar10_MINI, float Fesc10_MINI){
     int i, j;
-    float Mmin = 1e5, Mmax = 1e16;
+    float Mmin = 1e5/50., Mmax = 1e16;
     float Mlim_Fstar, Mlim_Fesc, Mlim_Fstar_MINI;
     
     Mlim_Fstar = Mass_limit_bisection(Mmin, Mmax, Alpha_star, Fstar10);
@@ -2510,7 +2510,7 @@ void initialise_FgtrM_st_SFR_spline(int Nbin, float zmin, float zmax, float Alph
 
 void initialise_Xray_FgtrM_st_SFR_spline(int Nbin, float zmin, float zmax, float Alpha_star, float Fstar10, float Fstar10_MINI){
     int i, j;
-    float Mmin = 1e5, Mmax = 1e16;
+    float Mmin = 1e5/50., Mmax = 1e16;
     float Mlim_Fstar, Mlim_Fstar_MINI;
     
     Mlim_Fstar = Mass_limit_bisection(Mmin, Mmax, Alpha_star, Fstar10);
@@ -2549,7 +2549,7 @@ void initialise_Xray_Fcollz_SFR_Conditional_table(int Nfilter, float min_density
     
     ln_10 = log(10);
     
-    Mmin = 1e5;
+    Mmin = 1e5/50.;
     Mmax = RtoM(R[Nfilter-1]);
     Mlim_Fstar = Mass_limit_bisection(Mmin, Mmax, Alpha_star, Fstar10);
     Mlim_Fstar_MINI = Mass_limit_bisection(Mmin, Mmax, Alpha_star, Fstar10_MINI);
@@ -2567,7 +2567,7 @@ void initialise_Xray_Fcollz_SFR_Conditional_table(int Nfilter, float min_density
         
         Mmax = RtoM(R[j]);
   
-        initialiseGL_FcollSFR_Xray(NGL_SFR, 1e5, Mmax);
+        initialiseGL_FcollSFR_Xray(NGL_SFR, 1e5/50., Mmax);
         
         Mmax = log(Mmax);
         MassBin = (int)floor( ( Mmax - MinMass )*inv_mass_bin_width );
@@ -2580,6 +2580,10 @@ void initialise_Xray_Fcollz_SFR_Conditional_table(int Nfilter, float min_density
             
             overdense_small_low = min_density[j]*growthf[j+Nfilter*k];
             overdense_small_high = max_density[j]*growthf[j+Nfilter*k];
+			if(overdense_small_low < -1.){
+				overdense_small_low = -1.+9e-8;
+			}
+
             if(overdense_small_high > 1.5) {
                 overdense_small_high = 1.5;
             }
@@ -2591,13 +2595,18 @@ void initialise_Xray_Fcollz_SFR_Conditional_table(int Nfilter, float min_density
             
             for (i=0; i<NSFR_low; i++){
 				for (q=0; q<NMTURN; q++){
-                  log10_Fcollz_SFR_Xray_low_table[k][j][i+q*NSFR_low] = log10(GaussLegendreQuad_FcollSFR_Xray(NGL_SFR,growthf[j+Nfilter*k],Mmax,sigma2,Deltac,overdense_Xray_low_table[i]-1.,Mturn_val_MINI[q],Alpha_star,0.,Fstar10,1.,Mlim_Fstar,0.));
-                
-                  log10_Fcollz_SFR_Xray_low_table[k][j][i+q*NSFR_low] += 10.0;
+                  log10_Fcollz_SFR_Xray_low_table[k][j][i+q*NSFR_low] = GaussLegendreQuad_FcollSFR_Xray(NGL_SFR,growthf[j+Nfilter*k],Mmax,sigma2,Deltac,overdense_Xray_low_table[i]-1.,Mturn_val_MINI[q],Alpha_star,0.,Fstar10,1.,Mlim_Fstar,0.);
+				  if (log10_Fcollz_SFR_Xray_low_table[k][j][i+q*NSFR_low] > 1e-50)
+					  log10_Fcollz_SFR_Xray_low_table[k][j][i+q*NSFR_low] = log10(log10_Fcollz_SFR_Xray_low_table[k][j][i+q*NSFR_low]) + 10.0;
+				  else
+					  log10_Fcollz_SFR_Xray_low_table[k][j][i+q*NSFR_low] = -40.0;
                   log10_Fcollz_SFR_Xray_low_table[k][j][i+q*NSFR_low] *= ln_10;
 				
-               	  log10_Fcollz_SFR_Xray_low_table_MINI[k][j][i+q*NSFR_low] = log10(GaussLegendreQuad_FcollSFR_Xray_MINI(NGL_SFR,growthf[j+Nfilter*k],Mmax,sigma2,Deltac,overdense_Xray_low_table[i]-1.,Mturn_val_MINI[q],Mcrit_atom[j+Nfilter*k],Alpha_star,Fstar10_MINI,Mlim_Fstar_MINI));
-                  log10_Fcollz_SFR_Xray_low_table_MINI[k][j][i+q*NSFR_low] += 10.0;
+               	  log10_Fcollz_SFR_Xray_low_table_MINI[k][j][i+q*NSFR_low] = GaussLegendreQuad_FcollSFR_Xray_MINI(NGL_SFR,growthf[j+Nfilter*k],Mmax,sigma2,Deltac,overdense_Xray_low_table[i]-1.,Mturn_val_MINI[q],Mcrit_atom[j+Nfilter*k],Alpha_star,Fstar10_MINI,Mlim_Fstar_MINI);
+				  if (log10_Fcollz_SFR_Xray_low_table_MINI[k][j][i+q*NSFR_low] > 1e-50)
+					  log10_Fcollz_SFR_Xray_low_table_MINI[k][j][i+q*NSFR_low] = log10(log10_Fcollz_SFR_Xray_low_table_MINI[k][j][i+q*NSFR_low]) + 10.0;
+				  else
+					  log10_Fcollz_SFR_Xray_low_table_MINI[k][j][i+q*NSFR_low] = -40.0;
 	              log10_Fcollz_SFR_Xray_low_table_MINI[k][j][i+q*NSFR_low] *= ln_10;
 				}
             }
