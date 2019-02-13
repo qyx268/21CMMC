@@ -71,20 +71,20 @@ double splined_recombination_rate(double z_eff, double gamma12_bg){
   }
   // check out of bounds
   if ( z_ct < 0 ){ // out of array bounds
-//    fprintf(stderr, "WARNING: splined_recombination_rate: effective redshift %g is outside of array bouds\n", z_eff);
+    //fprintf(stderr, "WARNING: splined_recombination_rate: effective redshift %g is outside of array bouds\n", z_eff);
     z_ct = 0;
   }
   else if (z_ct  >= RR_Z_NPTS){
-//    fprintf(stderr, "WARNING: splined_recombination_rate: effective redshift %g is outside of array bouds\n", z_eff);
+    //fprintf(stderr, "WARNING: splined_recombination_rate: effective redshift %g is outside of array bouds\n", z_eff);
     z_ct = RR_Z_NPTS-1;
   }
 
   if (lnGamma < RR_lnGamma_min){
     return 0;
   }
-  else if (lnGamma >= (RR_lnGamma_min + RR_DEL_lnGamma * RR_lnGamma_NPTS) ){
-//    fprintf(stderr, "WARNING: splined_recombination_rate: Gamma12 of %g is outside of interpolation array\n", gamma12_bg);
-    lnGamma =  RR_lnGamma_min + RR_DEL_lnGamma * RR_lnGamma_NPTS - FRACT_FLOAT_ERR;
+  else if (lnGamma >= (RR_lnGamma_min + RR_DEL_lnGamma * (RR_lnGamma_NPTS - 1)) ){
+    fprintf(stderr, "WARNING: splined_recombination_rate: Gamma12 of %g is outside of interpolation array\n", gamma12_bg);
+    lnGamma =  RR_lnGamma_min + RR_DEL_lnGamma * (RR_lnGamma_NPTS - 1) - FRACT_FLOAT_ERR;
   }
 
   return gsl_spline_eval(RR_spline[z_ct], lnGamma, RR_acc[z_ct]);

@@ -2504,6 +2504,7 @@ void initialise_FgtrM_st_SFR_spline(int Nbin, float zmin, float zmax, float Alph
 		for (j=0; j<NMTURN; j++){
           Fcollz_val[i+j*Nbin] = FgtrM_st_SFR(dicke(z_val[i]), Mturn_val_MINI[j], Alpha_star, Alpha_esc, Fstar10, Fesc10, Mlim_Fstar, Mlim_Fesc);
           Fcollz_val_MINI[i+j*Nbin] = FgtrM_st_SFR_MINI(dicke(z_val[i]), Mturn_val_MINI[j], Mcrit_atom_val[i], Alpha_star, Fstar10_MINI, Mlim_Fstar_MINI);
+//		  printf("(%i,%i)Fcollz_val=%g,Fcollz_val_MINI=%g\n",i,j,Fcollz_val[i+j*Nbin],Fcollz_val_MINI[i+j*Nbin]);
 		}
     }
 }
@@ -2522,6 +2523,7 @@ void initialise_Xray_FgtrM_st_SFR_spline(int Nbin, float zmin, float zmax, float
         for (j=0; j<NMTURN; j++){
           FcollzX_val[i] = FgtrM_st_SFR(dicke(z_X_val[i]), Mturn_val_MINI[j], Alpha_star, 0., Fstar10, 1.,Mlim_Fstar,0.);
           FcollzX_val_MINI[i+j*Nbin] = FgtrM_st_SFR_MINI(dicke(z_X_val[i]), Mturn_val_MINI[j], Mcrit_atom_val[i], Alpha_star, Fstar10_MINI, Mlim_Fstar_MINI);
+//		  printf("(%i,%i)FcollzX_val=%g,FcollzX_val_MINI=%g\n",i,j,Fcollz_val[i+j*Nbin],Fcollz_val_MINI[i+j*Nbin]);
 		}
     }
 }
@@ -2591,6 +2593,7 @@ void initialise_Xray_Fcollz_SFR_Conditional_table(int Nfilter, float min_density
             for (i=0; i<NSFR_low; i++) {
                 overdense_val = log10(1. + overdense_small_low) + (float)i/((float)NSFR_low-1.)*(log10(1.+overdense_small_high)-log10(1.+overdense_small_low));
                 overdense_Xray_low_table[i] = pow(10.,overdense_val);
+				//printf("(%i) overdense_small_low=%g, overdense_small_high=%g,overdense_val=%g, overdense_Xray_low_table=%g\n",i,overdense_small_low,overdense_small_high,overdense_val,overdense_Xray_low_table[i]);
             }
             
             for (i=0; i<NSFR_low; i++){
@@ -2608,6 +2611,7 @@ void initialise_Xray_Fcollz_SFR_Conditional_table(int Nfilter, float min_density
 				  else
 					  log10_Fcollz_SFR_Xray_low_table_MINI[k][j][i+q*NSFR_low] = -40.0;
 	              log10_Fcollz_SFR_Xray_low_table_MINI[k][j][i+q*NSFR_low] *= ln_10;
+				  //printf("(%i.%i.%i.%i)log10_Fcollz_SFR_Xray_low_table=%g, log10_Fcollz_SFR_Xray_low_table_MINI=%g\tNGL_SFR=%d,growthf=%g,Mmax=%g,sigma2=%g,Deltac=%g,overdense_Xray_low_table[i]-1.=%g,Mturn_val_MINI[q]=%g,Mcrit_atom=%g\n",j,k,i,q,log10_Fcollz_SFR_Xray_low_table[k][j][i+q*NSFR_low],log10_Fcollz_SFR_Xray_low_table_MINI[k][j][i+q*NSFR_low],NGL_SFR,growthf[j+Nfilter*k],Mmax,sigma2,Deltac,overdense_Xray_low_table[i]-1.,Mturn_val_MINI[q],Mcrit_atom[j+Nfilter*k]);
 				}
             }
             
@@ -2621,6 +2625,7 @@ void initialise_Xray_Fcollz_SFR_Conditional_table(int Nfilter, float min_density
                   Fcollz_SFR_Xray_high_table_MINI[k][j][i+q*NSFR_high] = FgtrConditionalM_SFR_Xray_MINI(growthf[j+Nfilter*k],Mmin,Mmax,sigma2,Deltac,Overdense_Xray_high_table[i],Mturn_val_MINI[q],Mcrit_atom[j+Nfilter*k],Alpha_star,Fstar10_MINI,Mlim_Fstar_MINI);
                 
                   Fcollz_SFR_Xray_high_table_MINI[k][j][i+q*NSFR_high] *= pow(10., 10.0);
+				  //printf("(%i.%i.%i.%i)Fcollz_SFR_Xray_high_table=%g, Fcollz_SFR_Xray_high_table_MINI=%g\n",j,k,i,q,Fcollz_SFR_Xray_high_table[k][j][i+q*NSFR_low],Fcollz_SFR_Xray_high_table_MINI[k][j][i+q*NSFR_low]);
 				}
             }
         }
