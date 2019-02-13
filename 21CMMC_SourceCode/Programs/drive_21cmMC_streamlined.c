@@ -692,6 +692,7 @@ int main(int argc, char ** argv){
     }
     
     // Output the text-file containing the file names of all the 21cm PS calculated from the light-cone boxes
+	
     if(USE_LIGHTCONE) {
         
         sprintf(filename, "delTps_lightcone_filenames_%f_%f.txt",INDIVIDUAL_ID,INDIVIDUAL_ID_2);
@@ -743,7 +744,7 @@ int main(int argc, char ** argv){
 	fftwf_free(log10_Mcrit_LW_unfiltered); 
 	fftwf_free(log10_Mcrit_LW_filtered);
     fftwf_free(J_21_LW);
-	for (ii=0; i<N_RSTEPS;i++){
+	for (ii=0; ii<N_RSTEPS;ii++){
 		fftwf_free(deltax_prev_filtered[ii]);
 		free(prev_Fcoll[ii]);
 		free(prev_Fcoll_MINI[ii]);
@@ -964,13 +965,6 @@ void ComputeTsBoxes() {
         }
     }
 #ifdef MINI_HALO
-    double ***Fcoll_R_Table_MINI = (double ***)calloc(Numzp_for_table,sizeof(double **));
-    for(i=0;i<Numzp_for_table;i++) {
-        Fcoll_R_Table_MINI[i] = (double **)calloc(X_RAY_Tvir_POINTS,sizeof(double *));
-        for(j=0;j<X_RAY_Tvir_POINTS;j++) {
-            Fcoll_R_Table_MINI[i][j] = (double *)calloc(NUM_FILTER_STEPS_FOR_Ts,sizeof(double));
-        }
-    }
 	prev_mean_f_coll_st = 0.0;
 	prev_mean_f_coll_st_MINI = 0.0;
 #endif
@@ -989,7 +983,7 @@ void ComputeTsBoxes() {
     // Initialise arrays to be used for the Ts.c computation //
     init_21cmMC_Ts_arrays();
     for (R_ct=0; R_ct<NUM_FILTER_STEPS_FOR_Ts; R_ct++){
-		log10_Mcrit_LW[R_ct] = (float *) malloc(sizeof(float)*HII_TOT_NUM_PIXELS); 
+		log10_Mcrit_LW[R_ct] = (float *) calloc(HII_TOT_NUM_PIXELS, sizeof(float));
 	}
     
     ///////////////////////////////  BEGIN INITIALIZATION   //////////////////////////////
@@ -2398,20 +2392,20 @@ void ComputeTsBoxes() {
         destruct_heat();
 #ifdef MINI_HALO
 	    for (R_ct=0; R_ct<NUM_FILTER_STEPS_FOR_Ts; R_ct++){
-		    free(log10_Mcrit_LW[ct]); 
+		    free(log10_Mcrit_LW[R_ct]); 
 		}
 #endif
     }
     
-    if(!USE_MASS_DEPENDENT_ZETA) {
+	if(!USE_MASS_DEPENDENT_ZETA) {
         for(i=0;i<Numzp_for_table;i++) {
-            for(j=0;j<X_RAY_Tvir_POINTS;j++) {
-                free(Fcoll_R_Table[i][j]);
-            }
-            free(Fcoll_R_Table[i]);
-        }
-        free(Fcoll_R_Table);
-    }
+        	for(j=0;j<X_RAY_Tvir_POINTS;j++) {
+            	free(Fcoll_R_Table[i][j]);
+	        }
+    	    free(Fcoll_R_Table[i]);
+    	}
+    	free(Fcoll_R_Table);
+	}
 }
 
 void ComputeIonisationBoxes(int sample_index, float REDSHIFT_SAMPLE, float PREV_REDSHIFT) {
