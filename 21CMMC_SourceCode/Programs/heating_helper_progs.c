@@ -897,13 +897,13 @@ double tauX_integrand_approx(double zhat, void *params){
         fcoll = Fcollz_val[redshift_int_fcollz] + ( zhat - redshift_table_fcollz )*( Fcollz_val[redshift_int_fcollz+1] - Fcollz_val[redshift_int_fcollz] )/(zpp_bin_width);
 
 #ifdef MINI_HALO
-		log10_Mcrit_LW_ave_int_fcollz = (int)floor( ( log10_Mcrit_LW_ave - (5. - 9e-8 )) / (5.+1.8e-7) * NMTURN);
-		log10_Mcrit_LW_ave_table_fcollz = 5. - 9e-8 + (5.+1.8e-7) / NMTURN * (float)log10_Mcrit_LW_ave_int_fcollz;
+		log10_Mcrit_LW_ave_int_fcollz = (int)floor( ( log10_Mcrit_LW_ave - LOG10MTURN_MIN) / LOG10MTURN_INT);
+		log10_Mcrit_LW_ave_table_fcollz = LOG10MTURN_MIN + LOG10MTURN_INT * (float)log10_Mcrit_LW_ave_int_fcollz;
 		fcoll_MINI_left = Fcollz_val_MINI[redshift_int_fcollz + zpp_interp_points_SFR * log10_Mcrit_LW_ave_int_fcollz] + ( zhat - redshift_table_fcollz ) / zpp_bin_width *
 			( Fcollz_val_MINI[redshift_int_fcollz+1 + zpp_interp_points_SFR * log10_Mcrit_LW_ave_int_fcollz] - Fcollz_val_MINI[redshift_int_fcollz + zpp_interp_points_SFR * log10_Mcrit_LW_ave_int_fcollz] );
 		fcoll_MINI_right = Fcollz_val_MINI[redshift_int_fcollz + zpp_interp_points_SFR * (log10_Mcrit_LW_ave_int_fcollz + 1)] + ( zhat - redshift_table_fcollz ) / zpp_bin_width *
 			( Fcollz_val_MINI[redshift_int_fcollz+1 + zpp_interp_points_SFR * (log10_Mcrit_LW_ave_int_fcollz+1)] - Fcollz_val_MINI[redshift_int_fcollz + zpp_interp_points_SFR * (log10_Mcrit_LW_ave_int_fcollz+1)] );
-		fcoll_MINI = fcoll_MINI_left + (log10_Mcrit_LW_ave - log10_Mcrit_LW_ave_table_fcollz) / ((5.+1.8e-7) / NMTURN) * ( fcoll_MINI_right - fcoll_MINI_left );
+		fcoll_MINI = fcoll_MINI_left + (log10_Mcrit_LW_ave - log10_Mcrit_LW_ave_table_fcollz) / LOG10MTURN_INT * ( fcoll_MINI_right - fcoll_MINI_left );
 #endif
     }
     else {
