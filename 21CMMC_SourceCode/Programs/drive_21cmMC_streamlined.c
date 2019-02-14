@@ -889,7 +889,8 @@ void ComputeTsBoxes() {
     
     float fcoll_interp_min, fcoll_interp_bin_width, fcoll_interp_bin_width_inv, fcoll_interp_val1, fcoll_interp_val2, dens_val;
     float fcoll_interp_high_min, fcoll_interp_high_bin_width, fcoll_interp_high_bin_width_inv;
-    int fcoll_int;
+    int dens_int;
+	float dens_diff;
     
     float ave_fcoll_float, dfcoll_dz_val_float, fcoll_float;
     
@@ -898,7 +899,7 @@ void ComputeTsBoxes() {
     int redshift_int_fcollz,redshift_int_fcollz_Xray;
 
 #ifdef MINI_HALO
-	float log10_Mcrit_LW_val, log10_Mcrit_atom_val;
+	float log10_Mcrit_LW_val, log10_Mcrit_atom_val, log10_Mcrit_LW_diff, log10_Mcrit_atom_diff;
 	int log10_Mcrit_LW_int, log10_Mcrit_atom_int;
 	float *log10_Mcrit_LW[NUM_FILTER_STEPS_FOR_Ts], log10_Mcrit_atom, log10_Mcrit_atom_Xray[NUM_FILTER_STEPS_FOR_Ts];
     float log10_Mcrit_LW_ave_table_fcollz, log10_Mcrit_atom_table_fcollz, log10_Mcrit_atom_table_fcollz_Xray;
@@ -1885,6 +1886,7 @@ void ComputeTsBoxes() {
 #ifdef MINI_HALO
 						log10_Mcrit_LW_val = ( log10_Mcrit_LW[R_ct][box_ct] - LOG10MTURN_MIN) / LOG10MTURN_INT;
 						log10_Mcrit_LW_int = (int)floorf( log10_Mcrit_LW_val );
+						log10_Mcrit_LW_diff = log10_Mcrit_LW_val - (float)log10_Mcrit_LW_int;
 #endif
                         
                         // Note: Be careful how I have defined this. I have done this for optimisation rather than readability
@@ -1902,21 +1904,25 @@ void ComputeTsBoxes() {
                                 else {
                                     dens_val = (log10f(curr_dens+1.) - fcoll_interp_min)*fcoll_interp_bin_width_inv;
                                         
-                                    fcoll_int = (int)floorf( dens_val );
+                                    dens_int = (int)floorf( dens_val );
+									dens_diff = dens_val - (float)dens_int;
                                     
 #ifdef MINI_HALO
-
-                                    fcoll_left = log10_Fcollz_SFR_Xray_low_table[counter][R_ct][fcoll_int+log10_Mcrit_atom_int*NSFR_low]*( 1 + (float)fcoll_int - dens_val ) + log10_Fcollz_SFR_Xray_low_table[counter][R_ct][fcoll_int+1+log10_Mcrit_atom_int*NSFR_low]*( dens_val - (float)fcoll_int );
-                                    fcoll_right = log10_Fcollz_SFR_Xray_low_table[counter][R_ct][fcoll_int+(log10_Mcrit_atom_int+1)*NSFR_low]*( 1 + (float)fcoll_int - dens_val ) + log10_Fcollz_SFR_Xray_low_table[counter][R_ct][fcoll_int+1+(log10_Mcrit_atom_int+1)*NSFR_low]*( dens_val - (float)fcoll_int );
+									index_left = dens_int+log10_Mcrit_atom_int*NSFR_low;
+									index_right = dens_int+(log10_Mcrit_atom_int+1)*NSFR_low;
+                                    fcoll_left = log10_Fcollz_SFR_Xray_low_table[counter][R_ct][index_left]*(1.-dens_diff) + log10_Fcollz_SFR_Xray_low_table[counter][R_ct][index_left+1]*dens_diff;
+                                    fcoll_right = log10_Fcollz_SFR_Xray_low_table[counter][R_ct][index_right]*(1.-dens_diff) + log10_Fcollz_SFR_Xray_low_table[counter][R_ct][index_right+1]*dens_diff;
 									fcoll = fcoll_left * (1 + (float)log10_Mcrit_atom_int - log10_Mcrit_atom_val) + fcoll_right * (log10_Mcrit_atom_val - (float)log10_Mcrit_atom_int);
 									fcoll = expf(fcoll);
 
-                                    fcoll_MINI_left = log10_Fcollz_SFR_Xray_low_table_MINI[counter][R_ct][fcoll_int+log10_Mcrit_LW_int*NSFR_low]*( 1 + (float)fcoll_int - dens_val ) + log10_Fcollz_SFR_Xray_low_table_MINI[counter][R_ct][fcoll_int+1+log10_Mcrit_LW_int*NSFR_low]*( dens_val - (float)fcoll_int );
-                                    fcoll_MINI_right = log10_Fcollz_SFR_Xray_low_table_MINI[counter][R_ct][fcoll_int+(log10_Mcrit_LW_int+1)*NSFR_low]*( 1 + (float)fcoll_int - dens_val ) + log10_Fcollz_SFR_Xray_low_table_MINI[counter][R_ct][fcoll_int+1+(log10_Mcrit_LW_int+1)*NSFR_low]*( dens_val - (float)fcoll_int );
-									fcoll_MINI = fcoll_MINI_left * (1 + (float)log10_Mcrit_LW_int - log10_Mcrit_LW_val) + fcoll_MINI_right * (log10_Mcrit_LW_val - (float)log10_Mcrit_LW_int);
+									index_left = dens_int+log10_Mcrit_LW_int*NSFR_low;
+									index_right = dens_int+(log10_Mcrit_LW_int+1)*NSFR_low;
+                                    fcoll_MINI_left = log10_Fcollz_SFR_Xray_low_table_MINI[counter][R_ct][index_left]*(1.-dens_diff) + log10_Fcollz_SFR_Xray_low_table_MINI[counter][R_ct][index_left+1]*dens_diff;
+                                    fcoll_MINI_right = log10_Fcollz_SFR_Xray_low_table_MINI[counter][R_ct][index_right]*(1.-dens_diff) + log10_Fcollz_SFR_Xray_low_table_MINI[counter][R_ct][index_right+1]*dens_diff;
+									fcoll_MINI = fcoll_MINI_left * (1.-log10_Mcrit_LW_diff) + fcoll_MINI_right * log10_Mcrit_LW_diff;
 									fcoll_MINI = expf(fcoll_MINI);
 #else
-                                    fcoll = log10_Fcollz_SFR_Xray_low_table[counter][R_ct][fcoll_int]*( 1 + (float)fcoll_int - dens_val ) + log10_Fcollz_SFR_Xray_low_table[counter][R_ct][fcoll_int+1]*( dens_val - (float)fcoll_int );
+                                    fcoll = log10_Fcollz_SFR_Xray_low_table[counter][R_ct][dens_int]*(1.-dens_diff) + log10_Fcollz_SFR_Xray_low_table[counter][R_ct][dens_int+1]*dens_diff;
                                     
                                     // Note here, this returns the collapse fraction
                                     // The interpolation table is log(10)*exponent, thus exp(log(10)*exponent) = 10^exponent. Which is the value of the collapse fraction.
@@ -1930,18 +1936,23 @@ void ComputeTsBoxes() {
                                         
                                     dens_val = (curr_dens - fcoll_interp_high_min)*fcoll_interp_high_bin_width_inv;
                                     
-                                    fcoll_int = (int)floorf( dens_val );
+                                    dens_int = (int)floorf( dens_val );
+									dens_diff = dens_val - (float)dens_int;
 
 #ifdef MINI_HALO
-									fcoll_left = Fcollz_SFR_Xray_high_table[counter][R_ct][fcoll_int+log10_Mcrit_atom_int*NSFR_low]*( 1. + (float)fcoll_int - dens_val ) + Fcollz_SFR_Xray_high_table[counter][R_ct][fcoll_int+1+log10_Mcrit_atom_int*NSFR_low]*( dens_val - (float)fcoll_int );
-									fcoll_right = Fcollz_SFR_Xray_high_table[counter][R_ct][fcoll_int+(log10_Mcrit_atom_int+1)*NSFR_low]*( 1. + (float)fcoll_int - dens_val ) + Fcollz_SFR_Xray_high_table[counter][R_ct][fcoll_int+1+(log10_Mcrit_atom_int+1)*NSFR_low]*( dens_val - (float)fcoll_int );
+									index_left = dens_int+log10_Mcrit_atom_int*NSFR_high;
+									index_right = dens_int+(log10_Mcrit_atom_int+1)*NSFR_high;
+									fcoll_left = Fcollz_SFR_Xray_high_table[counter][R_ct][index_left]*(1.-dens_diff) + Fcollz_SFR_Xray_high_table[counter][R_ct][index_left+1]*dens_diff;
+									fcoll_right = Fcollz_SFR_Xray_high_table[counter][R_ct][index_right]*(1.-dens_diff) + Fcollz_SFR_Xray_high_table[counter][R_ct][index_right+1]*dens_diff;
 									fcoll = fcoll_left * (1 + (float)log10_Mcrit_atom_int - log10_Mcrit_atom_val) + fcoll_right * (log10_Mcrit_atom_val - (float)log10_Mcrit_atom_int);
 
-									fcoll_MINI_left = Fcollz_SFR_Xray_high_table_MINI[counter][R_ct][fcoll_int+log10_Mcrit_LW_int*NSFR_low]*( 1. + (float)fcoll_int - dens_val ) + Fcollz_SFR_Xray_high_table_MINI[counter][R_ct][fcoll_int+1+log10_Mcrit_LW_int*NSFR_low]*( dens_val - (float)fcoll_int );
-									fcoll_MINI_right = Fcollz_SFR_Xray_high_table_MINI[counter][R_ct][fcoll_int+(log10_Mcrit_LW_int+1)*NSFR_low]*( 1. + (float)fcoll_int - dens_val ) + Fcollz_SFR_Xray_high_table_MINI[counter][R_ct][fcoll_int+1+(log10_Mcrit_LW_int+1)*NSFR_low]*( dens_val - (float)fcoll_int );
+									index_left = dens_int+log10_Mcrit_LW_int*NSFR_high;
+									index_right = dens_int+(log10_Mcrit_LW_int+1)*NSFR_high;
+									fcoll_MINI_left = Fcollz_SFR_Xray_high_table_MINI[counter][R_ct][index_left]*(1.-dens_diff) + Fcollz_SFR_Xray_high_table_MINI[counter][R_ct][index_left+1]*dens_diff;
+									fcoll_MINI_right = Fcollz_SFR_Xray_high_table_MINI[counter][R_ct][index_right]*(1.-dens_diff) + Fcollz_SFR_Xray_high_table_MINI[counter][R_ct][index_right+1]*dens_diff;
 									fcoll_MINI = fcoll_MINI_left * (1 + (float)log10_Mcrit_LW_int - log10_Mcrit_LW_val) + fcoll_MINI_right * (log10_Mcrit_LW_val - (float)log10_Mcrit_LW_int);
 #else
-                                    fcoll = Fcollz_SFR_Xray_high_table[counter][R_ct][fcoll_int]*( 1. + (float)fcoll_int - dens_val ) + Fcollz_SFR_Xray_high_table[counter][R_ct][fcoll_int+1]*( dens_val - (float)fcoll_int );
+                                    fcoll = Fcollz_SFR_Xray_high_table[counter][R_ct][dens_int]*(1.-dens_diff) + Fcollz_SFR_Xray_high_table[counter][R_ct][dens_int+1]*dens_diff;
 #endif
 
                                 }
@@ -2084,9 +2095,10 @@ void ComputeTsBoxes() {
                             
                             // First let's do dxe_dzp //
                             dxion_sink_dt = alpha_A(T) * CLUMPING_FACTOR * x_e*x_e * f_H * prefactor_1 * (1.+delNL0[0][box_ct]*growth_factor_zp);
-                            dxe_dzp = dt_dzp*(dxion_source_dt_box[box_ct] - dxion_sink_dt );
 #ifdef MINI_HALO
-                            dxe_dzp += dt_dzp*dxion_source_dt_box_MINI[box_ct];
+                            dxe_dzp = dt_dzp*(dxion_source_dt_box[box_ct] + dxion_source_dt_box_MINI[box_ct] - dxion_sink_dt );
+#else
+                            dxe_dzp = dt_dzp*(dxion_source_dt_box[box_ct] - dxion_sink_dt );
 #endif
                             
                             // Next, let's get the temperature components //
@@ -2105,9 +2117,10 @@ void ComputeTsBoxes() {
                             dcomp_dzp = dcomp_dzp_prefactor*(x_e/(1.0+x_e+f_He))*( Trad_fast - T );
                             
                             // lastly, X-ray heating
-                            dxheat_dzp = dxheat_dt_box[box_ct] * dt_dzp * 2.0 / 3.0 / k_B / (1.0+x_e);
 #ifdef MINI_HALO
-                            dxheat_dzp += dxheat_dt_box_MINI[box_ct] * dt_dzp * 2.0 / 3.0 / k_B / (1.0+x_e);
+                            dxheat_dzp = (dxheat_dt_box[box_ct] + dxheat_dt_box_MINI[box_ct])* dt_dzp * 2.0 / 3.0 / k_B / (1.0+x_e);
+#else
+                            dxheat_dzp = dxheat_dt_box[box_ct] * dt_dzp * 2.0 / 3.0 / k_B / (1.0+x_e);
 #endif
                             
                             //update quantities
@@ -2128,10 +2141,11 @@ void ComputeTsBoxes() {
                             Tk_box[box_ct] = T;
 
                             if (COMPUTE_Ts){
-                                J_alpha_tot = ( dxlya_dt_box[box_ct] + dstarlya_dt_box[box_ct] ); //not really d/dz, but the lya flux
 #ifdef MINI_HALO
-                                J_alpha_tot += ( dxlya_dt_box_MINI[box_ct] + dstarlya_dt_box_MINI[box_ct] ); //not really d/dz, but the lya flux
 								J_21_LW[box_ct] = dstarlyLW_dt_box[box_ct] + dstarlyLW_dt_box_MINI[box_ct];
+                                J_alpha_tot = dxlya_dt_box[box_ct] + dstarlya_dt_box[box_ct] + dxlya_dt_box_MINI[box_ct] + dstarlya_dt_box_MINI[box_ct]; //not really d/dz, but the lya flux
+#else
+                                J_alpha_tot = dxlya_dt_box[box_ct] + dstarlya_dt_box[box_ct]; //not really d/dz, but the lya flux
 #endif
 
                                 // Note: to make the code run faster, the get_Ts function call to evaluate the spin temperature was replaced with the code below.
@@ -2648,6 +2662,8 @@ void ComputeIonisationBoxes(int sample_index, float REDSHIFT_SAMPLE, float PREV_
 		Mcrit_atom                 = atomic_cooling_threshold(REDSHIFT_SAMPLE);
 		log10_Mcrit_atom           = log10(Mcrit_atom);
 		log10_Mcrit_mol            = log10(lyman_werner_threshold(REDSHIFT_SAMPLE, 0.));
+		log10_Mmin_ave = 0.;
+		log10_Mmin_MINI_ave = 0.;
 		for (x=0; x<HII_DIM; x++){
 			for (y=0; y<HII_DIM; y++){
 				for (z=0; z<HII_DIM; z++){
