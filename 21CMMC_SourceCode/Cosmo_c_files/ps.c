@@ -51,7 +51,8 @@ static gsl_spline *erfc_spline;
 #ifdef MINI_HALO
 #define LOG10MTURN_NUM (int) 100
 #define LOG10MTURN_MIN (double)   5.-9e-8
-#define LOG10MTURN_INT ((double) (10.+9e-8 - LOG10MTURN_MIN)) / ((double) LOG10MTURN_NUM)
+#define LOG10MTURN_MAX (double)   10.
+#define LOG10MTURN_INT ((double) (LOG10MTURN_MAX+9e-8 - LOG10MTURN_MIN)) / ((double) (LOG10MTURN_NUM - 1.))
 #endif
 
 #define zpp_interp_points_SFR (int) (300)
@@ -119,10 +120,10 @@ void bisection(float *x, float xlow, float xup, int *iter);
 float Mass_limit_bisection(float Mmin, float Mmax, float PL, float FRAC);
 
 #ifdef MINI_HALO
-static double Fcollz_val[zpp_interp_points_SFR*(LOG10MTURN_NUM+1)]; // For Ts.c
-static double FcollzX_val[zpp_interp_points_SFR*(LOG10MTURN_NUM+1)];
-static double Fcollz_val_MINI[zpp_interp_points_SFR*(LOG10MTURN_NUM+1)];
-static double FcollzX_val_MINI[zpp_interp_points_SFR*(LOG10MTURN_NUM+1)];
+static double Fcollz_val[zpp_interp_points_SFR*LOG10MTURN_NUM]; // For Ts.c
+static double FcollzX_val[zpp_interp_points_SFR*LOG10MTURN_NUM];
+static double Fcollz_val_MINI[zpp_interp_points_SFR*LOG10MTURN_NUM];
+static double FcollzX_val_MINI[zpp_interp_points_SFR*LOG10MTURN_NUM];
 void initialise_FgtrM_st_SFR_spline(int Nbin, float zmin, float zmax, float Alpha_star, float Alpha_esc, float Fstar10, float Fesc10, float Fstar10_MINI, float Fesc10_MINI);
 void initialise_Xray_FgtrM_st_SFR_spline(int Nbin, float zmin, float zmax, float Alpha_star, float Fstar10, float Fstar10_MINI);
 void initialise_Xray_Fcollz_SFR_Conditional_table(int Nfilter, float min_density[], float max_density[], float growthf[], float R[], float Mcrit_atom[], float Alpha_star, float Fstar10, float Fstar10_MINI);
@@ -2140,7 +2141,7 @@ void initialiseFcollSFR_spline(float z, float min_density, float max_density, fl
     
     sigma2 = Sigma_Spline_quicker[MassBin] + ( Mmax - MassBinLow )*( Sigma_Spline_quicker[MassBin+1] - Sigma_Spline_quicker[MassBin] )*inv_mass_bin_width;
     
-	for (j=0;j<=LOG10MTURN_NUM;j++){
+	for (j=0;j<LOG10MTURN_NUM;j++){
       for (i=0; i<NSFR_low; i++){
         overdense_val = log10(1. + overdense_small_low) + (double)i/((double)NSFR_low-1.)*(log10(1.+overdense_small_high)-log10(1.+overdense_small_low));
         
@@ -2496,7 +2497,7 @@ void initialise_FgtrM_st_SFR_spline(int Nbin, float zmin, float zmax, float Alph
         z_val = zmin + (double)i/((double)Nbin-1.)*(zmax - zmin);
 		Mcrit_atom_val = atomic_cooling_threshold(z_val);
 
-		for (j=0; j<=LOG10MTURN_NUM; j++){
+		for (j=0; j<LOG10MTURN_NUM; j++){
           Fcollz_val[i+j*Nbin] = FgtrM_st_SFR(dicke(z_val), Mturn_interp_table[j], Alpha_star, Alpha_esc, Fstar10, Fesc10, Mlim_Fstar, Mlim_Fesc);
           Fcollz_val_MINI[i+j*Nbin] = FgtrM_st_SFR_MINI(dicke(z_val), Mturn_interp_table[j], Mcrit_atom_val, Alpha_star, Fstar10_MINI, Mlim_Fstar_MINI);
 		  //printf("(%i,%i),z=%g,Mcrit_atom=%g,Mturn_interp_table=%g,Fcollz_val=%g,Fcollz_val_MINI=%g\n",i,j,z_val,Mcrit_atom_val,Mturn_interp_table[j],Fcollz_val[i+j*Nbin],Fcollz_val_MINI[i+j*Nbin]);
@@ -2517,7 +2518,7 @@ void initialise_Xray_FgtrM_st_SFR_spline(int Nbin, float zmin, float zmax, float
         z_X_val = zmin + (double)i/((double)Nbin-1.)*(zmax - zmin);
 		Mcrit_atom_val = atomic_cooling_threshold(z_X_val);
 
-        for (j=0; j<=LOG10MTURN_NUM; j++){
+        for (j=0; j<LOG10MTURN_NUM; j++){
           FcollzX_val[i+j*Nbin] = FgtrM_st_SFR(dicke(z_X_val), Mturn_interp_table[j], Alpha_star, 0., Fstar10, 1.,Mlim_Fstar,0.);
           FcollzX_val_MINI[i+j*Nbin] = FgtrM_st_SFR_MINI(dicke(z_X_val), Mturn_interp_table[j], Mcrit_atom_val, Alpha_star, Fstar10_MINI, Mlim_Fstar_MINI);
 		  //printf("(%i,%i),z=%g,Mcrit_atom=%g,Mturn_interp_table=%g,FcollzX_val=%g,FcollzX_val_MINI=%g\n",i,j,z_X_val,Mcrit_atom_val,Mturn_interp_table[j],FcollzX_val[i+j*Nbin],FcollzX_val_MINI[i+j*Nbin]);
@@ -2586,7 +2587,7 @@ void initialise_Xray_Fcollz_SFR_Conditional_table(int Nfilter, float min_density
             for (i=0; i<NSFR_low; i++){
                 overdense_val = log10(1. + overdense_small_low) + (float)i/((float)NSFR_low-1.)*(log10(1.+overdense_small_high)-log10(1.+overdense_small_low));
                 overdense_Xray_low_table[i] = pow(10.,overdense_val) - 1.;
-				for (q=0; q<=LOG10MTURN_NUM; q++){
+				for (q=0; q<LOG10MTURN_NUM; q++){
                   log10_Fcollz_SFR_Xray_low_table[k][j][i+q*NSFR_low] = GaussLegendreQuad_FcollSFR_Xray(NGL_SFR,growthf[j+Nfilter*k],Mmax,sigma2,Deltac,overdense_Xray_low_table[i],Mturn_interp_table[q],Alpha_star,0.,Fstar10,1.,Mlim_Fstar,0.);
 				  if (log10_Fcollz_SFR_Xray_low_table[k][j][i+q*NSFR_low] > 1e-50)
 					  log10_Fcollz_SFR_Xray_low_table[k][j][i+q*NSFR_low] = log10(log10_Fcollz_SFR_Xray_low_table[k][j][i+q*NSFR_low]) + 10.0;
@@ -2605,7 +2606,7 @@ void initialise_Xray_Fcollz_SFR_Conditional_table(int Nfilter, float min_density
             }
             
             for(i=0;i<NSFR_high;i++) {
-				for (q=0; q<=LOG10MTURN_NUM; q++){
+				for (q=0; q<LOG10MTURN_NUM; q++){
                 
                   Fcollz_SFR_Xray_high_table[k][j][i+q*NSFR_high] = FgtrConditionalM_SFR_Xray(growthf[j+Nfilter*k],Mmin,Mmax,sigma2,Deltac,Overdense_Xray_high_table[i],Mturn_interp_table[q],Alpha_star,0.,Fstar10,1.,Mlim_Fstar,0.);
                 
