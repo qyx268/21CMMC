@@ -176,7 +176,7 @@ double log10_Mcrit_LW_ave;
 double *ST_over_PS_MINI;
 float *J_21_LW, log10_Mcrit_mol;
 fftwf_complex *log10_Mcrit_LW_unfiltered, *log10_Mcrit_LW_filtered;
-float *log10_Mturn_interp_table;
+double *Mturn_interp_table;
 float *Mcrit_atom_interp_table;
 float *Fcoll_MINI;
 fftwf_complex *log10_Mmin_unfiltered, *log10_Mmin_filtered, *log10_Mmin_MINI_unfiltered, *log10_Mmin_MINI_filtered;

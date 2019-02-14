@@ -898,12 +898,11 @@ void ComputeTsBoxes() {
     int redshift_int_fcollz,redshift_int_fcollz_Xray;
 
 #ifdef MINI_HALO
-	float log10_Mcrit_LW_val;
-	int log10_Mcrit_LW_int;
-	float *log10_Mcrit_LW[NUM_FILTER_STEPS_FOR_Ts], log10_Mcrit_atom, log10_Mcrit_atom_Xray[NUM_FILTER_STEPS_FOR_Ts], log10_Mcrit_atom_val;
+	float log10_Mcrit_LW_val, log10_Mcrit_atom_val;
+	int log10_Mcrit_LW_int, log10_Mcrit_atom_int;
+	float *log10_Mcrit_LW[NUM_FILTER_STEPS_FOR_Ts], log10_Mcrit_atom, log10_Mcrit_atom_Xray[NUM_FILTER_STEPS_FOR_Ts];
     float log10_Mcrit_LW_ave_table_fcollz, log10_Mcrit_atom_table_fcollz, log10_Mcrit_atom_table_fcollz_Xray;
-
-    int log10_Mcrit_LW_ave_int_fcollz, log10_Mcrit_atom_int_fcollz, log10_Mcrit_atom_int_fcollz_Xray, log10_Mcrit_atom_int;
+    int log10_Mcrit_LW_ave_int_fcollz, log10_Mcrit_atom_int_fcollz, log10_Mcrit_atom_int_fcollz_Xray;
 #endif
     
     
@@ -3133,7 +3132,7 @@ void ComputeIonisationBoxes(int sample_index, float REDSHIFT_SAMPLE, float PREV_
             if(USE_MASS_DEPENDENT_ZETA) {
 #ifdef MINI_HALO
                 initialiseGL_FcollSFR(NGL_SFR, M_MIN,massofscaleR);
-                initialiseFcollSFR_spline(REDSHIFT_SAMPLE,min_density,max_density,M_MIN,massofscaleR,log10_Mturn_interp_table,ALPHA_STAR,ALPHA_ESC,F_STAR10,F_ESC10,Mlim_Fstar,Mlim_Fesc,F_STAR10_MINI,Mlim_Fstar_MINI);
+                initialiseFcollSFR_spline(REDSHIFT_SAMPLE,min_density,max_density,M_MIN,massofscaleR,Mturn_interp_table,ALPHA_STAR,ALPHA_ESC,F_STAR10,F_ESC10,Mlim_Fstar,Mlim_Fesc,F_STAR10_MINI,Mlim_Fstar_MINI);
 #else
                 initialiseGL_FcollSFR(NGL_SFR, M_TURN/50.,massofscaleR);
                 initialiseFcollSFR_spline(REDSHIFT_SAMPLE,min_density,max_density,massofscaleR,M_TURN,ALPHA_STAR,ALPHA_ESC,F_STAR10,F_ESC10,Mlim_Fstar,Mlim_Fesc);
@@ -5660,9 +5659,10 @@ void init_21cmMC_Ts_arrays() {
         
         SFR_timescale_factor = (float *)calloc(NUM_FILTER_STEPS_FOR_Ts,sizeof(float));
 #ifdef MINI_HALO
-        log10_Mturn_interp_table = (float *)calloc((LOG10MTURN_NUM+1), sizeof(float));
-        for (i=0; i < LOG10MTURN_NUM; i++)
-          log10_Mturn_interp_table[i] = LOG10MTURN_MIN + (double)i/LOG10MTURN_INT;
+		Mturn_interp_table = (double *)calloc((LOG10MTURN_NUM+1), sizeof(double));
+        for (i=0; i <=LOG10MTURN_NUM; i++){
+		  Mturn_interp_table[i] = pow(10., LOG10MTURN_MIN + (double)i/LOG10MTURN_INT);
+		}
 #endif
         
         for (i=0; i < NUM_FILTER_STEPS_FOR_Ts; i++){
@@ -5979,6 +5979,9 @@ void destroy_21cmMC_Ts_arrays() {
         free(wi_SFR_Xray);
 
         free(SFR_timescale_factor);
+#ifdef MINI_HALO
+		free(Mturn_interp_table);
+#endif
         
         free(zpp_interp_table);
         free(redshift_interp_table);
