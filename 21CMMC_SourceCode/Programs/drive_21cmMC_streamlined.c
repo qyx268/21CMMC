@@ -1637,7 +1637,7 @@ void ComputeTsBoxes() {
                     ST_over_PS[R_ct] *= ( ST_over_PS_arg_grid[zpp_gridpoint1_int] + grad2*( ST_over_PS_arg_grid[zpp_gridpoint2_int] - ST_over_PS_arg_grid[zpp_gridpoint1_int] ) );
                 }
 #ifdef MINI_HALO
-                lower_int_limit = FMAX(nu_tau_one_approx(zp, zpp, x_e_ave, filling_factor_of_HI_zp, ION_EFF_FACTOR, ION_EFF_FACTOR_MINI, log10_Mcrit_LW_ave, log10_Mcrit_atom_Xray[R_ct]), NU_X_THRESH);
+                lower_int_limit = FMAX(nu_tau_one_approx(zp, zpp, x_e_ave, filling_factor_of_HI_zp, ION_EFF_FACTOR, ION_EFF_FACTOR_MINI, log10_Mcrit_atom_Xray[R_ct], log10_Mcrit_LW_ave), NU_X_THRESH);
 #else
                 lower_int_limit = FMAX(nu_tau_one_approx(zp, zpp, x_e_ave, filling_factor_of_HI_zp), NU_X_THRESH);
 #endif
