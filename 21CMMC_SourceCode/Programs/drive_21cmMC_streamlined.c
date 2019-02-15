@@ -2754,6 +2754,9 @@ void ComputeIonisationBoxes(int sample_index, float REDSHIFT_SAMPLE, float PREV_
         		mean_f_coll_st_right = Fcollz_val[index_right] + redshift_table_fcollz_diff * ( Fcollz_val[index_right+1] - Fcollz_val[index_right] );
     			mean_f_coll_st -= (mean_f_coll_st_left + log10_Mmin_ave_table_fcollz_diff * ( mean_f_coll_st_right - mean_f_coll_st_left ));
     
+				index_left = redshift_int_fcollz + zpp_interp_points_SFR * log10_Mmin_MINI_ave_int_fcollz;
+				index_right = redshift_int_fcollz + zpp_interp_points_SFR * (log10_Mmin_MINI_ave_int_fcollz + 1);
+
 	        	mean_f_coll_st_MINI_left = Fcollz_val_MINI[index_left] + redshift_table_fcollz_diff * ( Fcollz_val_MINI[index_left+1] - Fcollz_val_MINI[index_left] );
         		mean_f_coll_st_MINI_right = Fcollz_val_MINI[index_right] + redshift_table_fcollz_diff * ( Fcollz_val_MINI[index_right+1] - Fcollz_val_MINI[index_right] );
     			mean_f_coll_st_MINI -= (mean_f_coll_st_MINI_left + log10_Mmin_MINI_ave_table_fcollz_diff * ( mean_f_coll_st_MINI_right - mean_f_coll_st_MINI_left ));
@@ -2772,6 +2775,9 @@ void ComputeIonisationBoxes(int sample_index, float REDSHIFT_SAMPLE, float PREV_
 	       	f_coll_min_left = Fcollz_val[index_left] + redshift_table_fcollz_diff * ( Fcollz_val[index_left+1] - Fcollz_val[index_left] );
         	f_coll_min_right = Fcollz_val[index_right] + redshift_table_fcollz_diff * ( Fcollz_val[index_right+1] - Fcollz_val[index_right] );
 			f_coll_min = f_coll_min_left + log10_Mmin_ave_table_fcollz_diff * ( f_coll_min_right - f_coll_min_left );
+
+			index_left = redshift_int_fcollz + zpp_interp_points_SFR * log10_Mmin_MINI_ave_int_fcollz;
+			index_right = redshift_int_fcollz + zpp_interp_points_SFR * (log10_Mmin_MINI_ave_int_fcollz + 1);
 
 	       	f_coll_min_MINI_left = Fcollz_val_MINI[index_left] + redshift_table_fcollz_diff * ( Fcollz_val_MINI[index_left+1] - Fcollz_val_MINI[index_left] );
         	f_coll_min_MINI_right = Fcollz_val_MINI[index_right] + redshift_table_fcollz_diff * ( Fcollz_val_MINI[index_right+1] - Fcollz_val_MINI[index_right] );
