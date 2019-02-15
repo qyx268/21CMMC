@@ -1143,6 +1143,8 @@ double nu_tau_one_approx(double zp, double zpp, double x_e, double HI_filling_fa
 #ifdef MINI_HALO
 	p.ion_eff = ion_eff;
 	p.ion_eff_MINI = ion_eff_MINI;
+	p.log10_Mturn = log10_Mturn;
+	p.log10_Mturn_MINI = log10_Mturn_MINI;
 #endif
     F.function = &nu_tau_one_helper_approx;
     F.params = &p;
