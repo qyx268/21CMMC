@@ -2520,7 +2520,8 @@ void initialise_Xray_FgtrM_st_SFR_spline(int Nbin, float zmin, float zmax, float
 
         for (j=0; j<LOG10MTURN_NUM; j++){
           FcollzX_val[i+j*Nbin] = FgtrM_st_SFR(dicke(z_X_val), Mturn_interp_table[j], Alpha_star, 0., Fstar10, 1.,Mlim_Fstar,0.);
-          FcollzX_val_MINI[i+j*Nbin] = FgtrM_st_SFR_MINI(dicke(z_X_val), Mturn_interp_table[j], Mcrit_atom_val, Alpha_star, Fstar10_MINI, Mlim_Fstar_MINI);
+          FcollzX_val_MINI[i+j*Nbin] = Fcollz_val_MINI[i+j*Nbin]; // Fesc_MINI is constant, so these two are the same now...
+          //FcollzX_val_MINI[i+j*Nbin] = FgtrM_st_SFR_MINI(dicke(z_X_val), Mturn_interp_table[j], Mcrit_atom_val, Alpha_star, Fstar10_MINI, Mlim_Fstar_MINI);
 		  //printf("(%i,%i),z=%g,Mcrit_atom=%g,Mturn_interp_table=%g,FcollzX_val=%g,FcollzX_val_MINI=%g\n",i,j,z_X_val,Mcrit_atom_val,Mturn_interp_table[j],FcollzX_val[i+j*Nbin],FcollzX_val_MINI[i+j*Nbin]);
 		}
     }

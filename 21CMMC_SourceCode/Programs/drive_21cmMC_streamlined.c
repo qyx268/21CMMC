@@ -3369,13 +3369,26 @@ void ComputeIonisationBoxes(int sample_index, float REDSHIFT_SAMPLE, float PREV_
 							if (Splined_Fcoll_MINI < 0.)
 								Splined_Fcoll_MINI = 1e-40;
 
+							if (prev_Splined_Fcoll > 1.)
+								prev_Splined_Fcoll = 1.;
+							if (prev_Splined_Fcoll < 0.)
+								prev_Splined_Fcoll = 1e-40;
+							if (prev_Splined_Fcoll_MINI > 1.)
+								prev_Splined_Fcoll_MINI = 1.;
+							if (prev_Splined_Fcoll_MINI < 0.)
+								prev_Splined_Fcoll_MINI = 1e-40;
+
                             Fcoll[HII_R_INDEX(x,y,z)] = prev_Fcoll[counter_R][HII_R_INDEX(x,y,z)] + Splined_Fcoll - prev_Splined_Fcoll;
                             Fcoll_MINI[HII_R_INDEX(x,y,z)] = prev_Fcoll_MINI[counter_R][HII_R_INDEX(x,y,z)] + Splined_Fcoll_MINI - prev_Splined_Fcoll_MINI;
 
 							if (Fcoll[HII_R_INDEX(x,y,z)] > 1.)
 								Fcoll[HII_R_INDEX(x,y,z)] = 1.;
+							if (Fcoll[HII_R_INDEX(x,y,z)] < 0.)
+								Fcoll[HII_R_INDEX(x,y,z)] = 1e-40;
 							if (Fcoll_MINI[HII_R_INDEX(x,y,z)] > 1.)
 								Fcoll_MINI[HII_R_INDEX(x,y,z)] = 1.;
+							if (Fcoll_MINI[HII_R_INDEX(x,y,z)] < 0.)
+								Fcoll_MINI[HII_R_INDEX(x,y,z)] = 1e-40;
 
 							prev_Fcoll[counter_R][HII_R_INDEX(x,y,z)] = Fcoll[HII_R_INDEX(x,y,z)];
 							prev_Fcoll_MINI[counter_R][HII_R_INDEX(x,y,z)] = Fcoll_MINI[HII_R_INDEX(x,y,z)];
