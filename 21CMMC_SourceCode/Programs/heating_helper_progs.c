@@ -909,9 +909,10 @@ double tauX_integrand_approx(double zhat, void *params){
 		index_left = redshift_int_fcollz + zpp_interp_points_SFR * log10_Mturn_int_fcollz;
 		index_right = redshift_int_fcollz + zpp_interp_points_SFR * (log10_Mturn_int_fcollz + 1);
 
-		fcoll_left = Fcollz_val[index_left] + redshift_table_fcollz_diff * ( Fcollz_val[index_left+1] - Fcollz_val[index_left] );
-		fcoll_right = Fcollz_val[index_right] + redshift_table_fcollz_diff *( Fcollz_val[index_right+1] - Fcollz_val[index_right] );
-		fcoll = fcoll_left + (log10_Mturn - log10_Mturn_table_fcollz) / LOG10MTURN_INT * ( fcoll_right - fcoll_left );
+		//fcoll_left = Fcollz_val[index_left] + redshift_table_fcollz_diff * ( Fcollz_val[index_left+1] - Fcollz_val[index_left] );
+		//fcoll_right = Fcollz_val[index_right] + redshift_table_fcollz_diff *( Fcollz_val[index_right+1] - Fcollz_val[index_right] );
+		//fcoll = fcoll_left + (log10_Mturn - log10_Mturn_table_fcollz) / LOG10MTURN_INT * ( fcoll_right - fcoll_left );
+        fcoll = Fcollz_val[redshift_int_fcollz] + redshift_table_fcollz_diff*( Fcollz_val[redshift_int_fcollz+1] - Fcollz_val[redshift_int_fcollz] );
 
 		log10_Mturn_MINI_int_fcollz = (int)floor( ( log10_Mturn_MINI - LOG10MTURN_MIN) / LOG10MTURN_INT);
 		log10_Mturn_MINI_table_fcollz = LOG10MTURN_MIN + LOG10MTURN_INT * (float)log10_Mturn_MINI_int_fcollz;
