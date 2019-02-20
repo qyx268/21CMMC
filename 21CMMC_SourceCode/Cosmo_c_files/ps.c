@@ -120,8 +120,10 @@ void bisection(float *x, float xlow, float xup, int *iter);
 float Mass_limit_bisection(float Mmin, float Mmax, float PL, float FRAC);
 
 #ifdef MINI_HALO
-static double Fcollz_val[zpp_interp_points_SFR*LOG10MTURN_NUM]; // For Ts.c
-static double FcollzX_val[zpp_interp_points_SFR*LOG10MTURN_NUM];
+//static double Fcollz_val[zpp_interp_points_SFR*LOG10MTURN_NUM]; // For Ts.c
+//static double FcollzX_val[zpp_interp_points_SFR*LOG10MTURN_NUM];
+static double Fcollz_val[zpp_interp_points_SFR]; // For Ts.c
+static double FcollzX_val[zpp_interp_points_SFR];
 static double Fcollz_val_MINI[zpp_interp_points_SFR*LOG10MTURN_NUM];
 static double FcollzX_val_MINI[zpp_interp_points_SFR*LOG10MTURN_NUM];
 void initialise_FgtrM_st_SFR_spline(int Nbin, float zmin, float zmax, float Alpha_star, float Alpha_esc, float Fstar10, float Fesc10, float Fstar10_MINI, float Fesc10_MINI);
@@ -2496,9 +2498,10 @@ void initialise_FgtrM_st_SFR_spline(int Nbin, float zmin, float zmax, float Alph
     for (i=0; i<Nbin; i++){
         z_val = zmin + (double)i/((double)Nbin-1.)*(zmax - zmin);
 		Mcrit_atom_val = atomic_cooling_threshold(z_val);
+        Fcollz_val[i] = FgtrM_st_SFR(dicke(z_val), Mcrit_atom_val, Alpha_star, Alpha_esc, Fstar10, Fesc10, Mlim_Fstar, Mlim_Fesc);
 
 		for (j=0; j<LOG10MTURN_NUM; j++){
-          Fcollz_val[i+j*Nbin] = FgtrM_st_SFR(dicke(z_val), Mturn_interp_table[j], Alpha_star, Alpha_esc, Fstar10, Fesc10, Mlim_Fstar, Mlim_Fesc);
+          //Fcollz_val[i+j*Nbin] = FgtrM_st_SFR(dicke(z_val), Mturn_interp_table[j], Alpha_star, Alpha_esc, Fstar10, Fesc10, Mlim_Fstar, Mlim_Fesc);
           Fcollz_val_MINI[i+j*Nbin] = FgtrM_st_SFR_MINI(dicke(z_val), Mturn_interp_table[j], Mcrit_atom_val, Alpha_star, Fstar10_MINI, Mlim_Fstar_MINI);
 		  //printf("(%i,%i),z=%g,Mcrit_atom=%g,Mturn_interp_table=%g,Fcollz_val=%g,Fcollz_val_MINI=%g\n",i,j,z_val,Mcrit_atom_val,Mturn_interp_table[j],Fcollz_val[i+j*Nbin],Fcollz_val_MINI[i+j*Nbin]);
 		}
@@ -2517,9 +2520,10 @@ void initialise_Xray_FgtrM_st_SFR_spline(int Nbin, float zmin, float zmax, float
     for (i=0; i<Nbin; i++){
         z_X_val = zmin + (double)i/((double)Nbin-1.)*(zmax - zmin);
 		Mcrit_atom_val = atomic_cooling_threshold(z_X_val);
+        FcollzX_val[i] = FgtrM_st_SFR(dicke(z_X_val), Mcrit_atom_val, Alpha_star, 0., Fstar10, 1.,Mlim_Fstar,0.);
 
         for (j=0; j<LOG10MTURN_NUM; j++){
-          FcollzX_val[i+j*Nbin] = FgtrM_st_SFR(dicke(z_X_val), Mturn_interp_table[j], Alpha_star, 0., Fstar10, 1.,Mlim_Fstar,0.);
+          //FcollzX_val[i+j*Nbin] = FgtrM_st_SFR(dicke(z_X_val), Mturn_interp_table[j], Alpha_star, 0., Fstar10, 1.,Mlim_Fstar,0.);
           FcollzX_val_MINI[i+j*Nbin] = Fcollz_val_MINI[i+j*Nbin]; // Fesc_MINI is constant, so these two are the same now...
           //FcollzX_val_MINI[i+j*Nbin] = FgtrM_st_SFR_MINI(dicke(z_X_val), Mturn_interp_table[j], Mcrit_atom_val, Alpha_star, Fstar10_MINI, Mlim_Fstar_MINI);
 		  //printf("(%i,%i),z=%g,Mcrit_atom=%g,Mturn_interp_table=%g,FcollzX_val=%g,FcollzX_val_MINI=%g\n",i,j,z_X_val,Mcrit_atom_val,Mturn_interp_table[j],FcollzX_val[i+j*Nbin],FcollzX_val_MINI[i+j*Nbin]);
