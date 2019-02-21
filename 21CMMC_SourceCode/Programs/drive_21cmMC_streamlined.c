@@ -872,7 +872,7 @@ void ComputeTsBoxes() {
     
     short dens_grid_int;
     
-    double Tk_ave, J_alpha_ave, xalpha_ave, J_alpha_tot, Xheat_ave, Xion_ave, nuprime, Ts_ave, lower_int_limit,Luminosity_converstion_factor,T_inv_TS_fast_inv, nfgave;
+    double Tk_ave, J_alpha_ave, xalpha_ave, J_alpha_tot, Xheat_ave, Xion_ave, nuprime, Ts_ave, lower_int_limit,Luminosity_converstion_factor,T_inv_TS_fast_inv, nfgave, nf_ave;
 #ifdef MINI_HALO
 	double J_LW_ave, Luminosity_converstion_factor_MINI;
 #endif
@@ -3077,7 +3077,7 @@ float ComputeIonisationBoxes(int sample_index, float REDSHIFT_SAMPLE, float PREV
             if(USE_MASS_DEPENDENT_ZETA) {
 #ifdef MINI_HALO
                 initialiseGL_FcollSFR(NGL_SFR, M_MIN,massofscaleR);
-                initialiseFcollSFR_spline(REDSHIFT_SAMPLE,min_density,max_density,M_MIN,massofscaleR,Mturn_interp_table,ALPHA_STAR,ALPHA_ESC,F_STAR10,F_ESC10,Mlim_Fstar,Mlim_Fesc,F_STAR10_MINI,Mlim_Fstar_MINI, counter_R);
+                initialiseFcollSFR_spline(REDSHIFT_SAMPLE,min_density,max_density,M_MIN,massofscaleR,Mturn_interp_table,ALPHA_STAR,ALPHA_ESC,F_STAR10,F_ESC10,Mlim_Fstar,Mlim_Fesc,F_STAR10_MINI,Mlim_Fstar_MINI);
 #else
                 initialiseGL_FcollSFR(NGL_SFR, M_TURN/50.,massofscaleR);
                 initialiseFcollSFR_spline(REDSHIFT_SAMPLE,min_density,max_density,massofscaleR,M_TURN,ALPHA_STAR,ALPHA_ESC,F_STAR10,F_ESC10,Mlim_Fstar,Mlim_Fesc);
@@ -3591,6 +3591,17 @@ float ComputeIonisationBoxes(int sample_index, float REDSHIFT_SAMPLE, float PREV
 			prev_overdense_small_min[counter_R] = overdense_small_min;
 			prev_overdense_large_bin_width_inv[counter_R] = overdense_large_bin_width_inv;
 			prev_overdense_small_bin_width_inv[counter_R] = overdense_small_bin_width_inv;
+			// store the result into prev_... to do the CONTEMPORANEOUS_DUTYCYCLE
+			for (j=0;j<LOG10MTURN_NUM;j++){
+				for (i=0; i<NSFR_low; i++){
+					prev_log10_Fcoll_spline_SFR[counter_R][i+j*NSFR_low] = log10_Fcoll_spline_SFR[i+j*NSFR_low];
+					prev_log10_Fcoll_spline_SFR_MINI[counter_R][i+j*NSFR_low] = log10_Fcoll_spline_SFR_MINI[i+j*NSFR_low];
+				}
+				for(i=0;i<NSFR_high;i++) {
+					prev_Fcoll_spline_SFR[counter_R][i+j*NSFR_high] = Fcoll_spline_SFR[i+j*NSFR_high];
+					prev_Fcoll_spline_SFR_MINI[counter_R][i+j*NSFR_high] = Fcoll_spline_SFR_MINI[i+j*NSFR_high];
+				}
+			}
 #endif
             
             if(first_step_R) {

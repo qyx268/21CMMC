@@ -120,7 +120,7 @@ double F_STAR10, ALPHA_STAR, F_ESC10, ALPHA_ESC, M_TURN, M_MIN;
 //float *Overdense_high_table, *Fcollz_SFR_high_table, *zpp_table;
 float *zpp_table;
 double *log10_overdense_spline_SFR;
-float *log10_Fcoll_spline_SFR, *log10_Fcollm_spline_SFR;
+float *log10_Fcoll_spline_SFR;
 float *Overdense_spline_SFR, *Fcoll_spline_SFR; 
 float **fcoll_Xray_SFR_array, *fcoll_SFR_array;
 double *lnMhalo_param, *Muv_param, *Mhalo_param, *log10phi;
@@ -129,8 +129,8 @@ gsl_spline *LF_spline;
 float *z_LF;
 
 float *overdense_Xray_low_table;
-float *log10_overdense_Xray_low_table, ***log10_Fcollz_SFR_Xray_low_table, ***log10_Fcollmz_SFR_Xray_low_table;
-float *Overdense_Xray_high_table, ***Fcollz_SFR_Xray_high_table, ***Fcollmz_SFR_Xray_high_table;
+float *log10_overdense_Xray_low_table, ***log10_Fcollz_SFR_Xray_low_table;
+float *Overdense_Xray_high_table, ***Fcollz_SFR_Xray_high_table;
 
 
 
