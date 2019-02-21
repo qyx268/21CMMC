@@ -88,7 +88,7 @@ double dT_comp(double z, double TK, double xe);
  emitted at z = zpp */
 double tauX(double nu, double x_e, double zp, double zpp, double HI_filling_factor_zp);
 #ifdef MINI_HALO
-double tauX_approx(double nu, double x_e, double zp, double zpp, double HI_filling_factor_zp, double ion_eff, double ion_eff_MINI, double log10_Mturn, double log10_Mturn_MINI);
+double tauX_approx(double nu, double x_e, double zp, double zpp, double HI_filling_factor_zp, double ion_eff, double ion_eff_MINI, double log10_Mturn_MINI);
 #else
 double tauX_approx(double nu, double x_e, double zp, double zpp, double HI_filling_factor_zp);
 #endif
@@ -100,7 +100,7 @@ double species_weighted_x_ray_cross_section(double nu, double x_e);
  in the IGM with mean electron fraction x_e */
 double nu_tau_one(double zp, double zpp, double x_e, double HI_filling_factor_zp);
 #ifdef MINI_HALO
-double nu_tau_one_approx(double zp, double zpp, double x_e, double HI_filling_factor_zp, double ion_eff, double ion_eff_MINI, double log10_Mturn, double log10_Mturn_MINI);
+double nu_tau_one_approx(double zp, double zpp, double x_e, double HI_filling_factor_zp, double ion_eff, double ion_eff_MINI, double log10_Mturn_MINI);
 #else
 double nu_tau_one_approx(double zp, double zpp, double x_e, double HI_filling_factor_zp);
 #endif
@@ -863,7 +863,7 @@ typedef struct{
     double nu_0, x_e, ion_eff;
 #ifdef MINI_HALO
 	double ion_eff_MINI;
-	double log10_Mturn, log10_Mturn_MINI;
+	double log10_Mturn_MINI;
 #endif
 } tauX_params_approx;
 double tauX_integrand_approx(double zhat, void *params){
@@ -878,7 +878,7 @@ double tauX_integrand_approx(double zhat, void *params){
     int redshift_int_fcollz;
     float redshift_table_fcollz, redshift_table_fcollz_diff;
 #ifdef MINI_HALO
-	double log10_Mturn, log10_Mturn_MINI;
+	double log10_Mturn_MINI;
 	double fcoll_left, fcoll_right, fcoll_MINI_left, fcoll_MINI_right, fcoll_MINI; 
 	float log10_Mturn_MINI_table_fcollz, log10_Mturn_table_fcollz;
 	int log10_Mturn_MINI_int_fcollz, log10_Mturn_int_fcollz;
@@ -891,7 +891,6 @@ double tauX_integrand_approx(double zhat, void *params){
     n = N_b0 * pow(1+zhat, 3);
     nuhat = p->nu_0 * (1+zhat);
 #ifdef MINI_HALO
-	log10_Mturn = p->log10_Mturn;
 	log10_Mturn_MINI = p->log10_Mturn_MINI;
 #endif
     
@@ -903,17 +902,8 @@ double tauX_integrand_approx(double zhat, void *params){
         redshift_table_fcollz = determine_zpp_min + zpp_bin_width*(float)redshift_int_fcollz;
 		redshift_table_fcollz_diff =  ( zhat - redshift_table_fcollz ) / zpp_bin_width;
 
-#ifdef MINI_HALO
-		log10_Mturn_int_fcollz = (int)floor( ( log10_Mturn - LOG10MTURN_MIN) / LOG10MTURN_INT);
-		log10_Mturn_table_fcollz = LOG10MTURN_MIN + LOG10MTURN_INT * (float)log10_Mturn_int_fcollz;
-		index_left = redshift_int_fcollz + zpp_interp_points_SFR * log10_Mturn_int_fcollz;
-		index_right = redshift_int_fcollz + zpp_interp_points_SFR * (log10_Mturn_int_fcollz + 1);
-
-		//fcoll_left = Fcollz_val[index_left] + redshift_table_fcollz_diff * ( Fcollz_val[index_left+1] - Fcollz_val[index_left] );
-		//fcoll_right = Fcollz_val[index_right] + redshift_table_fcollz_diff *( Fcollz_val[index_right+1] - Fcollz_val[index_right] );
-		//fcoll = fcoll_left + (log10_Mturn - log10_Mturn_table_fcollz) / LOG10MTURN_INT * ( fcoll_right - fcoll_left );
         fcoll = Fcollz_val[redshift_int_fcollz] + redshift_table_fcollz_diff*( Fcollz_val[redshift_int_fcollz+1] - Fcollz_val[redshift_int_fcollz] );
-
+#ifdef MINI_HALO
 		log10_Mturn_MINI_int_fcollz = (int)floor( ( log10_Mturn_MINI - LOG10MTURN_MIN) / LOG10MTURN_INT);
 		log10_Mturn_MINI_table_fcollz = LOG10MTURN_MIN + LOG10MTURN_INT * (float)log10_Mturn_MINI_int_fcollz;
 		index_left = redshift_int_fcollz + zpp_interp_points_SFR * log10_Mturn_MINI_int_fcollz;
@@ -922,8 +912,6 @@ double tauX_integrand_approx(double zhat, void *params){
 		fcoll_MINI_left = Fcollz_val_MINI[index_left] + redshift_table_fcollz_diff * ( Fcollz_val_MINI[index_left+1] - Fcollz_val_MINI[index_left] );
 		fcoll_MINI_right = Fcollz_val_MINI[index_right] + redshift_table_fcollz_diff *( Fcollz_val_MINI[index_right+1] - Fcollz_val_MINI[index_right] );
 		fcoll_MINI = fcoll_MINI_left + (log10_Mturn_MINI - log10_Mturn_MINI_table_fcollz) / LOG10MTURN_INT * ( fcoll_MINI_right - fcoll_MINI_left );
-#else
-        fcoll = Fcollz_val[redshift_int_fcollz] + redshift_table_fcollz_diff*( Fcollz_val[redshift_int_fcollz+1] - Fcollz_val[redshift_int_fcollz] );
 #endif
     }
     else {
@@ -956,7 +944,7 @@ double tauX_integrand_approx(double zhat, void *params){
     return drpropdz * n * HI_filling_factor_zhat * sigma_tilde;
 }
 #ifdef MINI_HALO
-double tauX_approx(double nu, double x_e, double zp, double zpp, double HI_filling_factor_zp, double ion_eff, double ion_eff_MINI, double log10_Mturn, double log10_Mturn_MINI){
+double tauX_approx(double nu, double x_e, double zp, double zpp, double HI_filling_factor_zp, double ion_eff, double ion_eff_MINI, double log10_Mturn_MINI){
     
     double result, error, fcoll;
     
@@ -972,7 +960,6 @@ double tauX_approx(double nu, double x_e, double zp, double zpp, double HI_filli
     p.x_e = x_e;
     p.ion_eff = ion_eff;
     p.ion_eff_MINI = ion_eff_MINI;
-	p.log10_Mturn = log10_Mturn;
 	p.log10_Mturn_MINI = log10_Mturn_MINI;
     
     F.params = &p;
@@ -1080,19 +1067,19 @@ typedef struct{
     double x_e, zp, zpp, HI_filling_factor_zp;
 #ifdef MINI_HALO
 	double ion_eff, ion_eff_MINI;
-	double log10_Mturn, log10_Mturn_MINI;
+	double log10_Mturn_MINI;
 #endif
 } nu_tau_one_params_approx;
 double nu_tau_one_helper_approx(double nu, void * params){
     nu_tau_one_params_approx *p = (nu_tau_one_params_approx *) params;
 #ifdef MINI_HALO
-    return tauX_approx(nu, p->x_e, p->zp, p->zpp, p->HI_filling_factor_zp, p->ion_eff, p->ion_eff_MINI, p->log10_Mturn, p->log10_Mturn_MINI) - 1;
+    return tauX_approx(nu, p->x_e, p->zp, p->zpp, p->HI_filling_factor_zp, p->ion_eff, p->ion_eff_MINI, p->log10_Mturn_MINI) - 1;
 #else
     return tauX_approx(nu, p->x_e, p->zp, p->zpp, p->HI_filling_factor_zp) - 1;
 #endif
 }
 #ifdef MINI_HALO
-double nu_tau_one_approx(double zp, double zpp, double x_e, double HI_filling_factor_zp, double ion_eff, double ion_eff_MINI, double log10_Mturn, double log10_Mturn_MINI)
+double nu_tau_one_approx(double zp, double zpp, double x_e, double HI_filling_factor_zp, double ion_eff, double ion_eff_MINI, double log10_Mturn_MINI)
 #else
 double nu_tau_one_approx(double zp, double zpp, double x_e, double HI_filling_factor_zp)
 #endif
@@ -1126,7 +1113,7 @@ double nu_tau_one_approx(double zp, double zpp, double x_e, double HI_filling_fa
     
     //check if lower bound has null
 #ifdef MINI_HALO
-    if (tauX_approx(HeI_NUIONIZATION, x_e, zp, zpp, HI_filling_factor_zp, ion_eff, ion_eff_MINI, log10_Mturn, log10_Mturn_MINI) < 1)
+    if (tauX_approx(HeI_NUIONIZATION, x_e, zp, zpp, HI_filling_factor_zp, ion_eff, ion_eff_MINI, log10_Mturn_MINI) < 1)
 #else
     if (tauX_approx(HeI_NUIONIZATION, x_e, zp, zpp, HI_filling_factor_zp) < 1)
 #endif
@@ -1144,7 +1131,6 @@ double nu_tau_one_approx(double zp, double zpp, double x_e, double HI_filling_fa
 #ifdef MINI_HALO
 	p.ion_eff = ion_eff;
 	p.ion_eff_MINI = ion_eff_MINI;
-	p.log10_Mturn = log10_Mturn;
 	p.log10_Mturn_MINI = log10_Mturn_MINI;
 #endif
     F.function = &nu_tau_one_helper_approx;
