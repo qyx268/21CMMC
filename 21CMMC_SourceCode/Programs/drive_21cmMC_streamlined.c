@@ -597,6 +597,7 @@ int main(int argc, char ** argv){
         N_rec_filtered = (fftwf_complex *) fftwf_malloc(sizeof(fftwf_complex)*HII_KSPACE_NUM_PIXELS);
 #ifdef MINI_HALO
         J_21_LW = (float *) fftwf_malloc(sizeof(float)*HII_TOT_NUM_PIXELS);
+        prev_J_21_LW = (float *) fftwf_malloc(sizeof(float)*HII_TOT_NUM_PIXELS);
 		log10_Mcrit_LW_unfiltered = (fftwf_complex *) fftwf_malloc(sizeof(fftwf_complex)*HII_KSPACE_NUM_PIXELS);
 		log10_Mcrit_LW_filtered = (fftwf_complex *) fftwf_malloc(sizeof(fftwf_complex)*HII_KSPACE_NUM_PIXELS);
 #endif 
@@ -605,7 +606,7 @@ int main(int argc, char ** argv){
             Gamma12[ct] = 0.0;
             z_re[ct] = -1.0;
 #ifdef MINI_HALO
-            J_21_LW[ct] = 0.0;
+            prev_J_21_LW[ct] = 0.0;
 #endif
         }
         
@@ -755,6 +756,7 @@ int main(int argc, char ** argv){
 	fftwf_free(log10_Mcrit_LW_unfiltered); 
 	fftwf_free(log10_Mcrit_LW_filtered);
     fftwf_free(J_21_LW);
+    fftwf_free(prev_J_21_LW);
 	for (ii=0; ii<N_RSTEPS;ii++){
 		fftwf_free(deltax_prev_filtered[ii]);
 		free(prev_Fcoll[ii]);
@@ -1046,7 +1048,7 @@ void ComputeTsBoxes() {
         // New in v1.4
         if (USE_MASS_DEPENDENT_ZETA) {
 #ifdef MINI_HALO
-        sprintf(filename, "../Boxes/Ts_z%06.2f_L_X%.1e_alphaX%.1f_f_star%06.4f_L_X_MINI%.1e_alphaX_MINI%.1f_f_star_MINI%06.4f_alpha_star%06.4f_t_star%06.4f_Pop%i_%i_%.0fMpc", REDSHIFT, L_X, X_RAY_SPEC_INDEX, F_STAR10, L_X_MINI, X_RAY_SPEC_INDEX_MINI, F_STAR10_MINI, ALPHA_STAR, t_STAR, Pop, HII_DIM, BOX_LEN);
+        sprintf(filename, "../Boxes/Ts_z%06.2f_L_X%.1e_alphaX%.1f_f_star%06.4f_L_X_MINI%.1e_alphaX_MINI%.1f_f_star_MINI%06.4f_alpha_star%06.4f_t_star%06.4f_%i_%.0fMpc", REDSHIFT, L_X, X_RAY_SPEC_INDEX, F_STAR10, L_X_MINI, X_RAY_SPEC_INDEX_MINI, F_STAR10_MINI, ALPHA_STAR, t_STAR, HII_DIM, BOX_LEN);
 #else
         sprintf(filename, "../Boxes/Ts_z%06.2f_L_X%.1e_alphaX%.1f_f_star%06.4f_alpha_star%06.4f_MturnX%.1e_t_star%06.4f_Pop%i_%i_%.0fMpc", REDSHIFT, L_X, X_RAY_SPEC_INDEX, F_STAR10, ALPHA_STAR, M_TURN, t_STAR, Pop, HII_DIM, BOX_LEN);
 #endif
@@ -1468,7 +1470,7 @@ void ComputeTsBoxes() {
                 for (i=0; i<HII_DIM; i++){
                   for (j=0; j<HII_DIM; j++){
                     for (k=0; k<HII_DIM; k++){
-                      *((float *)log10_Mcrit_LW_unfiltered + HII_R_FFT_INDEX(i,j,k)) = log10(lyman_werner_threshold(zp, J_21_LW[HII_R_INDEX(i,j,k)]));
+                      *((float *)log10_Mcrit_LW_unfiltered + HII_R_FFT_INDEX(i,j,k)) = log10(lyman_werner_threshold(zp, prev_J_21_LW[HII_R_INDEX(i,j,k)]));
                       log10_Mcrit_LW_ave += *((float *)log10_Mcrit_LW_unfiltered + HII_R_FFT_INDEX(i,j,k));
                     }
                   }
@@ -2673,11 +2675,12 @@ void ComputeIonisationBoxes(int sample_index, float REDSHIFT_SAMPLE, float PREV_
 			for (y=0; y<HII_DIM; y++){
 				for (z=0; z<HII_DIM; z++){
 					Mcrit_RE        = reionization_feedback(REDSHIFT_SAMPLE, Gamma12[HII_R_INDEX(x, y, z)], z_re[HII_R_INDEX(x, y, z)]);
-					Mcrit_LW        = lyman_werner_threshold(REDSHIFT_SAMPLE, J_21_LW[HII_R_INDEX(x, y, z)]);
+					Mcrit_LW        = lyman_werner_threshold(REDSHIFT_SAMPLE, prev_J_21_LW[HII_R_INDEX(x, y, z)]);
 					Mmin            = Mcrit_RE > Mcrit_atom ? Mcrit_RE : Mcrit_atom;
 					Mmin_MINI       = Mcrit_RE > Mcrit_LW   ? Mcrit_RE : Mcrit_LW;
 					log10_Mmin      = log10(Mmin);
 					log10_Mmin_MINI = log10(Mmin_MINI);
+					prev_J_21_LW[HII_R_INDEX(x, y, z)] = J_21_LW[HII_R_INDEX(x, y, z)];
 
 					*((float *)log10_Mmin_unfiltered + HII_R_FFT_INDEX(x,y,z))      = log10_Mmin;
 					*((float *)log10_Mmin_MINI_unfiltered + HII_R_FFT_INDEX(x,y,z)) = log10_Mmin_MINI;

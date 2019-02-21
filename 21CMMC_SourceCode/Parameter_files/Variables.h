@@ -174,7 +174,7 @@ double *dstarlyLW_dt_prefactor, *dstarlyLW_dt_prefactor_MINI;
 double F_STAR10_MINI, F_ESC10_MINI, L_X_MINI, ION_EFF_FACTOR_MINI;
 double log10_Mcrit_LW_ave;
 double *ST_over_PS_MINI;
-float *J_21_LW, log10_Mcrit_mol;
+float *J_21_LW, *prev_J_21_LW, log10_Mcrit_mol;
 fftwf_complex *log10_Mcrit_LW_unfiltered, *log10_Mcrit_LW_filtered;
 double *Mturn_interp_table;
 float *Mcrit_atom_interp_table;
