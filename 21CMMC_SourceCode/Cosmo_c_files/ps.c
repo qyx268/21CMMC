@@ -2640,7 +2640,7 @@ void initialise_FgtrM_st_SFR_spline(int Nbin, float zmin, float zmax, float Mass
 
 void initialise_Xray_FgtrM_st_SFR_spline(int Nbin, float zmin, float zmax, float MassTurn, float Alpha_star, float Fstar10){
     int i;
-	double Z_X_val;
+	double z_X_val;
     float Mmin = MassTurn/50., Mmax = 1e16;
     float Mlim_Fstar;
     

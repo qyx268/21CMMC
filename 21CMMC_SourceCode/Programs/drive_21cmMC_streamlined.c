@@ -1000,9 +1000,11 @@ void ComputeTsBoxes() {
     
     // Initialise arrays to be used for the Ts.c computation //
     init_21cmMC_Ts_arrays();
+#ifdef MINI_HALO
     for (R_ct=0; R_ct<NUM_FILTER_STEPS_FOR_Ts; R_ct++){
 		log10_Mcrit_LW[R_ct] = (float *) calloc(HII_TOT_NUM_PIXELS, sizeof(float));
 	}
+#endif
     
     ///////////////////////////////  BEGIN INITIALIZATION   //////////////////////////////
     growth_factor_z = dicke(REDSHIFT);
