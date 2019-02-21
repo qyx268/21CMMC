@@ -1928,27 +1928,19 @@ void ComputeTsBoxes() {
                                     dens_int = (int)floorf( dens_val );
 									dens_diff = dens_val - (float)dens_int;
                                     
-#ifdef MINI_HALO
-									index_left = dens_int+log10_Mcrit_atom_int*NSFR_low;
-									index_right = dens_int+(log10_Mcrit_atom_int+1)*NSFR_low;
-                                    fcoll_left = log10_Fcollz_SFR_Xray_low_table[counter][R_ct][index_left]*(1.-dens_diff) + log10_Fcollz_SFR_Xray_low_table[counter][R_ct][index_left+1]*dens_diff;
-                                    fcoll_right = log10_Fcollz_SFR_Xray_low_table[counter][R_ct][index_right]*(1.-dens_diff) + log10_Fcollz_SFR_Xray_low_table[counter][R_ct][index_right+1]*dens_diff;
-									fcoll = fcoll_left * (1 + (float)log10_Mcrit_atom_int - log10_Mcrit_atom_val) + fcoll_right * (log10_Mcrit_atom_val - (float)log10_Mcrit_atom_int);
-									fcoll = expf(fcoll);
-
-									index_left = dens_int+log10_Mcrit_LW_int*NSFR_low;
-									index_right = dens_int+(log10_Mcrit_LW_int+1)*NSFR_low;
-                                    fcoll_MINI_left = log10_Fcollz_SFR_Xray_low_table_MINI[counter][R_ct][index_left]*(1.-dens_diff) + log10_Fcollz_SFR_Xray_low_table_MINI[counter][R_ct][index_left+1]*dens_diff;
-                                    fcoll_MINI_right = log10_Fcollz_SFR_Xray_low_table_MINI[counter][R_ct][index_right]*(1.-dens_diff) + log10_Fcollz_SFR_Xray_low_table_MINI[counter][R_ct][index_right+1]*dens_diff;
-									fcoll_MINI = fcoll_MINI_left * (1.-log10_Mcrit_LW_diff) + fcoll_MINI_right * log10_Mcrit_LW_diff;
-									fcoll_MINI = expf(fcoll_MINI);
-#else
                                     fcoll = log10_Fcollz_SFR_Xray_low_table[counter][R_ct][dens_int]*(1.-dens_diff) + log10_Fcollz_SFR_Xray_low_table[counter][R_ct][dens_int+1]*dens_diff;
                                     
                                     // Note here, this returns the collapse fraction
                                     // The interpolation table is log(10)*exponent, thus exp(log(10)*exponent) = 10^exponent. Which is the value of the collapse fraction.
                                     // The log(10) is implicitly in the interpolation table already
                                     fcoll = expf(fcoll);
+#ifdef MINI_HALO
+									index_left = dens_int+log10_Mcrit_LW_int*NSFR_low;
+									index_right = dens_int+(log10_Mcrit_LW_int+1)*NSFR_low;
+                                    fcoll_MINI_left = log10_Fcollz_SFR_Xray_low_table_MINI[counter][R_ct][index_left]*(1.-dens_diff) + log10_Fcollz_SFR_Xray_low_table_MINI[counter][R_ct][index_left+1]*dens_diff;
+                                    fcoll_MINI_right = log10_Fcollz_SFR_Xray_low_table_MINI[counter][R_ct][index_right]*(1.-dens_diff) + log10_Fcollz_SFR_Xray_low_table_MINI[counter][R_ct][index_right+1]*dens_diff;
+									fcoll_MINI = fcoll_MINI_left * (1.-log10_Mcrit_LW_diff) + fcoll_MINI_right * log10_Mcrit_LW_diff;
+									fcoll_MINI = expf(fcoll_MINI);
 #endif
                                 }
                             }
@@ -1960,20 +1952,13 @@ void ComputeTsBoxes() {
                                     dens_int = (int)floorf( dens_val );
 									dens_diff = dens_val - (float)dens_int;
 
+                                    fcoll = Fcollz_SFR_Xray_high_table[counter][R_ct][dens_int]*(1.-dens_diff) + Fcollz_SFR_Xray_high_table[counter][R_ct][dens_int+1]*dens_diff;
 #ifdef MINI_HALO
-									index_left = dens_int+log10_Mcrit_atom_int*NSFR_high;
-									index_right = dens_int+(log10_Mcrit_atom_int+1)*NSFR_high;
-									fcoll_left = Fcollz_SFR_Xray_high_table[counter][R_ct][index_left]*(1.-dens_diff) + Fcollz_SFR_Xray_high_table[counter][R_ct][index_left+1]*dens_diff;
-									fcoll_right = Fcollz_SFR_Xray_high_table[counter][R_ct][index_right]*(1.-dens_diff) + Fcollz_SFR_Xray_high_table[counter][R_ct][index_right+1]*dens_diff;
-									fcoll = fcoll_left * (1 + (float)log10_Mcrit_atom_int - log10_Mcrit_atom_val) + fcoll_right * (log10_Mcrit_atom_val - (float)log10_Mcrit_atom_int);
-
 									index_left = dens_int+log10_Mcrit_LW_int*NSFR_high;
 									index_right = dens_int+(log10_Mcrit_LW_int+1)*NSFR_high;
 									fcoll_MINI_left = Fcollz_SFR_Xray_high_table_MINI[counter][R_ct][index_left]*(1.-dens_diff) + Fcollz_SFR_Xray_high_table_MINI[counter][R_ct][index_left+1]*dens_diff;
 									fcoll_MINI_right = Fcollz_SFR_Xray_high_table_MINI[counter][R_ct][index_right]*(1.-dens_diff) + Fcollz_SFR_Xray_high_table_MINI[counter][R_ct][index_right+1]*dens_diff;
 									fcoll_MINI = fcoll_MINI_left * (1 + (float)log10_Mcrit_LW_int - log10_Mcrit_LW_val) + fcoll_MINI_right * (log10_Mcrit_LW_val - (float)log10_Mcrit_LW_int);
-#else
-                                    fcoll = Fcollz_SFR_Xray_high_table[counter][R_ct][dens_int]*(1.-dens_diff) + Fcollz_SFR_Xray_high_table[counter][R_ct][dens_int+1]*dens_diff;
 #endif
 
                                 }
@@ -5774,11 +5759,9 @@ void init_21cmMC_Ts_arrays() {
             log10_Fcollz_SFR_Xray_low_table_MINI[i] = (float **)calloc(NUM_FILTER_STEPS_FOR_Ts,sizeof(float *));
 #endif
             for(j=0;j<NUM_FILTER_STEPS_FOR_Ts;j++) {
-#ifdef MINI_HALO
-                log10_Fcollz_SFR_Xray_low_table[i][j] = (float *)calloc(NSFR_low*LOG10MTURN_NUM,sizeof(float));
-                log10_Fcollz_SFR_Xray_low_table_MINI[i][j] = (float *)calloc(NSFR_low*LOG10MTURN_NUM,sizeof(float));
-#else
                 log10_Fcollz_SFR_Xray_low_table[i][j] = (float *)calloc(NSFR_low,sizeof(float));
+#ifdef MINI_HALO
+                log10_Fcollz_SFR_Xray_low_table_MINI[i][j] = (float *)calloc(NSFR_low*LOG10MTURN_NUM,sizeof(float));
 #endif
             }
         }
@@ -5794,11 +5777,9 @@ void init_21cmMC_Ts_arrays() {
             Fcollz_SFR_Xray_high_table_MINI[i] = (float **)calloc(NUM_FILTER_STEPS_FOR_Ts,sizeof(float *));
 #endif
             for(j=0;j<NUM_FILTER_STEPS_FOR_Ts;j++) {
-#ifdef MINI_HALO
-                Fcollz_SFR_Xray_high_table[i][j] = (float *)calloc(NSFR_high*LOG10MTURN_NUM,sizeof(float));
-                Fcollz_SFR_Xray_high_table_MINI[i][j] = (float *)calloc(NSFR_high*LOG10MTURN_NUM,sizeof(float));
-#else
                 Fcollz_SFR_Xray_high_table[i][j] = (float *)calloc(NSFR_high,sizeof(float));
+#ifdef MINI_HALO
+                Fcollz_SFR_Xray_high_table_MINI[i][j] = (float *)calloc(NSFR_high*LOG10MTURN_NUM,sizeof(float));
 #endif
             }
         }
