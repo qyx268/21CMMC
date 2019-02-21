@@ -52,7 +52,7 @@ void init_LF_arrays(); // New in v1.4
 
 void ComputeBoxesForFile();
 void ComputeTsBoxes();
-void ComputeIonisationBoxes(int sample_index, float REDSHIFT_SAMPLE, float PREV_REDSHIFT);
+float ComputeIonisationBoxes(int sample_index, float REDSHIFT_SAMPLE, float PREV_REDSHIFT);
 
 void adj_complex_conj();
 void ComputeInitialConditions();
@@ -122,6 +122,7 @@ int main(int argc, char ** argv){
     
     int i,j,k,temp_int,temp_int2, counter;
     float z_prime,prev_z_prime;
+	float nf_ave;
     
     unsigned long long ct;
 
@@ -689,7 +690,7 @@ int main(int argc, char ** argv){
             // Note, that INHOMO_RECO cannot be set when entering here.
             // INHOMO_RECO must be set with USE_TS_FLUCT
             // This is because no data is stored
-            ComputeIonisationBoxes(i,redshifts[i],redshifts[i]+0.2);
+            nf_ave = ComputeIonisationBoxes(i,redshifts[i],redshifts[i]+0.2);
         }
     }
     
@@ -871,7 +872,7 @@ void ComputeTsBoxes() {
     
     short dens_grid_int;
     
-    double Tk_ave, J_alpha_ave, xalpha_ave, J_alpha_tot, Xheat_ave, Xion_ave, nuprime, Ts_ave, lower_int_limit,Luminosity_converstion_factor,T_inv_TS_fast_inv;
+    double Tk_ave, J_alpha_ave, xalpha_ave, J_alpha_tot, Xheat_ave, Xion_ave, nuprime, Ts_ave, lower_int_limit,Luminosity_converstion_factor,T_inv_TS_fast_inv, nfgave;
 #ifdef MINI_HALO
 	double J_LW_ave, Luminosity_converstion_factor_MINI;
 #endif
@@ -2330,10 +2331,10 @@ void ComputeTsBoxes() {
                     if(i_z==0) {
                         // If in here, it doesn't matter what PREV_REDSHIFT is set to
                         // as the recombinations will not be calculated
-                        ComputeIonisationBoxes(i_z,redshifts[i_z],redshifts[i_z]+0.2);
+                        nf_ave = ComputeIonisationBoxes(i_z,redshifts[i_z],redshifts[i_z]+0.2);
                     }
                     else {
-                        ComputeIonisationBoxes(i_z,redshifts[i_z],redshifts[i_z-1]);
+                        nf_ave = ComputeIonisationBoxes(i_z,redshifts[i_z],redshifts[i_z-1]);
                     }
                 }
             }
@@ -2355,9 +2356,9 @@ void ComputeTsBoxes() {
 #endif
         
 #ifdef MINI_HALO
-                printf("zp = %e Ts_ave = %e x_e_ave = %e Tk_ave = %e J_alpha_ave = %e xalpha_ave = %e Xheat_ave = %e Xion_ave = %e J_LW_ave = %e\n",zp,Ts_ave,x_e_ave,Tk_ave,J_alpha_ave,xalpha_ave,Xheat_ave,Xion_ave,J_LW_ave*1e-21);
+                printf("zp = %.2f nf_ave = %e Ts_ave = %e x_e_ave = %e Tk_ave = %e J_alpha_ave = %e xalpha_ave = %e Xheat_ave = %e Xion_ave = %e J_LW_ave = %e\n",zp,nf_ave,Ts_ave,x_e_ave,Tk_ave,J_alpha_ave,xalpha_ave,Xheat_ave,Xion_ave,J_LW_ave*1e-21);
 #else
-                printf("zp = %e Ts_ave = %e x_e_ave = %e Tk_ave = %e J_alpha_ave = %e xalpha_ave = %e Xheat_ave = %e Xion_ave = %e\n",zp,Ts_ave,x_e_ave,Tk_ave,J_alpha_ave,xalpha_ave,Xheat_ave,Xion_ave);
+                printf("zp = %.2f nf_ave = %e Ts_ave = %e x_e_ave = %e Tk_ave = %e J_alpha_ave = %e xalpha_ave = %e Xheat_ave = %e Xion_ave = %e\n",zp,nf_ave,Ts_ave,x_e_ave,Tk_ave,J_alpha_ave,xalpha_ave,Xheat_ave,Xion_ave);
 #endif
             }
             
@@ -2389,7 +2390,7 @@ void ComputeTsBoxes() {
 	}
 }
 
-void ComputeIonisationBoxes(int sample_index, float REDSHIFT_SAMPLE, float PREV_REDSHIFT) {
+float ComputeIonisationBoxes(int sample_index, float REDSHIFT_SAMPLE, float PREV_REDSHIFT) {
     
     /* This is an entire re-write of find_HII_bubbles.c from 21cmFAST. Refer back to that code if this becomes a little confusing, the computation and algorithm are the same.
      Additionally, the code here includes delta_T.c for calculating the 21cm PS, and also redshift_interpolate_boxes.c for calculating the lightcones. */
@@ -3669,7 +3670,6 @@ void ComputeIonisationBoxes(int sample_index, float REDSHIFT_SAMPLE, float PREV_
     gsl_rng_free (r);
     
     nf = global_xH;
-	printf("nf=%g\n", nf);
     if(STORE_DATA) {
         aveNF[sample_index] = nf;
     }
@@ -4336,7 +4336,7 @@ void ComputeIonisationBoxes(int sample_index, float REDSHIFT_SAMPLE, float PREV_
     free(slice_index);
     
     destroy_21cmMC_HII_arrays(skip_deallocate);
-	
+	return nf;	
 }
 
 void ComputeInitialConditions() {
