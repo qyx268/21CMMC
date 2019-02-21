@@ -2415,7 +2415,7 @@ float ComputeIonisationBoxes(int sample_index, float REDSHIFT_SAMPLE, float PREV
 	float prev_dens;
     float prev_Splined_Fcoll,prev_Splined_Fcoll_left,prev_Splined_Fcoll_right;
     float prev_Splined_Fcoll_MINI,prev_Splined_Fcoll_MINI_left, prev_Splined_Fcoll_MINI_right;
-	double ST_over_PS_HII_MINI, mean_f_coll_st_left, mean_f_coll_st_right, mean_f_coll_st_MINI, mean_f_coll_st_MINI_left, mean_f_coll_st_MINI_right, f_coll_MINI, f_coll_min_left, f_coll_min_right, f_coll_min_MINI_left, f_coll_min_MINI_right, f_coll_min_MINI;
+	double ST_over_PS_HII_MINI, mean_f_coll_st_MINI, f_coll_MINI, f_coll_min_MINI;
 	int index_left, index_right;
 #endif
     
@@ -2709,16 +2709,16 @@ float ComputeIonisationBoxes(int sample_index, float REDSHIFT_SAMPLE, float PREV
 			prev_mean_f_coll_st_MINI = mean_f_coll_st_MINI;
 
 			// below is to calculate the minimum f_coll following v1.4
-			f_coll_min = FgtrM_st_SFR(dicke(Z_HEAT_MAX), pow(10, log10_Mmin_ave), ALPHA_STAR, ALPHA_ESC, F_STAR10, F_ESC10, Mlim_Fstar, Mlim_Fesc);
-			f_coll_min_MINI = FgtrM_st_SFR_MINI(dicke(Z_HEAT_MAX), pow(10., log10_Mmin_MINI_ave), Mcrit_atom, ALPHA_STAR, F_STAR10_MINI, Mlim_Fstar_MINI);
+			//f_coll_min = FgtrM_st_SFR(dicke(Z_HEAT_MAX), pow(10, log10_Mmin_ave), ALPHA_STAR, ALPHA_ESC, F_STAR10, F_ESC10, Mlim_Fstar, Mlim_Fesc);
+			//f_coll_min_MINI = FgtrM_st_SFR_MINI(dicke(Z_HEAT_MAX), pow(10., log10_Mmin_MINI_ave), Mcrit_atom, ALPHA_STAR, F_STAR10_MINI, Mlim_Fstar_MINI);
 #else
             mean_f_coll_st = Fcollz_val[redshift_int_fcollz] + redshift_table_fcollz_diff *( Fcollz_val[redshift_int_fcollz+1] - Fcollz_val[redshift_int_fcollz] );
             
-            redshift_int_fcollz = (int)floor( ( Z_HEAT_MAX - determine_zpp_min )/zpp_bin_width );
+            //redshift_int_fcollz = (int)floor( ( Z_HEAT_MAX - determine_zpp_min )/zpp_bin_width );
             
-            redshift_table_fcollz_diff = ( Z_HEAT_MAX - determine_zpp_min - zpp_bin_width*(float)redshift_int_fcollz ) / zpp_bin_width;
+            //redshift_table_fcollz_diff = ( Z_HEAT_MAX - determine_zpp_min - zpp_bin_width*(float)redshift_int_fcollz ) / zpp_bin_width;
             
-            f_coll_min = Fcollz_val[redshift_int_fcollz] + redshift_table_fcollz_diff *( Fcollz_val[redshift_int_fcollz+1] - Fcollz_val[redshift_int_fcollz] );
+            //f_coll_min = Fcollz_val[redshift_int_fcollz] + redshift_table_fcollz_diff *( Fcollz_val[redshift_int_fcollz+1] - Fcollz_val[redshift_int_fcollz] );
 #endif
             }
         else {
@@ -3289,35 +3289,21 @@ float ComputeIonisationBoxes(int sample_index, float REDSHIFT_SAMPLE, float PREV
                         
                             // save the value of the collasped fraction into the Fcoll array
 #ifdef MINI_HALO
-							if (Splined_Fcoll > 1.)
-								Splined_Fcoll = 1.;
-							if (Splined_Fcoll < 0.)
-								Splined_Fcoll = 1e-40;
-							if (Splined_Fcoll_MINI > 1.)
-								Splined_Fcoll_MINI = 1.;
-							if (Splined_Fcoll_MINI < 0.)
-								Splined_Fcoll_MINI = 1e-40;
+							if (Splined_Fcoll > 1.) Splined_Fcoll = 1.;
+							if (Splined_Fcoll < 0.) Splined_Fcoll = 1e-40;
+							if (Splined_Fcoll_MINI > 1.) Splined_Fcoll_MINI = 1.;
+							if (Splined_Fcoll_MINI < 0.) Splined_Fcoll_MINI = 1e-40;
 
-							if (prev_Splined_Fcoll > 1.)
-								prev_Splined_Fcoll = 1.;
-							if (prev_Splined_Fcoll < 0.)
-								prev_Splined_Fcoll = 1e-40;
-							if (prev_Splined_Fcoll_MINI > 1.)
-								prev_Splined_Fcoll_MINI = 1.;
-							if (prev_Splined_Fcoll_MINI < 0.)
-								prev_Splined_Fcoll_MINI = 1e-40;
+							if (prev_Splined_Fcoll > 1.) prev_Splined_Fcoll = 1.;
+							if (prev_Splined_Fcoll < 0.) prev_Splined_Fcoll = 1e-40;
+							if (prev_Splined_Fcoll_MINI > 1.) prev_Splined_Fcoll_MINI = 1.;
+							if (prev_Splined_Fcoll_MINI < 0.) prev_Splined_Fcoll_MINI = 1e-40;
 
                             Fcoll[HII_R_INDEX(x,y,z)] = prev_Fcoll[counter_R][HII_R_INDEX(x,y,z)] + Splined_Fcoll - prev_Splined_Fcoll;
                             Fcoll_MINI[HII_R_INDEX(x,y,z)] = prev_Fcoll_MINI[counter_R][HII_R_INDEX(x,y,z)] + Splined_Fcoll_MINI - prev_Splined_Fcoll_MINI;
 
-							if (Fcoll[HII_R_INDEX(x,y,z)] > 1.)
-								Fcoll[HII_R_INDEX(x,y,z)] = 1.;
-							if (Fcoll[HII_R_INDEX(x,y,z)] < 0.)
-								Fcoll[HII_R_INDEX(x,y,z)] = 1e-40;
-							if (Fcoll_MINI[HII_R_INDEX(x,y,z)] > 1.)
-								Fcoll_MINI[HII_R_INDEX(x,y,z)] = 1.;
-							if (Fcoll_MINI[HII_R_INDEX(x,y,z)] < 0.)
-								Fcoll_MINI[HII_R_INDEX(x,y,z)] = 1e-40;
+							if (Fcoll[HII_R_INDEX(x,y,z)] > 1.) Fcoll[HII_R_INDEX(x,y,z)] = 1.;
+							if (Fcoll_MINI[HII_R_INDEX(x,y,z)] > 1.) Fcoll_MINI[HII_R_INDEX(x,y,z)] = 1.;
 
 							prev_Fcoll[counter_R][HII_R_INDEX(x,y,z)] = Fcoll[HII_R_INDEX(x,y,z)];
 							prev_Fcoll_MINI[counter_R][HII_R_INDEX(x,y,z)] = Fcoll_MINI[HII_R_INDEX(x,y,z)];
@@ -3335,10 +3321,10 @@ float ComputeIonisationBoxes(int sample_index, float REDSHIFT_SAMPLE, float PREV
                 f_coll /= (double) HII_TOT_NUM_PIXELS;
                 // To avoid ST_over_PS becoms nan when f_coll = 0, I set f_coll = FRACT_FLOAT_ERR.
                 //if (f_coll <= FRACT_FLOAT_ERR) f_coll = FRACT_FLOAT_ERR;
-                if (f_coll <= f_coll_min) f_coll = f_coll_min;
+                //if (f_coll <= f_coll_min) f_coll = f_coll_min;
 #ifdef MINI_HALO
                 f_coll_MINI /= (double) HII_TOT_NUM_PIXELS;
-                if (f_coll_MINI <= f_coll_min_MINI) f_coll_MINI = f_coll_min_MINI;
+                //if (f_coll_MINI <= f_coll_min_MINI) f_coll_MINI = f_coll_min_MINI;
 #endif
             }
             else {
@@ -3466,10 +3452,10 @@ float ComputeIonisationBoxes(int sample_index, float REDSHIFT_SAMPLE, float PREV
                         }
                         
                         f_coll = ST_over_PS_HII * Splined_Fcoll;
-                        if (f_coll <= f_coll_min) f_coll = f_coll_min;
+                        //if (f_coll <= f_coll_min) f_coll = f_coll_min;
 #ifdef MINI_HALO
                         f_coll_MINI = ST_over_PS_HII_MINI * Splined_Fcoll_MINI;
-                        if (f_coll_MINI <= f_coll_min_MINI) f_coll_MINI = f_coll_min_MINI;
+                        //if (f_coll_MINI <= f_coll_min_MINI) f_coll_MINI = f_coll_min_MINI;
 #endif
 
                         
@@ -3534,19 +3520,23 @@ float ComputeIonisationBoxes(int sample_index, float REDSHIFT_SAMPLE, float PREV
 #endif
                             
                             if (ave_N_min_cell < N_POISSON){
-                                N_min_cell = (int) gsl_ran_poisson(r, ave_N_min_cell);
+								if (ave_N_min_cell < 0.2){
+									f_coll=0;
 #ifdef MINI_HALO
-                                f_coll = N_min_cell * M_MIN / (pixel_mass*(1. + curr_dens)) * ((f_coll / (f_coll + f_coll_MINI)));
-                                f_coll_MINI = N_min_cell * M_MIN / (pixel_mass*(1. + curr_dens)) - f_coll;
+									f_coll_MINI=0;
+#endif
+								}
+								else{
+	                                N_min_cell = (int) gsl_ran_poisson(r, N_POISSON) * ave_N_min_cell / (float) N_POISSON;
+#ifdef MINI_HALO
+                                	f_coll = N_min_cell * M_MIN / (pixel_mass*(1. + curr_dens)) * ((f_coll / (f_coll + f_coll_MINI)));
+                                	f_coll_MINI = N_min_cell * M_MIN / (pixel_mass*(1. + curr_dens)) - f_coll;
 #else
-                                f_coll = N_min_cell * M_MIN / (pixel_mass*(1. + curr_dens));
+                                	f_coll = N_min_cell * M_MIN / (pixel_mass*(1. + curr_dens));
 #endif
+								}
                             }
-                                
-                            if (f_coll>1) f_coll=1;
-#ifdef MINI_HALO
-                            if (f_coll_MINI>1) f_coll_MINI=1;
-#endif
+
                             res_xH = xHI_from_xrays - f_coll * ION_EFF_FACTOR;
 #ifdef MINI_HALO
                             res_xH -= f_coll_MINI * ION_EFF_FACTOR_MINI;
