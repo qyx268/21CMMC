@@ -181,7 +181,7 @@ define M_TURNOVER (double) (5e8) // Halo mass threshold for efficient star forma
   it is recommended to turn off this feature, as halos can stocastically
   "pop in and out of" existance from one redshift to the next...
 */
-#define N_POISSON (int) (-1)
+#define N_POISSON (int) (5)
 
 
 /*
