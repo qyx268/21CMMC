@@ -153,10 +153,10 @@ fftwf_complex *N_rec_unfiltered, *N_rec_filtered;
 #ifdef MINI_HALO
 float *log10_Fcoll_spline_SFR_MINI;
 float *Fcoll_spline_SFR_MINI;
-float *prev_log10_Fcoll_spline_SFR_MINI;
-float *prev_Fcoll_spline_SFR_MINI;
-float *prev_log10_Fcoll_spline_SFR;
-float *prev_Fcoll_spline_SFR;
+float **prev_log10_Fcoll_spline_SFR_MINI;
+float **prev_Fcoll_spline_SFR_MINI;
+float **prev_log10_Fcoll_spline_SFR;
+float **prev_Fcoll_spline_SFR;
 float **prev_Fcoll, **prev_Fcoll_MINI;
 float *SFR_for_integrals_Rct_MINI;
 float ***log10_Fcollz_SFR_Xray_low_table_MINI;

@@ -637,14 +637,25 @@ int main(int argc, char ** argv){
 	deltax_prev_filtered = (fftwf_complex**)fftwf_malloc(N_RSTEPS*sizeof(fftwf_complex *));
 	prev_Fcoll           = (float**) calloc(N_RSTEPS,sizeof(float *));
 	prev_Fcoll_MINI      = (float**) calloc(N_RSTEPS,sizeof(float *));
-	prev_overdense_small_min = (float *) calloc(N_RSTEPS,sizeof(float *));
-	prev_overdense_large_min = (float *) calloc(N_RSTEPS,sizeof(float *));
-	prev_overdense_small_bin_width_inv = (float *) calloc(N_RSTEPS,sizeof(float *));
-	prev_overdense_large_bin_width_inv = (float *) calloc(N_RSTEPS,sizeof(float *));
+	prev_overdense_small_min = (float *) calloc(N_RSTEPS,sizeof(float));
+	prev_overdense_large_min = (float *) calloc(N_RSTEPS,sizeof(float));
+	prev_overdense_small_bin_width_inv = (float *) calloc(N_RSTEPS,sizeof(float));
+	prev_overdense_large_bin_width_inv = (float *) calloc(N_RSTEPS,sizeof(float));
+
+	prev_log10_Fcoll_spline_SFR = (float **) calloc(N_RSTEPS,sizeof(float *));
+	prev_Fcoll_spline_SFR = (float **) calloc(N_RSTEPS,sizeof(float *));
+	prev_log10_Fcoll_spline_SFR_MINI = (float **) calloc(N_RSTEPS,sizeof(float *));
+	prev_Fcoll_spline_SFR_MINI = (float **) calloc(N_RSTEPS,sizeof(float *));
+
 	for (ii=0; ii<N_RSTEPS;ii++){
 		deltax_prev_filtered[ii] = (fftwf_complex *) fftwf_malloc(sizeof(fftwf_complex)*HII_KSPACE_NUM_PIXELS);
 		prev_Fcoll[ii]           = (float *) calloc(HII_TOT_NUM_PIXELS,sizeof(float));
 		prev_Fcoll_MINI[ii]      = (float *) calloc(HII_TOT_NUM_PIXELS,sizeof(float));
+
+    	prev_log10_Fcoll_spline_SFR[ii] = calloc(NSFR_low*LOG10MTURN_NUM,sizeof(double));
+    	prev_Fcoll_spline_SFR[ii] = calloc(NSFR_high*LOG10MTURN_NUM,sizeof(float));
+    	prev_log10_Fcoll_spline_SFR_MINI[ii] = calloc(NSFR_low*LOG10MTURN_NUM,sizeof(double));
+    	prev_Fcoll_spline_SFR_MINI[ii] = calloc(NSFR_high*LOG10MTURN_NUM,sizeof(float));
 
 		for (x=0; x<HII_DIM; x++){
 			for (y=0; y<HII_DIM; y++){
@@ -748,10 +759,18 @@ int main(int argc, char ** argv){
 		fftwf_free(deltax_prev_filtered[ii]);
 		free(prev_Fcoll[ii]);
 		free(prev_Fcoll_MINI[ii]);
+    	free(prev_log10_Fcoll_spline_SFR[ii]);
+    	free(prev_Fcoll_spline_SFR[ii]);
+    	free(prev_log10_Fcoll_spline_SFR_MINI[ii]);
+    	free(prev_Fcoll_spline_SFR_MINI[ii]);
 	}
 	fftwf_free(deltax_prev_filtered);
 	free(prev_Fcoll);
 	free(prev_Fcoll_MINI);
+    free(prev_log10_Fcoll_spline_SFR);
+    free(prev_Fcoll_spline_SFR);
+    free(prev_log10_Fcoll_spline_SFR_MINI);
+    free(prev_Fcoll_spline_SFR_MINI);
 	free(prev_overdense_small_min);
 	free(prev_overdense_large_min);
 	free(prev_overdense_small_bin_width_inv);
@@ -3156,7 +3175,7 @@ void ComputeIonisationBoxes(int sample_index, float REDSHIFT_SAMPLE, float PREV_
             if(USE_MASS_DEPENDENT_ZETA) {
 #ifdef MINI_HALO
                 initialiseGL_FcollSFR(NGL_SFR, M_MIN,massofscaleR);
-                initialiseFcollSFR_spline(REDSHIFT_SAMPLE,min_density,max_density,M_MIN,massofscaleR,Mturn_interp_table,ALPHA_STAR,ALPHA_ESC,F_STAR10,F_ESC10,Mlim_Fstar,Mlim_Fesc,F_STAR10_MINI,Mlim_Fstar_MINI);
+                initialiseFcollSFR_spline(REDSHIFT_SAMPLE,min_density,max_density,M_MIN,massofscaleR,Mturn_interp_table,ALPHA_STAR,ALPHA_ESC,F_STAR10,F_ESC10,Mlim_Fstar,Mlim_Fesc,F_STAR10_MINI,Mlim_Fstar_MINI, counter_R);
 #else
                 initialiseGL_FcollSFR(NGL_SFR, M_TURN/50.,massofscaleR);
                 initialiseFcollSFR_spline(REDSHIFT_SAMPLE,min_density,max_density,massofscaleR,M_TURN,ALPHA_STAR,ALPHA_ESC,F_STAR10,F_ESC10,Mlim_Fstar,Mlim_Fesc);
@@ -3231,15 +3250,15 @@ void ComputeIonisationBoxes(int sample_index, float REDSHIFT_SAMPLE, float PREV_
 
 										index_left = prev_overdense_int+log10_Mmin_int*NSFR_low;
 										index_right = prev_overdense_int+(log10_Mmin_int+1)*NSFR_low;
-                                        prev_Splined_Fcoll_left = prev_log10_Fcoll_spline_SFR[index_left]*(1.-prev_dens_diff) + prev_log10_Fcoll_spline_SFR[index_left+1]*prev_dens_diff;
-                                        prev_Splined_Fcoll_right = prev_log10_Fcoll_spline_SFR[index_right]*(1.-prev_dens_diff) + prev_log10_Fcoll_spline_SFR[index_right+1]*prev_dens_diff;
+                                        prev_Splined_Fcoll_left = prev_log10_Fcoll_spline_SFR[counter_R][index_left]*(1.-prev_dens_diff) + prev_log10_Fcoll_spline_SFR[counter_R][index_left+1]*prev_dens_diff;
+                                        prev_Splined_Fcoll_right = prev_log10_Fcoll_spline_SFR[counter_R][index_right]*(1.-prev_dens_diff) + prev_log10_Fcoll_spline_SFR[counter_R][index_right+1]*prev_dens_diff;
 										prev_Splined_Fcoll = prev_Splined_Fcoll_left * (1. - log10_Mmin_diff) + prev_Splined_Fcoll_right * log10_Mmin_diff;
                                         prev_Splined_Fcoll = expf(prev_Splined_Fcoll);
                                         
 										index_left = prev_overdense_int+log10_Mmin_MINI_int*NSFR_low;
 										index_right = prev_overdense_int+(log10_Mmin_MINI_int+1)*NSFR_low;
-                                        prev_Splined_Fcoll_MINI_left = prev_log10_Fcoll_spline_SFR_MINI[index_left]*(1.-prev_dens_diff) + prev_log10_Fcoll_spline_SFR_MINI[index_left+1]*prev_dens_diff;
-                                        prev_Splined_Fcoll_MINI_right = prev_log10_Fcoll_spline_SFR_MINI[index_right]*(1.-prev_dens_diff) + prev_log10_Fcoll_spline_SFR_MINI[index_right+1]*prev_dens_diff;
+                                        prev_Splined_Fcoll_MINI_left = prev_log10_Fcoll_spline_SFR_MINI[counter_R][index_left]*(1.-prev_dens_diff) + prev_log10_Fcoll_spline_SFR_MINI[counter_R][index_left+1]*prev_dens_diff;
+                                        prev_Splined_Fcoll_MINI_right = prev_log10_Fcoll_spline_SFR_MINI[counter_R][index_right]*(1.-prev_dens_diff) + prev_log10_Fcoll_spline_SFR_MINI[counter_R][index_right+1]*prev_dens_diff;
 										prev_Splined_Fcoll_MINI = prev_Splined_Fcoll_MINI_left * (1. - log10_Mmin_MINI_diff) + prev_Splined_Fcoll_MINI_right * log10_Mmin_MINI_diff;
                                         prev_Splined_Fcoll_MINI = expf(prev_Splined_Fcoll_MINI);
 
@@ -3254,14 +3273,14 @@ void ComputeIonisationBoxes(int sample_index, float REDSHIFT_SAMPLE, float PREV_
 
 										index_left = prev_overdense_int+log10_Mmin_int*NSFR_high;
 										index_right = prev_overdense_int+(log10_Mmin_int+1)*NSFR_high;
-                                        prev_Splined_Fcoll_left = prev_Fcoll_spline_SFR[index_left]*(1.-prev_dens_diff) + prev_Fcoll_spline_SFR[index_left+1]*prev_dens_diff;
-                                        prev_Splined_Fcoll_right = prev_Fcoll_spline_SFR[index_right]*(1.-prev_dens_diff) + prev_Fcoll_spline_SFR[index_right+1]*prev_dens_diff;
+                                        prev_Splined_Fcoll_left = prev_Fcoll_spline_SFR[counter_R][index_left]*(1.-prev_dens_diff) + prev_Fcoll_spline_SFR[counter_R][index_left+1]*prev_dens_diff;
+                                        prev_Splined_Fcoll_right = prev_Fcoll_spline_SFR[counter_R][index_right]*(1.-prev_dens_diff) + prev_Fcoll_spline_SFR[counter_R][index_right+1]*prev_dens_diff;
 										prev_Splined_Fcoll = prev_Splined_Fcoll_left * (1. - log10_Mmin_diff) + prev_Splined_Fcoll_right * log10_Mmin_diff;
 
 										index_left = prev_overdense_int+log10_Mmin_MINI_int*NSFR_high;
 										index_right = prev_overdense_int+(log10_Mmin_MINI_int+1)*NSFR_high;
-                                        prev_Splined_Fcoll_MINI_left = prev_Fcoll_spline_SFR_MINI[index_left]*(1.-prev_dens_diff) + prev_Fcoll_spline_SFR_MINI[index_left+1]*prev_dens_diff;
-                                        prev_Splined_Fcoll_MINI_right = prev_Fcoll_spline_SFR_MINI[index_right]*(1.-prev_dens_diff) + prev_Fcoll_spline_SFR_MINI[index_right+1]*prev_dens_diff;
+                                        prev_Splined_Fcoll_MINI_left = prev_Fcoll_spline_SFR_MINI[counter_R][index_left]*(1.-prev_dens_diff) + prev_Fcoll_spline_SFR_MINI[counter_R][index_left+1]*prev_dens_diff;
+                                        prev_Splined_Fcoll_MINI_right = prev_Fcoll_spline_SFR_MINI[counter_R][index_right]*(1.-prev_dens_diff) + prev_Fcoll_spline_SFR_MINI[counter_R][index_right+1]*prev_dens_diff;
 										prev_Splined_Fcoll_MINI = prev_Splined_Fcoll_MINI_left * (1. - log10_Mmin_MINI_diff) + prev_Splined_Fcoll_MINI_right * log10_Mmin_MINI_diff;
                                     }
                                     else {
@@ -3749,6 +3768,7 @@ void ComputeIonisationBoxes(int sample_index, float REDSHIFT_SAMPLE, float PREV_
     gsl_rng_free (r);
     
     nf = global_xH;
+	printf("nf=%g\n", nf);
     if(STORE_DATA) {
         aveNF[sample_index] = nf;
     }
@@ -5698,11 +5718,6 @@ void init_21cmMC_Ts_arrays() {
     log10_Fcoll_spline_SFR_MINI = calloc(NSFR_low*LOG10MTURN_NUM,sizeof(double));
     Fcoll_spline_SFR_MINI = calloc(NSFR_high*LOG10MTURN_NUM,sizeof(float));
 
-    prev_log10_Fcoll_spline_SFR = calloc(NSFR_low*LOG10MTURN_NUM,sizeof(double));
-    prev_Fcoll_spline_SFR = calloc(NSFR_high*LOG10MTURN_NUM,sizeof(float));
-    prev_log10_Fcoll_spline_SFR_MINI = calloc(NSFR_low*LOG10MTURN_NUM,sizeof(double));
-    prev_Fcoll_spline_SFR_MINI = calloc(NSFR_high*LOG10MTURN_NUM,sizeof(float));
-
     for (i=0;i<NSFR_low*LOG10MTURN_NUM;i++){
         log10_Fcoll_spline_SFR[i] = 0.;
         log10_Fcoll_spline_SFR_MINI[i] = 0.;
@@ -6026,10 +6041,6 @@ void destroy_21cmMC_Ts_arrays() {
     free(Fcoll_spline_SFR);
     free(log10_Fcoll_spline_SFR_MINI);
     free(Fcoll_spline_SFR_MINI);
-    free(prev_log10_Fcoll_spline_SFR);
-    free(prev_Fcoll_spline_SFR);
-    free(prev_log10_Fcoll_spline_SFR_MINI);
-    free(prev_Fcoll_spline_SFR_MINI);
 #endif
 
     if (USE_MASS_DEPENDENT_ZETA) {
