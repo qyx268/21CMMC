@@ -1566,6 +1566,8 @@ void ComputeTsBoxes() {
 				  }
 				}
 				log10_Mcrit_LW_ave /= HII_TOT_NUM_PIXELS;
+				log10_Mcrit_LW_ave_int_fcollz = (int)floor( ( log10_Mcrit_LW_ave - LOG10MTURN_MIN) / LOG10MTURN_INT);
+				log10_Mcrit_LW_ave_table_fcollz = LOG10MTURN_MIN + LOG10MTURN_INT * (float)log10_Mcrit_LW_ave_int_fcollz;
 #endif
 
                 if (USE_MASS_DEPENDENT_ZETA) { 
