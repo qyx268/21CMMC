@@ -1085,7 +1085,7 @@ void ComputeTsBoxes() {
         
         /////////////// Create the z=0 non-linear density fields smoothed on scale R to be used in computing fcoll //////////////
         R = L_FACTOR*BOX_LEN/(float)HII_DIM;
-        R_factor = pow(R_XLy_MAX/R, 1/(float)NUM_FILTER_STEPS_FOR_Ts);
+        R_factor = pow(R_XLy_MAX/R, 1./(float)NUM_FILTER_STEPS_FOR_Ts);
 //      R_factor = pow(E, log(HII_DIM)/(float)NUM_FILTER_STEPS_FOR_Ts);
         
         ///////////////////  Read in density box at z-prime  ///////////////
@@ -1218,7 +1218,7 @@ void ComputeTsBoxes() {
                         curr_delNL0 = *((float *) box + HII_R_FFT_INDEX(i,j,k));
                             
                         if (curr_delNL0 < -1){ // correct for alliasing in the filtering step
-                            curr_delNL0 = -1+FRACT_FLOAT_ERR;
+                            curr_delNL0 = -1.+FRACT_FLOAT_ERR;
                         }
                             
                         // and linearly extrapolate to z=0
@@ -1278,11 +1278,11 @@ void ComputeTsBoxes() {
         zp = REDSHIFT*1.0001; //higher for rounding
         // New in v1.4: count the number of zp steps
         while (zp < Z_HEAT_MAX) {
-            zp = ((1+zp)*ZPRIME_STEP_FACTOR - 1);
+            zp = ((1.+zp)*ZPRIME_STEP_FACTOR - 1);
 
         }
         prev_zp = Z_HEAT_MAX;
-        zp = ((1+zp)/ ZPRIME_STEP_FACTOR - 1);
+        zp = ((1.+zp)/ ZPRIME_STEP_FACTOR - 1);
         dzp = zp - prev_zp;
         COMPUTE_Ts = 0;
     
@@ -1348,7 +1348,7 @@ void ComputeTsBoxes() {
                     counter += 1;
                   }
                 prev_zp = zp_table;
-                zp_table = ((1+prev_zp) / ZPRIME_STEP_FACTOR - 1);
+                zp_table = ((1.+prev_zp) / ZPRIME_STEP_FACTOR - 1);
             }
 
             /* generate a table for interpolation of the collapse fraction with respect to the X-ray heating, as functions of
@@ -1438,7 +1438,7 @@ void ComputeTsBoxes() {
         while (zp > REDSHIFT){
             
             // check if we will next compute the spin temperature (i.e. if this is the final zp step)
-            if (Ts_verbose || (((1+zp) / ZPRIME_STEP_FACTOR) < (REDSHIFT+1)) )
+            if (Ts_verbose || (((1.+zp) / ZPRIME_STEP_FACTOR) < (REDSHIFT+1)) )
                 COMPUTE_Ts = 1;
             
             // check if we are in the really high z regime before the first stars..
@@ -1577,7 +1577,7 @@ void ComputeTsBoxes() {
                     
                     Splined_Fcollzpp_X_mean = FcollzX_val[redshift_int_fcollz_Xray] + redshift_table_fcollz_diff_Xray *( FcollzX_val[redshift_int_fcollz_Xray+1] - FcollzX_val[redshift_int_fcollz_Xray] );
 
-                    ST_over_PS[R_ct] = pow(1+zpp, -X_RAY_SPEC_INDEX)*fabs(dzpp_for_evolve);
+                    ST_over_PS[R_ct] = pow(1.+zpp, -X_RAY_SPEC_INDEX)*fabs(dzpp_for_evolve);
                     ST_over_PS[R_ct] *= Splined_Fcollzpp_X_mean;
 #ifdef MINI_HALO
 					index_left = redshift_int_fcollz_Xray + zpp_interp_points_SFR * log10_Mcrit_LW_ave_int_fcollz;
@@ -1587,7 +1587,7 @@ void ComputeTsBoxes() {
         	        Splined_Fcollzpp_X_mean_MINI_right = FcollzX_val_MINI[index_right] + redshift_table_fcollz_diff_Xray * ( FcollzX_val_MINI[index_right + 1] - FcollzX_val_MINI[index_right]);
 					Splined_Fcollzpp_X_mean_MINI = Splined_Fcollzpp_X_mean_MINI_left + (log10_Mcrit_LW_ave - log10_Mcrit_LW_ave_table_fcollz) / LOG10MTURN_INT * ( Splined_Fcollzpp_X_mean_MINI_right - Splined_Fcollzpp_X_mean_MINI_left );
 
-                    ST_over_PS_MINI[R_ct] = pow(1+zpp, -X_RAY_SPEC_INDEX_MINI)*fabs(dzpp_for_evolve);
+                    ST_over_PS_MINI[R_ct] = pow(1.+zpp, -X_RAY_SPEC_INDEX_MINI)*fabs(dzpp_for_evolve);
                     ST_over_PS_MINI[R_ct] *= Splined_Fcollzpp_X_mean_MINI;
 #endif
                     SFR_timescale_factor[R_ct] = hubble(zpp)*fabs(dtdz(zpp));
@@ -1624,7 +1624,7 @@ void ComputeTsBoxes() {
                     }
             
                     // Using the interpolated values to update arrays of relevant quanties for the IGM spin temperature calculation
-                    ST_over_PS[R_ct] = dzpp_for_evolve * pow(1+zpp, -X_RAY_SPEC_INDEX);
+                    ST_over_PS[R_ct] = dzpp_for_evolve * pow(1.+zpp, -X_RAY_SPEC_INDEX);
                     ST_over_PS[R_ct] *= ( ST_over_PS_arg_grid[zpp_gridpoint1_int] + grad2*( ST_over_PS_arg_grid[zpp_gridpoint2_int] - ST_over_PS_arg_grid[zpp_gridpoint1_int] ) );
                 }
 #ifdef MINI_HALO
@@ -1663,7 +1663,7 @@ void ComputeTsBoxes() {
                     if (zpp > zmax(zp, n_ct))
                         continue;
                 
-                    nuprime = nu_n(n_ct)*(1+zpp)/(1.0+zp);
+                    nuprime = nu_n(n_ct)*(1.+zpp)/(1.0+zp);
 #ifdef MINI_HALO
 					sum_lyn[R_ct]  += frecycle(n_ct) * spectral_emissivity(nuprime, 0, 2);
 					sum_lyn_MINI[R_ct] += frecycle(n_ct) * spectral_emissivity(nuprime, 0, 3);
@@ -1686,8 +1686,8 @@ void ComputeTsBoxes() {
             // NOTE: pre-sampling the fcoll field does not support the new parametrization in v1.4.
             
             fcoll_interp_high_min = 1.5;
-            fcoll_interp_high_bin_width = 1/((float)NSFR_high-1.)*(Deltac - fcoll_interp_high_min);
-            fcoll_interp_high_bin_width_inv = 1./fcoll_interp_bin_width;
+            fcoll_interp_high_bin_width = 1./((float)NSFR_high-1.)*(Deltac - fcoll_interp_high_min);
+            fcoll_interp_high_bin_width_inv = 1./fcoll_interp_high_bin_width;
             
             if(!USE_MASS_DEPENDENT_ZETA) {
                 if(SHORTEN_FCOLL) {
@@ -1728,9 +1728,9 @@ void ComputeTsBoxes() {
             Luminosity_converstion_factor *= (3.1556226e7)/(hplank);
             
             // Leave the original 21cmFAST code for reference. Refer to Greig & Mesinger (2017) for the new parameterisation.
-            const_zp_prefactor = ( L_X * Luminosity_converstion_factor ) / NU_X_THRESH * C * F_STAR10 * OMb * RHOcrit * pow(CMperMPC, -3) * pow(1+zp, X_RAY_SPEC_INDEX+3);
+            const_zp_prefactor = ( L_X * Luminosity_converstion_factor ) / NU_X_THRESH * C * F_STAR10 * OMb * RHOcrit * pow(CMperMPC, -3) * pow(1.+zp, X_RAY_SPEC_INDEX+3);
 //          This line below is kept purely for reference w.r.t to the original 21cmFAST
-//            const_zp_prefactor = ZETA_X * X_RAY_SPEC_INDEX / NU_X_THRESH * C * F_STAR * OMb * RHOcrit * pow(CMperMPC, -3) * pow(1+zp, X_RAY_SPEC_INDEX+3);
+//            const_zp_prefactor = ZETA_X * X_RAY_SPEC_INDEX / NU_X_THRESH * C * F_STAR * OMb * RHOcrit * pow(CMperMPC, -3) * pow(1.+zp, X_RAY_SPEC_INDEX+3);
             
 #ifdef MINI_HALO
             if(fabs(X_RAY_SPEC_INDEX_MINI - 1.0) < 0.000001) {
@@ -1746,9 +1746,9 @@ void ComputeTsBoxes() {
             Luminosity_converstion_factor_MINI *= (3.1556226e7)/(hplank);
             
             // Leave the original 21cmFAST code for reference. Refer to Greig & Mesinger (2017) for the new parameterisation.
-            const_zp_prefactor_MINI = ( L_X_MINI * Luminosity_converstion_factor_MINI ) / NU_X_THRESH * C * F_STAR10_MINI * OMb * RHOcrit * pow(CMperMPC, -3) * pow(1+zp, X_RAY_SPEC_INDEX_MINI+3);
+            const_zp_prefactor_MINI = ( L_X_MINI * Luminosity_converstion_factor_MINI ) / NU_X_THRESH * C * F_STAR10_MINI * OMb * RHOcrit * pow(CMperMPC, -3) * pow(1.+zp, X_RAY_SPEC_INDEX_MINI+3);
 //          This line below is kept purely for reference w.r.t to the original 21cmFAST
-//            const_zp_prefactor = ZETA_X * X_RAY_SPEC_INDEX / NU_X_THRESH * C * F_STAR * OMb * RHOcrit * pow(CMperMPC, -3) * pow(1+zp, X_RAY_SPEC_INDEX+3);
+//            const_zp_prefactor = ZETA_X * X_RAY_SPEC_INDEX / NU_X_THRESH * C * F_STAR * OMb * RHOcrit * pow(CMperMPC, -3) * pow(1.+zp, X_RAY_SPEC_INDEX+3);
 #endif
             //////////////////////////////  LOOP THROUGH BOX //////////////////////////////
         
@@ -1759,10 +1759,10 @@ void ComputeTsBoxes() {
         
             // Extra pre-factors etc. are defined here, as they are independent of the density field, and only have to be computed once per z' or R_ct, rather than each box_ct
             for (R_ct=0; R_ct<NUM_FILTER_STEPS_FOR_Ts; R_ct++){
-                zpp_integrand = ( pow(1+zp,2)*(1+zpp_for_evolve_list[R_ct]) )/( pow(1+zpp_for_evolve_list[R_ct], -X_RAY_SPEC_INDEX) );
+                zpp_integrand = ( pow(1.+zp,2)*(1.+zpp_for_evolve_list[R_ct]) )/( pow(1.+zpp_for_evolve_list[R_ct], -X_RAY_SPEC_INDEX) );
                 dstarlya_dt_prefactor[R_ct]  = zpp_integrand * sum_lyn[R_ct];
 #ifdef MINI_HALO
-                zpp_integrand_MINI = ( pow(1+zp,2)*(1+zpp_for_evolve_list[R_ct]) )/( pow(1+zpp_for_evolve_list[R_ct], -X_RAY_SPEC_INDEX_MINI) );
+                zpp_integrand_MINI = ( pow(1.+zp,2)*(1.+zpp_for_evolve_list[R_ct]) )/( pow(1.+zpp_for_evolve_list[R_ct], -X_RAY_SPEC_INDEX_MINI) );
                 dstarlya_dt_prefactor_MINI[R_ct]  = zpp_integrand_MINI * sum_lyn_MINI[R_ct];
                 dstarlyLW_dt_prefactor[R_ct]  = zpp_integrand * sum_lyLWn[R_ct];
                 dstarlyLW_dt_prefactor_MINI[R_ct]  = zpp_integrand_MINI * sum_lyLWn_MINI[R_ct];
@@ -1773,14 +1773,14 @@ void ComputeTsBoxes() {
             // Note: These used to be determined in evolveInt (and other functions). But I moved them all here, into a single location.
             Trad_fast = T_cmb*(1.0+zp);
             Trad_fast_inv = 1.0/Trad_fast;
-            TS_prefactor = pow(1.0e-7*(1.342881e-7 / hubble(zp))*No*pow(1+zp,3),1./3.);
+            TS_prefactor = pow(1.0e-7*(1.342881e-7 / hubble(zp))*No*pow(1.+zp,3),1./3.);
             xa_tilde_prefactor = 1.66e11/(1.0+zp);
         
             xc_inverse =  pow(1.0+zp,3.0)*T21/( Trad_fast*A10_HYPERFINE );
         
             dcomp_dzp_prefactor = (-1.51e-4)/(hubble(zp)/Ho)/hlittle*pow(Trad_fast,4.0)/(1.0+zp);
         
-            prefactor_1 = N_b0 * pow(1+zp, 3);
+            prefactor_1 = N_b0 * pow(1.+zp, 3);
             prefactor_2 = F_STAR10 * C * N_b0 / FOURPI;
 #ifdef MINI_HALO
             prefactor_2_MINI = F_STAR10_MINI * C * N_b0 / FOURPI;
@@ -2084,7 +2084,7 @@ void ComputeTsBoxes() {
                             dadia_dzp *= (2.0/3.0)*T;
                             
                             // next heating due to the changing species
-                            dspec_dzp = - dxe_dzp * T / (1+x_e);
+                            dspec_dzp = - dxe_dzp * T / (1.+x_e);
                             
                             // next, Compton heating
                             //                dcomp_dzp = dT_comp(zp, T, x_e);
@@ -2108,7 +2108,7 @@ void ComputeTsBoxes() {
                             }
                             
                             if (T<0){ // spurious bahaviour of the trapazoidalintegrator. generally overcooling in underdensities
-                                T = T_cmb*(1+zp);
+                                T = T_cmb*(1.+zp);
                             }
 
                             x_e_box[box_ct] = x_e;
@@ -2244,7 +2244,7 @@ void ComputeTsBoxes() {
                     dadia_dzp *= (2.0/3.0)*T;
                     
                     // next heating due to the changing species
-                    dspec_dzp = - dxe_dzp * T / (1+x_e);
+                    dspec_dzp = - dxe_dzp * T / (1.+x_e);
                     
                     // next, Compton heating
                     //                dcomp_dzp = dT_comp(zp, T, x_e);
@@ -2264,7 +2264,7 @@ void ComputeTsBoxes() {
                     }
                     
                     if (T<0){ // spurious bahaviour of the trapazoidalintegrator. generally overcooling in underdensities
-                        T = T_cmb*(1+zp);
+                        T = T_cmb*(1.+zp);
                     }
                     
                     x_e_box[box_ct] = x_e;
@@ -2365,7 +2365,7 @@ void ComputeTsBoxes() {
             }
             
             prev_zp = zp;
-            zp = ((1+prev_zp) / ZPRIME_STEP_FACTOR - 1);
+            zp = ((1.+prev_zp) / ZPRIME_STEP_FACTOR - 1);
             dzp = zp - prev_zp;
             
             counter += 1;
@@ -2449,7 +2449,7 @@ float ComputeIonisationBoxes(int sample_index, float REDSHIFT_SAMPLE, float PREV
 #endif
     
     overdense_large_min = 1.5*0.999;
-    overdense_large_bin_width = 1/((double)NSFR_high-1.)*(Deltac-overdense_large_min);
+    overdense_large_bin_width = 1./((double)NSFR_high-1.)*(Deltac-overdense_large_min);
     overdense_large_bin_width_inv = 1./overdense_large_bin_width;
     
     const gsl_rng_type * T;
@@ -2742,7 +2742,7 @@ float ComputeIonisationBoxes(int sample_index, float REDSHIFT_SAMPLE, float PREV
         // find the neutral fraction
         if(USE_TS_FLUCT) {
             for (ct=0; ct<HII_TOT_NUM_PIXELS; ct++){
-                xH[ct] = 1-x_e_z[ct]; // convert from x_e to xH
+                xH[ct] = 1.-x_e_z[ct]; // convert from x_e to xH
                 global_xH += xH[ct];
             }
             global_xH /= (double)HII_TOT_NUM_PIXELS;
@@ -3067,10 +3067,10 @@ float ComputeIonisationBoxes(int sample_index, float REDSHIFT_SAMPLE, float PREV
             
             overdense_small_min = log10(1. + min_density);
             if(max_density > 1.5*1.001) {
-                overdense_small_bin_width = 1/((double)NSFR_low-1.)*(log10(1.+1.5*1.001)-overdense_small_min);
+                overdense_small_bin_width = 1./((double)NSFR_low-1.)*(log10(1.+1.5*1.001)-overdense_small_min);
             }
             else {
-                overdense_small_bin_width = 1/((double)NSFR_low-1.)*(log10(1.+max_density)-overdense_small_min);
+                overdense_small_bin_width = 1./((double)NSFR_low-1.)*(log10(1.+max_density)-overdense_small_min);
             }
             overdense_small_bin_width_inv = 1./overdense_small_bin_width;
             
@@ -3368,8 +3368,8 @@ float ComputeIonisationBoxes(int sample_index, float REDSHIFT_SAMPLE, float PREV
             rec = 0.;
             
             xHI_from_xrays = 1;
-            //Gamma_R_prefactor = pow(1+REDSHIFT_SAMPLE, 2) * (R*CMperMPC) * SIGMA_HI * ALPHA_UVB / (ALPHA_UVB+2.75) * N_b0 * HII_EFF_FACTOR / 1.0e-12;
-            Gamma_R_prefactor = pow(1+REDSHIFT_SAMPLE, 2) * (R*CMperMPC) * SIGMA_HI * ALPHA_UVB / (ALPHA_UVB+2.75) * N_b0 * ION_EFF_FACTOR / 1.0e-12;
+            //Gamma_R_prefactor = pow(1.+REDSHIFT_SAMPLE, 2) * (R*CMperMPC) * SIGMA_HI * ALPHA_UVB / (ALPHA_UVB+2.75) * N_b0 * HII_EFF_FACTOR / 1.0e-12;
+            Gamma_R_prefactor = pow(1.+REDSHIFT_SAMPLE, 2) * (R*CMperMPC) * SIGMA_HI * ALPHA_UVB / (ALPHA_UVB+2.75) * N_b0 * ION_EFF_FACTOR / 1.0e-12;
             
             Gamma_R_prefactor /= t_ast;
 #ifdef MINI_HALO
@@ -3660,7 +3660,7 @@ float ComputeIonisationBoxes(int sample_index, float REDSHIFT_SAMPLE, float PREV
                 for (y=0; y<HII_DIM; y++){
                     for (z=0; z<HII_DIM; z++){
                         curr_dens = 1.0 + (*((float *)deltax_unfiltered + HII_R_FFT_INDEX(x,y,z)));
-                        z_eff = (1+REDSHIFT_SAMPLE) * pow(curr_dens, 1.0/3.0) - 1;
+                        z_eff = (1.+REDSHIFT_SAMPLE) * pow(curr_dens, 1.0/3.0) - 1;
                         dNrec = splined_recombination_rate(z_eff, Gamma12[HII_R_INDEX(x,y,z)]) * fabs_dtdz * ZSTEP * (1 - xH[HII_R_INDEX(x,y,z)]);
                         *((float *)N_rec_unfiltered + HII_R_FFT_INDEX(x,y,z)) += dNrec;
                     }
@@ -3728,10 +3728,10 @@ float ComputeIonisationBoxes(int sample_index, float REDSHIFT_SAMPLE, float PREV
         fclose(F);
     }
 
-    T_rad = T_cmb*(1+REDSHIFT_SAMPLE);
+    T_rad = T_cmb*(1.+REDSHIFT_SAMPLE);
     H = hubble(REDSHIFT_SAMPLE);
     const_factor = 27 * (OMb*hlittle*hlittle/0.023) *
-    sqrt( (0.15/OMm/hlittle/hlittle) * (1+REDSHIFT_SAMPLE)/10.0 );
+    sqrt( (0.15/OMm/hlittle/hlittle) * (1.+REDSHIFT_SAMPLE)/10.0 );
     
     memcpy(deltax, deltax_unfiltered_original, sizeof(fftwf_complex)*HII_KSPACE_NUM_PIXELS);
     
@@ -3746,7 +3746,7 @@ float ComputeIonisationBoxes(int sample_index, float REDSHIFT_SAMPLE, float PREV
                 pixel_deltax = deltax[HII_R_FFT_INDEX(i,j,k)];
                 pixel_x_HI = xH[HII_R_INDEX(i,j,k)];
                 
-                delta_T[HII_R_INDEX(i,j,k)] = const_factor*pixel_x_HI*(1+pixel_deltax);
+                delta_T[HII_R_INDEX(i,j,k)] = const_factor*pixel_x_HI*(1.+pixel_deltax);
 
                 if (USE_TS_FLUCT) {
                         
@@ -3882,7 +3882,7 @@ float ComputeIonisationBoxes(int sample_index, float REDSHIFT_SAMPLE, float PREV
                 x_pos[ii] = x_pos_offset[ii]/( BOX_LEN/(float)HII_DIM );
             }
             
-            // Note to convert the velocity v, to a displacement in redshift space, convert from s -> r + (1+z)*v/H(z)
+            // Note to convert the velocity v, to a displacement in redshift space, convert from s -> r + (1.+z)*v/H(z)
             // To convert the velocity within the array v to km/s, it is a*dD/dt*delta. Where the scale factor a comes from the continuity equation
             // The array v as defined in 21cmFAST is (ik/k^2)*dD/dt*delta, as it is defined as a comoving quantity (scale factor is implicit).
             // However, the conversion between real and redshift space also picks up a scale factor, therefore the scale factors drop out and therefore
@@ -5189,7 +5189,7 @@ void ComputePerturbField(float REDSHIFT_SAMPLE) {
                 for(k=0; k<HII_DIM; k++){
                     *((float *)LOWRES_density_perturb + HII_R_FFT_INDEX(i,j,k)) /= (float)HII_TOT_NUM_PIXELS;
                     if (*((float *)LOWRES_density_perturb + HII_R_FFT_INDEX(i,j,k)) < -1) // shouldn't happen
-                        *((float *)LOWRES_density_perturb + HII_R_FFT_INDEX(i,j,k)) = -1+FRACT_FLOAT_ERR;
+                        *((float *)LOWRES_density_perturb + HII_R_FFT_INDEX(i,j,k)) = -1.+FRACT_FLOAT_ERR;
                 }
             }
         }
