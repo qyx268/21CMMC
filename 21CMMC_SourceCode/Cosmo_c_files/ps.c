@@ -2482,7 +2482,7 @@ void initialiseGL_FcollSFR_Xray(int n, float M_Min, float M_Max){
 void initialise_FgtrM_st_SFR_spline(int Nbin, float zmin, float zmax, float Alpha_star, float Alpha_esc, float Fstar10, float Fesc10, float Fstar10_MINI, float Fesc10_MINI){
     int i, j;
 	double z_val, Mcrit_atom_val;
-    float Mmin = 1e5/50., Mmax = 1e16;
+    float Mmin = 1e5, Mmax = 1e16;
     float Mlim_Fstar, Mlim_Fesc, Mlim_Fstar_MINI;
     
     Mlim_Fstar = Mass_limit_bisection(Mmin, Mmax, Alpha_star, Fstar10);
@@ -2505,7 +2505,7 @@ void initialise_FgtrM_st_SFR_spline(int Nbin, float zmin, float zmax, float Alph
 void initialise_Xray_FgtrM_st_SFR_spline(int Nbin, float zmin, float zmax, float Alpha_star, float Fstar10, float Fstar10_MINI){
     int i, j;
 	double z_X_val, Mcrit_atom_val;
-    float Mmin = 1e5/50., Mmax = 1e16;
+    float Mmin = 1e5, Mmax = 1e16;
     float Mlim_Fstar, Mlim_Fstar_MINI;
     
     Mlim_Fstar = Mass_limit_bisection(Mmin, Mmax, Alpha_star, Fstar10);
@@ -2548,7 +2548,7 @@ void initialise_Xray_Fcollz_SFR_Conditional_table(int Nfilter, float min_density
     
     ln_10 = log(10);
     
-    Mmin = 1e5/50.;
+    Mmin = 1e5;
     Mmax = RtoM(R[Nfilter-1]);
     Mlim_Fstar = Mass_limit_bisection(Mmin, Mmax, Alpha_star, Fstar10);
     Mlim_Fstar_MINI = Mass_limit_bisection(Mmin, Mmax, Alpha_star, Fstar10_MINI);
