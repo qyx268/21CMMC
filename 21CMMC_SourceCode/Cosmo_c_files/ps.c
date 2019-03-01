@@ -50,9 +50,8 @@ static gsl_spline *erfc_spline;
 #define NGL_SFR (int) 100
 #ifdef MINI_HALO
 #define LOG10MTURN_NUM (int) 100
-#define LOG10MTURN_MIN (double)   5.-9e-8
-#define LOG10MTURN_MAX (double)   10.
-#define LOG10MTURN_INT ((double) (LOG10MTURN_MAX+9e-8 - LOG10MTURN_MIN)) / ((double) (LOG10MTURN_NUM - 1.))
+#define LOG10MTURN_MIN (double) 5.-9e-8
+#define LOG10MTURN_MAX (double) 10.
 #endif
 
 #define zpp_interp_points_SFR (int) (300)

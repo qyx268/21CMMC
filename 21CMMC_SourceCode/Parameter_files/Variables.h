@@ -180,4 +180,5 @@ double *Mturn_interp_table;
 float *Mcrit_atom_interp_table;
 float *Fcoll_MINI;
 fftwf_complex *log10_Mmin_unfiltered, *log10_Mmin_filtered, *log10_Mmin_MINI_unfiltered, *log10_Mmin_MINI_filtered;
+double LOG10MTURN_INT;
 #endif

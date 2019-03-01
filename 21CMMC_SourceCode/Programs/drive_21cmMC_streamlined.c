@@ -354,6 +354,7 @@ int main(int argc, char ** argv){
         // Probably should do free the memory properly here...
         return 0;
     }
+	LOG10MTURN_INT = (double) ((LOG10MTURN_MAX+9e-8 - LOG10MTURN_MIN)) / ((double) (LOG10MTURN_NUM - 1.));
 #endif
     
     ///////////////// Hard coded assignment of parameters, but can't do much about it (problem of merging C and Python code) //////////////////////////////////
@@ -5640,7 +5641,7 @@ void init_21cmMC_Ts_arrays() {
 #ifdef MINI_HALO
 		Mturn_interp_table = (double *)calloc(LOG10MTURN_NUM, sizeof(double));
         for (i=0; i <LOG10MTURN_NUM; i++){
-		  Mturn_interp_table[i] = pow(10., LOG10MTURN_MIN + (double)i/LOG10MTURN_INT);
+		  Mturn_interp_table[i] = pow(10., LOG10MTURN_MIN + (double)i*LOG10MTURN_INT);
 		}
 #endif
         
