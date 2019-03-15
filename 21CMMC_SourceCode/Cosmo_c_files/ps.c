@@ -118,19 +118,17 @@ float Mass_limit (float logM, float PL, float FRAC);
 void bisection(float *x, float xlow, float xup, int *iter);
 float Mass_limit_bisection(float Mmin, float Mmax, float PL, float FRAC);
 
-#ifdef MINI_HALO
 //static double Fcollz_val[zpp_interp_points_SFR*LOG10MTURN_NUM]; // For Ts.c
 //static double FcollzX_val[zpp_interp_points_SFR*LOG10MTURN_NUM];
 static double Fcollz_val[zpp_interp_points_SFR]; // For Ts.c
 static double FcollzX_val[zpp_interp_points_SFR];
+#ifdef MINI_HALO
 static double Fcollz_val_MINI[zpp_interp_points_SFR*LOG10MTURN_NUM];
 static double FcollzX_val_MINI[zpp_interp_points_SFR*LOG10MTURN_NUM];
 void initialise_FgtrM_st_SFR_spline(int Nbin, float zmin, float zmax, float Alpha_star, float Alpha_esc, float Fstar10, float Fesc10, float Fstar10_MINI, float Fesc10_MINI);
 void initialise_Xray_FgtrM_st_SFR_spline(int Nbin, float zmin, float zmax, float Alpha_star, float Fstar10, float Fstar10_MINI);
 void initialise_Xray_Fcollz_SFR_Conditional_table(int Nfilter, float min_density[], float max_density[], float growthf[], float R[], float Mcrit_atom[], float Alpha_star, float Fstar10, float Fstar10_MINI);
 #else
-static double Fcollz_val[zpp_interp_points_SFR]; // For Ts.c
-static double FcollzX_val[zpp_interp_points_SFR];
 void initialise_FgtrM_st_SFR_spline(int Nbin, float zmin, float zmax, float MassTurn, float Alpha_star, float Alpha_esc, float Fstar10, float Fesc10);
 void initialise_Xray_FgtrM_st_SFR_spline(int Nbin, float zmin, float zmax, float MassTurn, float Alpha_star, float Fstar10);
 void initialise_Xray_Fcollz_SFR_Conditional_table(int Nfilter, float min_density[], float max_density[], float growthf[], float R[], float Alpha_star, float Fstar10, float Fstar10_MINI);
@@ -2176,6 +2174,24 @@ void initialiseFcollSFR_spline(float z, float min_density, float max_density, fl
         }
       }
 	}
+	if (flag_generate_tables == 1){
+		FILE *f;
+		char filename[500];
+		char cmd[500];
+		sprintf(cmd, "mkdir -p ../InterpolationTables/Walker_%1.6lf_%1.6lf/initialiseFcollSFR_spline",INDIVIDUAL_ID,INDIVIDUAL_ID_2); system(cmd);
+		sprintf(filename,"../InterpolationTables/Walker_%1.6lf_%1.6lf/log10_overdense_spline_SFR.bin",INDIVIDUAL_ID,INDIVIDUAL_ID_2); f = fopen(filename, "wb");
+		fwrite(log10_overdense_spline_SFR, sizeof(double), NSFR_low, f); fclose(f);
+		sprintf(filename,"../InterpolationTables/Walker_%1.6lf_%1.6lf/Overdense_spline_SFR.bin",INDIVIDUAL_ID,INDIVIDUAL_ID_2); f = fopen(filename, "wb");
+		fwrite(Overdense_spline_SFR, sizeof(float), NSFR_high, f); fclose(f);
+		sprintf(filename,"../InterpolationTables/Walker_%1.6lf_%1.6lf/initialiseFcollSFR_spline/log10_Fcoll_spline_SFR.bin",INDIVIDUAL_ID,INDIVIDUAL_ID_2); f = fopen(filename, "wb");
+		fwrite(log10_Fcoll_spline_SFR, sizeof(double), NSFR_low*LOG10MTURN_NUM, f); fclose(f);
+		sprintf(filename,"../InterpolationTables/Walker_%1.6lf_%1.6lf/initialiseFcollSFR_spline/log10_Fcoll_spline_SFR_MINI.bin",INDIVIDUAL_ID,INDIVIDUAL_ID_2); f = fopen(filename, "wb");
+		fwrite(log10_Fcoll_spline_SFR_MINI, sizeof(double), NSFR_low*LOG10MTURN_NUM, f); fclose(f);
+		sprintf(filename,"../InterpolationTables/Walker_%1.6lf_%1.6lf/initialiseFcollSFR_spline/Fcoll_spline_SFR.bin",INDIVIDUAL_ID,INDIVIDUAL_ID_2); f = fopen(filename, "wb");
+		fwrite(Fcoll_spline_SFR, sizeof(float), NSFR_high*LOG10MTURN_NUM, f); fclose(f);
+		sprintf(filename,"../InterpolationTables/Walker_%1.6lf_%1.6lf/initialiseFcollSFR_spline/Fcoll_spline_SFR_MINI.bin",INDIVIDUAL_ID,INDIVIDUAL_ID_2); f = fopen(filename, "wb");
+		fwrite(Fcoll_spline_SFR_MINI, sizeof(float), NSFR_high*LOG10MTURN_NUM, f); fclose(f);
+	}
 }
 #else
 void initialiseFcollSFR_spline(float z, float min_density, float max_density, float Mmax, float MassTurnover, float Alpha_star, float Alpha_esc, float Fstar10, float Fesc10, float Mlim_Fstar, float Mlim_Fesc){
@@ -2500,6 +2516,16 @@ void initialise_FgtrM_st_SFR_spline(int Nbin, float zmin, float zmax, float Alph
 		  //printf("(%i,%i),z=%g,Mcrit_atom=%g,Mturn_interp_table=%g,Fcollz_val=%g,Fcollz_val_MINI=%g\n",i,j,z_val,Mcrit_atom_val,Mturn_interp_table[j],Fcollz_val[i+j*Nbin],Fcollz_val_MINI[i+j*Nbin]);
 		}
     }
+	if (flag_generate_tables == 1){
+		FILE *f ;
+		char filename[500];
+		char cmd[500];
+		sprintf(cmd, "mkdir -p ../InterpolationTables/Walker_%1.6lf_%1.6lf/initialise_FgtrM_st_SFR_spline",INDIVIDUAL_ID,INDIVIDUAL_ID_2); system(cmd);
+		sprintf(filename,"../InterpolationTables/Walker_%1.6lf_%1.6lf/initialise_FgtrM_st_SFR_spline/Fcollz_val.bin",INDIVIDUAL_ID,INDIVIDUAL_ID_2); f = fopen(filename, "wb");
+		fwrite(Fcollz_val, sizeof(double), Nbin, f); fclose(f);
+		sprintf(filename,"../InterpolationTables/Walker_%1.6lf_%1.6lf/initialise_FgtrM_st_SFR_spline/Fcollz_val_MINI.bin",INDIVIDUAL_ID,INDIVIDUAL_ID_2); f = fopen(filename, "wb");
+		fwrite(Fcollz_val_MINI, sizeof(double), Nbin*LOG10MTURN_NUM, f); fclose(f);
+	}
 }
 
 void initialise_Xray_FgtrM_st_SFR_spline(int Nbin, float zmin, float zmax, float Alpha_star, float Fstar10, float Fstar10_MINI){
@@ -2523,6 +2549,16 @@ void initialise_Xray_FgtrM_st_SFR_spline(int Nbin, float zmin, float zmax, float
 		  //printf("(%i,%i),z=%g,Mcrit_atom=%g,Mturn_interp_table=%g,FcollzX_val=%g,FcollzX_val_MINI=%g\n",i,j,z_X_val,Mcrit_atom_val,Mturn_interp_table[j],FcollzX_val[i+j*Nbin],FcollzX_val_MINI[i+j*Nbin]);
 		}
     }
+	if (flag_generate_tables == 1){
+		FILE *f ;
+		char filename[500];
+		char cmd[500];
+		sprintf(cmd, "mkdir -p ../InterpolationTables/Walker_%1.6lf_%1.6lf/initialise_Xray_FgtrM_st_SFR_spline",INDIVIDUAL_ID,INDIVIDUAL_ID_2); system(cmd);
+		sprintf(filename,"../InterpolationTables/Walker_%1.6lf_%1.6lf/initialise_Xray_FgtrM_st_SFR_spline/FcollzX_val.bin",INDIVIDUAL_ID,INDIVIDUAL_ID_2); f = fopen(filename, "wb");
+		fwrite(FcollzX_val, sizeof(double), Nbin, f); fclose(f);
+		//sprintf(filename,"../InterpolationTables/Walker_%1.6lf_%1.6lf/initialise_Xray_FgtrM_st_SFR_spline/FcollzX_val_MINI.bin",INDIVIDUAL_ID,INDIVIDUAL_ID_2); f = fopen(filename, "wb");
+		//fwrite(FcollzX_val_MINI, sizeof(double), Nbin*LOG10MTURN_NUM, f); fclose(f);
+	}
 }
 
 void initialise_Xray_Fcollz_SFR_Conditional_table(int Nfilter, float min_density[], float max_density[], float growthf[], float R[], float Mcrit_atom[], float Alpha_star, float Fstar10, float Fstar10_MINI){
@@ -2539,7 +2575,7 @@ void initialise_Xray_Fcollz_SFR_Conditional_table(int Nfilter, float min_density
     // (as the tables are in log10 quantities).
     
     double overdense_val;
-    double overdense_large_high = Deltac, overdense_large_low = 1.5;
+    double overdense_large_high = Deltac, overdense_large_low = 1.5*0.999;
     double overdense_small_high, overdense_small_low;
     float Mmin,Mmax,Mlim_Fstar,sigma2, Mlim_Fstar_MINI;
     int i,j,k,i_tot,q;
@@ -2577,8 +2613,14 @@ void initialise_Xray_Fcollz_SFR_Conditional_table(int Nfilter, float min_density
         
         for(k=0;k<N_USER_REDSHIFT;k++) {
             
-            overdense_small_low = min_density[j]*growthf[j+Nfilter*k];
-            overdense_small_high = max_density[j]*growthf[j+Nfilter*k];
+			if (flag_generate_tables == 1){
+				overdense_small_low = min_density[j];
+				overdense_small_high = max_density[j];
+			}
+			else{
+            	overdense_small_low = min_density[j]*growthf[j+Nfilter*k];
+            	overdense_small_high = max_density[j]*growthf[j+Nfilter*k];
+			}
             if(overdense_small_high > 1.5) {
                 overdense_small_high = 1.5;
             }
@@ -2620,6 +2662,24 @@ void initialise_Xray_Fcollz_SFR_Conditional_table(int Nfilter, float min_density
             }
         }
     }
+	if (flag_generate_tables == 1){
+		FILE *f ;
+		char filename[500];
+		char cmd[500];
+		sprintf(cmd, "mkdir -p ../InterpolationTables/Walker_%1.6lf_%1.6lf/initialise_Xray_Fcollz_SFR_Conditional_table",INDIVIDUAL_ID,INDIVIDUAL_ID_2); system(cmd);
+		//sprintf(filename,"../InterpolationTables/Walker_%1.6lf_%1.6lf/initialise_Xray_Fcollz_SFR_Conditional_table/overdense_Xray_low_table.bin",INDIVIDUAL_ID,INDIVIDUAL_ID_2); f = fopen(filename, "wb");
+		//fwrite(overdense_Xray_low_table, sizeof(float), NSFR_low, f); fclose(f);
+		//sprintf(filename,"../InterpolationTables/Walker_%1.6lf_%1.6lf/initialise_Xray_Fcollz_SFR_Conditional_table/Overdense_Xray_high_table.bin",INDIVIDUAL_ID,INDIVIDUAL_ID_2); f = fopen(filename, "wb");
+		//fwrite(Overdense_Xray_high_table, sizeof(float), NSFR_high, f); fclose(f);
+		sprintf(filename,"../InterpolationTables/Walker_%1.6lf_%1.6lf/initialise_Xray_Fcollz_SFR_Conditional_table/log10_Fcollz_SFR_Xray_low_table.bin",INDIVIDUAL_ID,INDIVIDUAL_ID_2); f = fopen(filename, "wb");
+		fwrite(log10_Fcollz_SFR_Xray_low_table, sizeof(double), N_USER_REDSHIFT*Nfilter*NSFR_low, f); fclose(f);
+		sprintf(filename,"../InterpolationTables/Walker_%1.6lf_%1.6lf/initialise_Xray_Fcollz_SFR_Conditional_table/log10_Fcollz_SFR_Xray_low_table_MINI.bin",INDIVIDUAL_ID,INDIVIDUAL_ID_2); f = fopen(filename, "wb");
+		fwrite(log10_Fcollz_SFR_Xray_low_table_MINI, sizeof(double), N_USER_REDSHIFT*Nfilter*NSFR_low*LOG10MTURN_NUM, f); fclose(f);
+		sprintf(filename,"../InterpolationTables/Walker_%1.6lf_%1.6lf/initialise_Xray_Fcollz_SFR_Conditional_table/Fcollz_SFR_Xray_high_table.bin",INDIVIDUAL_ID,INDIVIDUAL_ID_2); f = fopen(filename, "wb");
+		fwrite(Fcollz_SFR_Xray_high_table, sizeof(float), N_USER_REDSHIFT*Nfilter*NSFR_high, f); fclose(f);
+		sprintf(filename,"../InterpolationTables/Walker_%1.6lf_%1.6lf/initialise_Xray_Fcollz_SFR_Conditional_table/Fcollz_SFR_Xray_high_table_MINI.bin",INDIVIDUAL_ID,INDIVIDUAL_ID_2); f = fopen(filename, "wb");
+		fwrite(Fcollz_SFR_Xray_high_table_MINI, sizeof(float), N_USER_REDSHIFT*Nfilter*NSFR_high*LOG10MTURN_NUM, f); fclose(f);
+	}
 }
 #else
 void initialise_FgtrM_st_SFR_spline(int Nbin, float zmin, float zmax, float MassTurn, float Alpha_star, float Alpha_esc, float Fstar10, float Fesc10){

@@ -36,7 +36,7 @@
 /* The number of bins for arrays to compute luminosity functions (New in v1.4) */
 #define NBINS_LF (int)100
 
-#define NUM_OF_REDSHIFT_FOR_LF (int)4
+#define NUM_OF_REDSHIFT_FOR_LF (int)7
 // Declaration of various required variables
 
 
@@ -120,7 +120,7 @@ double F_STAR10, ALPHA_STAR, F_ESC10, ALPHA_ESC, M_TURN, M_MIN;
 //float *Overdense_high_table, *Fcollz_SFR_high_table, *zpp_table;
 float *zpp_table;
 double *log10_overdense_spline_SFR;
-float *log10_Fcoll_spline_SFR;
+double *log10_Fcoll_spline_SFR;
 float *Overdense_spline_SFR, *Fcoll_spline_SFR; 
 float **fcoll_Xray_SFR_array, *fcoll_SFR_array;
 double *lnMhalo_param, *Muv_param, *Mhalo_param, *log10phi;
@@ -129,7 +129,7 @@ gsl_spline *LF_spline;
 float *z_LF;
 
 float *overdense_Xray_low_table;
-float *log10_overdense_Xray_low_table, ***log10_Fcollz_SFR_Xray_low_table;
+double *log10_overdense_Xray_low_table, ***log10_Fcollz_SFR_Xray_low_table;
 float *Overdense_Xray_high_table, ***Fcollz_SFR_Xray_high_table;
 
 
@@ -151,15 +151,15 @@ fftwf_complex *N_rec_unfiltered, *N_rec_filtered;
 
 // Mini halos
 #ifdef MINI_HALO
-float *log10_Fcoll_spline_SFR_MINI;
+double *log10_Fcoll_spline_SFR_MINI;
 float *Fcoll_spline_SFR_MINI;
-float **prev_log10_Fcoll_spline_SFR_MINI;
+double **prev_log10_Fcoll_spline_SFR_MINI;
 float **prev_Fcoll_spline_SFR_MINI;
-float **prev_log10_Fcoll_spline_SFR;
+double **prev_log10_Fcoll_spline_SFR;
 float **prev_Fcoll_spline_SFR;
 float **prev_Fcoll, **prev_Fcoll_MINI;
 float *SFR_for_integrals_Rct_MINI;
-float ***log10_Fcollz_SFR_Xray_low_table_MINI;
+double ***log10_Fcollz_SFR_Xray_low_table_MINI;
 float ***Fcollz_SFR_Xray_high_table_MINI;
 fftwf_complex **deltax_prev_filtered;
 float prev_mean_f_coll_st, prev_mean_f_coll_st_MINI;
@@ -181,4 +181,11 @@ float *Mcrit_atom_interp_table;
 float *Fcoll_MINI;
 fftwf_complex *log10_Mmin_unfiltered, *log10_Mmin_filtered, *log10_Mmin_MINI_unfiltered, *log10_Mmin_MINI_filtered;
 double LOG10MTURN_INT;
+gsl_interp_accel *LF_spline_acc_MINI, *LF2_spline_acc_MINI, *LF3_spline_acc_MINI;
+gsl_spline *LF_spline_MINI, *LF2_spline_MINI, *LF3_spline_MINI;
+double *Muv_param_MINI, *log10phi_MINI, *Mhalo_param_MINI;
+double *log10_Mmin_ave, *log10_Mmin_MINI_ave;
+gsl_interp_accel *log10_Mmin_ave_spline_acc, *log10_Mmin_MINI_ave_spline_acc;
+gsl_spline *log10_Mmin_ave_spline, *log10_Mmin_MINI_ave_spline;
+int flag_generate_tables;
 #endif

@@ -113,6 +113,7 @@ int main(int argc, char ** argv){
     
     // The standard build of 21cmFAST requires openmp for the FFTs. 21CMMC does not, however, for some computing architectures, I found it important to include this
     omp_set_num_threads(1);
+	flag_generate_tables = 0;
     
     char filename[500];
     char dummy_string[500];
@@ -415,6 +416,7 @@ int main(int argc, char ** argv){
     ION_EFF_FACTOR_MINI = N_GAMMA_UV_MINI * F_STAR10_MINI * F_ESC10_MINI;
 #endif
 
+#ifndef MINI_HALO
     ////////////////// Compute luminosity functions ////////////////////////////////////////////////
     // New in v1.4
     if (USE_LF) {
@@ -425,6 +427,7 @@ int main(int argc, char ** argv){
 
         destroy_LF_arrays();
     }
+#endif
     
     /////////////////   Populating requisite arrays for the construction of the light-cone box (including the indexing and individual slice redshifts etc.     /////////////////
     
@@ -645,9 +648,9 @@ int main(int argc, char ** argv){
 	prev_overdense_small_bin_width_inv = (float *) calloc(N_RSTEPS,sizeof(float));
 	prev_overdense_large_bin_width_inv = (float *) calloc(N_RSTEPS,sizeof(float));
 
-	prev_log10_Fcoll_spline_SFR = (float **) calloc(N_RSTEPS,sizeof(float *));
+	prev_log10_Fcoll_spline_SFR = (double **) calloc(N_RSTEPS,sizeof(double *));
 	prev_Fcoll_spline_SFR = (float **) calloc(N_RSTEPS,sizeof(float *));
-	prev_log10_Fcoll_spline_SFR_MINI = (float **) calloc(N_RSTEPS,sizeof(float *));
+	prev_log10_Fcoll_spline_SFR_MINI = (double **) calloc(N_RSTEPS,sizeof(double *));
 	prev_Fcoll_spline_SFR_MINI = (float **) calloc(N_RSTEPS,sizeof(float *));
 
 	for (ii=0; ii<N_RSTEPS;ii++){
@@ -670,6 +673,14 @@ int main(int argc, char ** argv){
 			}
 		}
 	}
+
+	//to record the evolution of log10_Mmin_ave for LF calculation
+	log10_Mmin_ave = calloc(N_USER_REDSHIFT, sizeof(double));
+	log10_Mmin_MINI_ave = calloc(N_USER_REDSHIFT, sizeof(double));
+	log10_Mmin_ave_spline_acc = gsl_interp_accel_alloc();
+	log10_Mmin_ave_spline = gsl_spline_alloc(gsl_interp_cspline, N_USER_REDSHIFT);
+	log10_Mmin_MINI_ave_spline_acc = gsl_interp_accel_alloc();
+	log10_Mmin_MINI_ave_spline = gsl_spline_alloc(gsl_interp_cspline, N_USER_REDSHIFT);
 #endif
         
     /////////////////   Calculate the filtering scales for all the relevant smoothing scales for the HII_BUBBLES excursion set formalism    /////////////////
@@ -694,7 +705,7 @@ int main(int argc, char ** argv){
             nf_ave = ComputeIonisationBoxes(i,redshifts[i],redshifts[i]+0.2);
         }
     }
-    
+
     // Storing the global history of the IGM neutral fraction and brightness temperature contrast into a text-file
     if(STORE_DATA) {
         sprintf(filename, "AveData_%f_%f.txt",INDIVIDUAL_ID,INDIVIDUAL_ID_2);
@@ -716,6 +727,20 @@ int main(int argc, char ** argv){
         }
         fclose(F);
     }
+    
+#ifdef MINI_HALO
+	if (USE_LF){
+		// so that redshifts is increasing... :)
+		for (i=0; i<N_USER_REDSHIFT; i++){
+			redshifts[i] *= -1.;
+		}
+		gsl_spline_init(log10_Mmin_ave_spline, redshifts, log10_Mmin_ave, N_USER_REDSHIFT);
+		gsl_spline_init(log10_Mmin_MINI_ave_spline, redshifts, log10_Mmin_MINI_ave, N_USER_REDSHIFT);
+		init_LF_arrays();
+		ComputeLF();
+		destroy_LF_arrays();
+	}
+#endif
     
     // De-allocate all arrays etc. that have been allocated and used
     free(Ts_z);
@@ -779,6 +804,12 @@ int main(int argc, char ** argv){
 	free(prev_overdense_large_min);
 	free(prev_overdense_small_bin_width_inv);
 	free(prev_overdense_large_bin_width_inv);
+	free(log10_Mmin_ave);
+	free(log10_Mmin_MINI_ave);
+	gsl_interp_accel_free(log10_Mmin_ave_spline_acc);
+	gsl_interp_accel_free(log10_Mmin_MINI_ave_spline_acc);
+	gsl_spline_free(log10_Mmin_ave_spline);
+	gsl_spline_free(log10_Mmin_MINI_ave_spline);
 #endif
     
 //    printf("END, time=%06.2f min\n", (double)clock()/CLOCKS_PER_SEC/60.0);
@@ -786,7 +817,8 @@ int main(int argc, char ** argv){
     return 0;
 }
 
-void ComputeLF() {
+void ComputeLF()
+{
     char filename[500];
     FILE *F, *OUT;
     int i,i_z;
@@ -799,16 +831,32 @@ void ComputeLF() {
     double Mhalo_min = 1e6, Mhalo_max = 1e16;
     double Mhalo_i, lnMhalo_min, lnMhalo_max, lnMhalo_lo, lnMhalo_hi, dlnM;
     float Mlim_Fstar,Fstar;
+#ifdef MINI_HALO
+	double Mcrit_atom, Mmin_ave ,Mmin_MINI_ave;
+	double SFRparam_MINI, Muv_1_MINI, Muv_2_MINI, dMuvdMhalo_MINI;
+    float Mlim_Fstar_MINI,Fstar_MINI;
+#endif
     // At the moment I just put the redshift list by hand, but this part should be modified.
-    float z_LF[NUM_OF_REDSHIFT_FOR_LF] = {6.00, 7.00, 8.00, 10.00};
+    float z_LF[NUM_OF_REDSHIFT_FOR_LF] = {6.00, 7.00, 8.00, 10.00, 15.00, 20.00, 28.00};
 
     Mlim_Fstar = Mass_limit_bisection((float)Mhalo_min*0.999, (float)Mhalo_max*1.001, ALPHA_STAR, F_STAR10);
+#ifdef MINI_HALO
+    Mlim_Fstar_MINI = Mass_limit_bisection((float)Mhalo_min*0.999, (float)Mhalo_max*1.001, ALPHA_STAR, F_STAR10_MINI);
+#endif
 
     lnMhalo_min = log(Mhalo_min*0.999);
     lnMhalo_max = log(Mhalo_max*1.001);
     dlnMhalo = (lnMhalo_max - lnMhalo_min)/(double)(NBINS_LF - 1);
 
+	printf("Calculating LF...\n");
     for (i_z=0; i_z<NUM_OF_REDSHIFT_FOR_LF; i_z++) {
+#ifdef MINI_HALO
+		Mcrit_atom = atomic_cooling_threshold(z_LF[i_z]);
+		Mmin_ave = pow(10., gsl_spline_eval(log10_Mmin_ave_spline, 0.-z_LF[i_z], log10_Mmin_ave_spline_acc));
+		Mmin_MINI_ave = pow(10., gsl_spline_eval(log10_Mmin_MINI_ave_spline, 0.-z_LF[i_z], log10_Mmin_MINI_ave_spline_acc));
+		printf("z=%.1f, Mcrit_atom=%5.2e, Mmin_ave=%5.2e, Mmin_MINI_ave=%5.2e\n", z_LF[i_z], Mcrit_atom, Mmin_ave, Mmin_MINI_ave);
+#endif
+
         for (i=0; i<NBINS_LF; i++) {
             // generate interpolation arrays
             lnMhalo_param[i] = lnMhalo_min + dlnMhalo*(double)i;
@@ -816,16 +864,33 @@ void ComputeLF() {
 
             Fstar = F_STAR10*pow(Mhalo_i/1e10,ALPHA_STAR);
             if (Fstar > 1.) Fstar = 1;
+#ifdef MINI_HALO
+            Fstar_MINI = F_STAR10_MINI*pow(Mhalo_i/1e10,ALPHA_STAR);
+            if (Fstar_MINI > 1.) Fstar_MINI = 1;
+#endif
 
             // parametrization of SFR
             SFRparam = Mhalo_i * OMb/OMm * (double)Fstar * (double)(hubble(z_LF[i_z])*SperYR/t_STAR); // units of M_solar/year 
 
             Muv_param[i] = 51.63 - 2.5*log10(SFRparam*Luv_over_SFR); // UV magnitude
+
             // except if Muv value is nan or inf, but avoid error put the value as 10.
             if ( isinf(Muv_param[i]) || isnan(Muv_param[i]) ) Muv_param[i] = 10.;
+#ifdef MINI_HALO
+            SFRparam_MINI = Mhalo_i * OMb/OMm * (double)Fstar_MINI * (double)(hubble(z_LF[i_z])*SperYR/t_STAR); // units of M_solar/year 
+
+
+            Muv_param_MINI[i] = 51.63 - 2.5*log10(SFRparam_MINI*Luv_over_SFR); // UV magnitude
+
+            // except if Muv value is nan or inf, but avoid error put the value as 10.
+            if ( isinf(Muv_param_MINI[i]) || isnan(Muv_param_MINI[i]) ) Muv_param_MINI[i] = 10.;
+#endif
         }
 
         gsl_spline_init(LF_spline, lnMhalo_param, Muv_param, NBINS_LF);
+#ifdef MINI_HALO
+        gsl_spline_init(LF_spline_MINI, lnMhalo_param, Muv_param_MINI, NBINS_LF);
+#endif
 
         lnMhalo_lo = log(Mhalo_min);
         lnMhalo_hi = log(Mhalo_max);
@@ -841,16 +906,43 @@ void ComputeLF() {
 
             dMuvdMhalo = (Muv_2 - Muv_1) / (2.*delta_lnMhalo * exp(lnMhalo_i));
 
-            log10phi[i] = log10( dNdM_st(z_LF[i_z],exp(lnMhalo_i)) * exp(-(M_TURN/Mhalo_param[i])) / fabs(dMuvdMhalo) );
+            log10phi[i] = log10( dNdM_st(z_LF[i_z],exp(lnMhalo_i)) * exp(-(Mmin_ave/Mhalo_param[i])) / fabs(dMuvdMhalo) );
             if (isinf(log10phi[i]) || isnan(log10phi[i]) || log10phi[i] < -30.) log10phi[i] = -30.;
+#ifdef MINI_HALO
+            Muv_1_MINI = gsl_spline_eval(LF_spline_MINI, lnMhalo_i - delta_lnMhalo, LF_spline_acc_MINI);
+            Muv_2_MINI = gsl_spline_eval(LF_spline_MINI, lnMhalo_i + delta_lnMhalo, LF_spline_acc_MINI);
+            dMuvdMhalo_MINI = (Muv_2_MINI - Muv_1_MINI) / (2.*delta_lnMhalo * exp(lnMhalo_i));
+            log10phi_MINI[i] = log10( dNdM_st(z_LF[i_z],exp(lnMhalo_i)) * exp(-(Mmin_ave/Mhalo_param[i])) * exp(-(Mhalo_param[i]/Mcrit_atom)) / fabs(dMuvdMhalo_MINI) );
+            if (isinf(log10phi_MINI[i]) || isnan(log10phi_MINI[i]) || log10phi_MINI[i] < -40.) log10phi_MINI[i] = -40.;
+#endif
         }
-        
-
+#ifdef MINI_HALO
+		for (i=0; i<NBINS_LF; i++) {
+			Muv_param_MINI[i] *= -1.;
+		}
+        gsl_spline_init(LF2_spline_MINI, Muv_param_MINI, log10phi_MINI, NBINS_LF);
+        gsl_spline_init(LF3_spline_MINI, Muv_param_MINI, Mhalo_param, NBINS_LF);
+		for (i=0; i<NBINS_LF; i++) {
+			//  Muv_param_MINI[0] should be the brightest, halos brighter than this should be dominated by atomic cooling
+			if (Muv_param[i] >= -Muv_param_MINI[0]){
+				log10phi_MINI[i] = gsl_spline_eval(LF2_spline_MINI, -Muv_param[i], LF2_spline_acc_MINI);
+				Mhalo_param_MINI[i] = gsl_spline_eval(LF3_spline_MINI, -Muv_param[i], LF3_spline_acc_MINI);
+			}
+			else{
+				log10phi_MINI[i] = -40;
+				Mhalo_param_MINI[i] = Mhalo_max;
+			}
+		}
+#endif
         if(PRINT_FILES) {
             sprintf(filename, "LF_estimate_%f_%f_%.6f.txt",INDIVIDUAL_ID,INDIVIDUAL_ID_2,z_LF[i_z]);
             F=fopen(filename, "wt");
             for (i=0; i<NBINS_LF; i++){
+#ifdef MINI_HALO
+                fprintf(F, "%e\t%e\t%e\t%e\t%e\t%e\n", Muv_param[i],log10(pow(10.,log10phi[i]) + pow(10.,log10phi_MINI[i])),log10phi[i],Mhalo_param[i],log10phi_MINI[i],Mhalo_param_MINI[i]);
+#else
                 fprintf(F, "%e\t%e\t%e\n", Muv_param[i],log10phi[i],Mhalo_param[i]);
+#endif
             }
             fclose(F);
         }
@@ -2437,7 +2529,7 @@ float ComputeIonisationBoxes(int sample_index, float REDSHIFT_SAMPLE, float PREV
     int redshift_int_fcollz;
 #ifdef MINI_HALO
 	double Gamma_R_prefactor_MINI;
-	double log10_Mmin_ave, log10_Mmin_MINI_ave, log10_Mmin, log10_Mmin_MINI;
+	double log10_Mmin, log10_Mmin_MINI;
 	float log10_Mmin_ave_table_fcollz, log10_Mmin_MINI_ave_table_fcollz,log10_Mmin_ave_table_fcollz_diff,log10_Mmin_MINI_ave_table_fcollz_diff;
 	int log10_Mmin_ave_int_fcollz, log10_Mmin_MINI_ave_int_fcollz;
 	double Mcrit_atom, Mcrit_RE, Mcrit_LW, log10_Mcrit_atom, log10_Mcrit_mol, Mmin, Mmin_MINI;
@@ -2641,8 +2733,8 @@ float ComputeIonisationBoxes(int sample_index, float REDSHIFT_SAMPLE, float PREV
 		Mcrit_atom                 = atomic_cooling_threshold(REDSHIFT_SAMPLE);
 		log10_Mcrit_atom           = log10(Mcrit_atom);
 		log10_Mcrit_mol            = log10(lyman_werner_threshold(REDSHIFT_SAMPLE, 0.));
-		log10_Mmin_ave = 0.;
-		log10_Mmin_MINI_ave = 0.;
+		log10_Mmin_ave[sample_index] = 0.;
+		log10_Mmin_MINI_ave[sample_index] = 0.;
 		for (x=0; x<HII_DIM; x++){
 			for (y=0; y<HII_DIM; y++){
 				for (z=0; z<HII_DIM; z++){
@@ -2657,15 +2749,15 @@ float ComputeIonisationBoxes(int sample_index, float REDSHIFT_SAMPLE, float PREV
 					*((float *)log10_Mmin_unfiltered + HII_R_FFT_INDEX(x,y,z))      = log10_Mmin;
 					*((float *)log10_Mmin_MINI_unfiltered + HII_R_FFT_INDEX(x,y,z)) = log10_Mmin_MINI;
 
-					log10_Mmin_ave      += log10_Mmin;
-					log10_Mmin_MINI_ave += log10_Mmin_MINI;
+					log10_Mmin_ave[sample_index]      += log10_Mmin;
+					log10_Mmin_MINI_ave[sample_index] += log10_Mmin_MINI;
 				}
 			}
 		}
-		log10_Mmin_ave      /= HII_TOT_NUM_PIXELS;
-		log10_Mmin_MINI_ave /= HII_TOT_NUM_PIXELS;
-		Mmin                 = pow(10., log10_Mmin_ave);
-		Mmin_MINI            = pow(10., log10_Mmin_MINI_ave);
+		log10_Mmin_ave[sample_index]      /= HII_TOT_NUM_PIXELS;
+		log10_Mmin_MINI_ave[sample_index] /= HII_TOT_NUM_PIXELS;
+		Mmin                 = pow(10., log10_Mmin_ave[sample_index]);
+		Mmin_MINI            = pow(10., log10_Mmin_MINI_ave[sample_index]);
         M_MIN = 1e5;
         Mlim_Fstar = Mass_limit_bisection(M_MIN, 1e16,  ALPHA_STAR, F_STAR10);
         Mlim_Fesc = Mass_limit_bisection(M_MIN, 1e16, ALPHA_ESC, F_ESC10);
@@ -2703,14 +2795,14 @@ float ComputeIonisationBoxes(int sample_index, float REDSHIFT_SAMPLE, float PREV
             redshift_table_fcollz_diff = ( REDSHIFT_SAMPLE - determine_zpp_min - zpp_bin_width*(float)redshift_int_fcollz ) / zpp_bin_width;
 
 #ifdef MINI_HALO
-			mean_f_coll_st = prev_mean_f_coll_st + FgtrM_st_SFR(dicke(REDSHIFT_SAMPLE), pow(10, log10_Mmin_ave), ALPHA_STAR, ALPHA_ESC, F_STAR10, F_ESC10, Mlim_Fstar, Mlim_Fesc);
-			mean_f_coll_st_MINI = prev_mean_f_coll_st_MINI + FgtrM_st_SFR_MINI(dicke(REDSHIFT_SAMPLE), pow(10., log10_Mmin_MINI_ave), Mcrit_atom, ALPHA_STAR, F_STAR10_MINI, Mlim_Fstar_MINI);
+			mean_f_coll_st = prev_mean_f_coll_st + FgtrM_st_SFR(dicke(REDSHIFT_SAMPLE), Mmin, ALPHA_STAR, ALPHA_ESC, F_STAR10, F_ESC10, Mlim_Fstar, Mlim_Fesc);
+			mean_f_coll_st_MINI = prev_mean_f_coll_st_MINI + FgtrM_st_SFR_MINI(dicke(REDSHIFT_SAMPLE), Mmin_MINI, Mcrit_atom, ALPHA_STAR, F_STAR10_MINI, Mlim_Fstar_MINI);
 
 			// to do the CONTEMPORANEOUS_DUTYCYCLE, we need to calculate the prev_mean_... with the current Mturns
 			if(sample_index > 0) 
 			{
-				mean_f_coll_st -= FgtrM_st_SFR(dicke(PREV_REDSHIFT), pow(10, log10_Mmin_ave), ALPHA_STAR, ALPHA_ESC, F_STAR10, F_ESC10, Mlim_Fstar, Mlim_Fesc);
-				mean_f_coll_st_MINI -= FgtrM_st_SFR_MINI(dicke(PREV_REDSHIFT), pow(10., log10_Mmin_MINI_ave), Mcrit_atom, ALPHA_STAR, F_STAR10_MINI, Mlim_Fstar_MINI);
+				mean_f_coll_st -= FgtrM_st_SFR(dicke(PREV_REDSHIFT), Mmin, ALPHA_STAR, ALPHA_ESC, F_STAR10, F_ESC10, Mlim_Fstar, Mlim_Fesc);
+				mean_f_coll_st_MINI -= FgtrM_st_SFR_MINI(dicke(PREV_REDSHIFT), Mmin_MINI, Mcrit_atom, ALPHA_STAR, F_STAR10_MINI, Mlim_Fstar_MINI);
     		}
 
 			// record into the prev_mean to do CONTEMPORANEOUS_DUTYCYCLE at next snapshot
@@ -2718,8 +2810,8 @@ float ComputeIonisationBoxes(int sample_index, float REDSHIFT_SAMPLE, float PREV
 			prev_mean_f_coll_st_MINI = mean_f_coll_st_MINI;
 
 			// below is to calculate the minimum f_coll following v1.4
-			//f_coll_min = FgtrM_st_SFR(dicke(Z_HEAT_MAX), pow(10, log10_Mmin_ave), ALPHA_STAR, ALPHA_ESC, F_STAR10, F_ESC10, Mlim_Fstar, Mlim_Fesc);
-			//f_coll_min_MINI = FgtrM_st_SFR_MINI(dicke(Z_HEAT_MAX), pow(10., log10_Mmin_MINI_ave), Mcrit_atom, ALPHA_STAR, F_STAR10_MINI, Mlim_Fstar_MINI);
+			//f_coll_min = FgtrM_st_SFR(dicke(Z_HEAT_MAX), Mmin, ALPHA_STAR, ALPHA_ESC, F_STAR10, F_ESC10, Mlim_Fstar, Mlim_Fesc);
+			//f_coll_min_MINI = FgtrM_st_SFR_MINI(dicke(Z_HEAT_MAX), Mmin_MINI, Mcrit_atom, ALPHA_STAR, F_STAR10_MINI, Mlim_Fstar_MINI);
 #else
             mean_f_coll_st = Fcollz_val[redshift_int_fcollz] + redshift_table_fcollz_diff *( Fcollz_val[redshift_int_fcollz+1] - Fcollz_val[redshift_int_fcollz] );
             
@@ -5674,20 +5766,20 @@ void init_21cmMC_Ts_arrays() {
         Mcrit_atom_interp_table = calloc(NUM_FILTER_STEPS_FOR_Ts*N_USER_REDSHIFT, sizeof(float)); // New
 #endif
 
-        overdense_Xray_low_table = calloc(NSFR_low,sizeof(double));
-        log10_Fcollz_SFR_Xray_low_table = (float ***)calloc(N_USER_REDSHIFT,sizeof(float **)); //New
+        overdense_Xray_low_table = calloc(NSFR_low,sizeof(float));
+        log10_Fcollz_SFR_Xray_low_table = (double ***)calloc(N_USER_REDSHIFT,sizeof(double **)); //New
 #ifdef MINI_HALO
-        log10_Fcollz_SFR_Xray_low_table_MINI = (float ***)calloc(N_USER_REDSHIFT,sizeof(float **)); //New
+        log10_Fcollz_SFR_Xray_low_table_MINI = (double ***)calloc(N_USER_REDSHIFT,sizeof(double **)); //New
 #endif
         for(i=0;i<N_USER_REDSHIFT;i++){  // New
-            log10_Fcollz_SFR_Xray_low_table[i] = (float **)calloc(NUM_FILTER_STEPS_FOR_Ts,sizeof(float *));
+            log10_Fcollz_SFR_Xray_low_table[i] = (double **)calloc(NUM_FILTER_STEPS_FOR_Ts,sizeof(double *));
 #ifdef MINI_HALO
-            log10_Fcollz_SFR_Xray_low_table_MINI[i] = (float **)calloc(NUM_FILTER_STEPS_FOR_Ts,sizeof(float *));
+            log10_Fcollz_SFR_Xray_low_table_MINI[i] = (double **)calloc(NUM_FILTER_STEPS_FOR_Ts,sizeof(double *));
 #endif
             for(j=0;j<NUM_FILTER_STEPS_FOR_Ts;j++) {
-                log10_Fcollz_SFR_Xray_low_table[i][j] = (float *)calloc(NSFR_low,sizeof(float));
+                log10_Fcollz_SFR_Xray_low_table[i][j] = (double *)calloc(NSFR_low,sizeof(double));
 #ifdef MINI_HALO
-                log10_Fcollz_SFR_Xray_low_table_MINI[i][j] = (float *)calloc(NSFR_low*LOG10MTURN_NUM,sizeof(float));
+                log10_Fcollz_SFR_Xray_low_table_MINI[i][j] = (double *)calloc(NSFR_low*LOG10MTURN_NUM,sizeof(double));
 #endif
             }
         }
@@ -5863,6 +5955,17 @@ void init_LF_arrays() { // New in v1.4
 
     LF_spline_acc = gsl_interp_accel_alloc();
     LF_spline = gsl_spline_alloc(gsl_interp_cspline, NBINS_LF);
+#ifdef MINI_HALO
+    Mhalo_param_MINI = calloc((NBINS_LF),sizeof(double));
+    Muv_param_MINI = calloc((NBINS_LF),sizeof(double));
+    log10phi_MINI = calloc((NBINS_LF),sizeof(double));
+    LF_spline_acc_MINI = gsl_interp_accel_alloc();
+    LF2_spline_acc_MINI = gsl_interp_accel_alloc();
+    LF3_spline_acc_MINI = gsl_interp_accel_alloc();
+    LF_spline_MINI = gsl_spline_alloc(gsl_interp_cspline, NBINS_LF);
+    LF2_spline_MINI = gsl_spline_alloc(gsl_interp_cspline, NBINS_LF);
+    LF3_spline_MINI = gsl_spline_alloc(gsl_interp_cspline, NBINS_LF);
+#endif
 }
 
 void destroy_21cmMC_HII_arrays(int skip_deallocate) {
@@ -6150,4 +6253,15 @@ void destroy_LF_arrays() { // New in v1.4
     free(Muv_param);
     free(log10phi);
     free(Mhalo_param);
+#ifdef MINI_HALO
+    free(Mhalo_param_MINI);
+    gsl_interp_accel_free(LF_spline_acc_MINI);
+    gsl_interp_accel_free(LF2_spline_acc_MINI);
+    gsl_interp_accel_free(LF3_spline_acc_MINI);
+    gsl_spline_free(LF_spline_MINI);
+    gsl_spline_free(LF2_spline_MINI);
+    gsl_spline_free(LF3_spline_MINI);
+    free(Muv_param_MINI);
+    free(log10phi_MINI);
+#endif
 }
