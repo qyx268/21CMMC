@@ -134,13 +134,13 @@ int main(int argc, char ** argv){
     F_STAR10_MINI = pow(10.,PARAM_VALS[20]);
     F_ESC10_MINI = pow(10.,PARAM_VALS[21]);
     sprintf(cmd,"mkdir -p ../InterpolationTables/Walker_%1.6lf_%1.6lf",INDIVIDUAL_ID,INDIVIDUAL_ID_2); system(cmd);
-	sprintf(cmd,"mv ./Walker*_%1.6lf_%1.6lf.txt ../InterpolationTables/Walker_%1.6lf_%1.6lf",INDIVIDUAL_ID,INDIVIDUAL_ID_2, INDIVIDUAL_ID,INDIVIDUAL_ID_2); system(cmd);
     init_MHR();
     ComputeTsBoxes();
     free(PARAM_VALS);
     free(redshifts);
     free_ps();
     free_MHR();
+	sprintf(cmd,"mv ./Walker*_%1.6lf_%1.6lf.txt ../InterpolationTables/Walker_%1.6lf_%1.6lf",INDIVIDUAL_ID,INDIVIDUAL_ID_2, INDIVIDUAL_ID,INDIVIDUAL_ID_2); system(cmd);
     return 0;
 }
 
