@@ -221,6 +221,18 @@ class Likelihood21cmFast_multiz(object):
         else:
             create_file.write("M_TURN    %s\n"%(self.Fiducial_Params['M_TURN']))
 
+        if self.param_legend['F_STAR10_MINI'] is True:    
+            create_file.write("F_STAR10_MINI    %s\n"%(Decimal(repr(params[parameter_number])).quantize(SIXPLACES)))
+            parameter_number += 1
+        else:
+            create_file.write("F_STAR10_MINI    %s\n"%(self.Fiducial_Params['F_STAR10_MINI']))
+
+        if self.param_legend['F_ESC10_MINI'] is True:    
+            create_file.write("F_ESC10_MINI    %s\n"%(Decimal(repr(params[parameter_number])).quantize(SIXPLACES)))
+            parameter_number += 1
+        else:
+            create_file.write("F_ESC10_MINI    %s\n"%(self.Fiducial_Params['F_ESC10_MINI']))
+
         if self.param_legend['t_STAR'] is True:    
             create_file.write("t_STAR    %s\n"%(Decimal(repr(params[parameter_number])).quantize(SIXPLACES)))
             parameter_number += 1
@@ -266,6 +278,18 @@ class Likelihood21cmFast_multiz(object):
             parameter_number += 1
         else:
             create_file.write("X_RAY_SPEC_INDEX    %s\n"%(self.Fiducial_Params['X_RAY_SPEC_INDEX']))
+
+        if self.param_legend['L_X_MINI'] is True:
+            create_file.write("L_X_MINI    %s\n"%(Decimal(repr(params[parameter_number])).quantize(SIXPLACES)))
+            parameter_number += 1
+        else:
+            create_file.write("L_X_MINI    %s\n"%(self.Fiducial_Params['L_X_MINI']))
+
+        if self.param_legend['X_RAY_SPEC_INDEX_MINI'] is True:
+            create_file.write("X_RAY_SPEC_INDEX_MINI    %s\n"%(Decimal(repr(params[parameter_number])).quantize(SIXPLACES)))
+            parameter_number += 1
+        else:
+            create_file.write("X_RAY_SPEC_INDEX_MINI    %s\n"%(self.Fiducial_Params['X_RAY_SPEC_INDEX_MINI']))
 
         if self.param_legend['TVIR_MIN'] is True:
             create_file.write("X_RAY_TVIR_MIN    %s\n"%(Decimal(repr(X_RAY_TVIR_MIN)).quantize(SIXPLACES)))

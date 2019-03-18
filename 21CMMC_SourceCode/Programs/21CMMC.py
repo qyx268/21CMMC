@@ -45,6 +45,10 @@ if __name__ == '__main__':
 #	CosmologyToVary = ['SIGMA_8','littleh','OMEGA_M','OMEGA_b','NS']
 	CosmologyToVary = []
 
+	# New in v1.5
+	# everything in v1.4 is required in v1.5
+	MINI_HALO = True
+
     # New in v1.4
     # Decide whether to use halo mass dependent ionizing efficiency. 
     # The ionizing efficiency zeta is allowed to scale with the halo mass:
@@ -576,16 +580,42 @@ if __name__ == '__main__':
         param_lower_limits.append(LowerBound_AlphaEsc)
         param_upper_limits.append(UpperBound_AlphaEsc)
 
-        # Halo mass threshold for efficient star formation (in Msun)
-        param_legend['M_TURN'] = True
+		if MINI_HALO:
 
-        Fiducial_Mturn = 8.69897     # logarithmic scale: 8 x 10^10
-        LowerBound_Mturn = 8.
-        UpperBound_Mturn = 10.
+	        # Stellar baryon fraction defined for 10^10 Msun mini halos
+    	    param_legend['F_STAR10_MINI'] = True   
 
-        param_string_names.append('M_TURN')
-        param_lower_limits.append(LowerBound_Mturn)
-        param_upper_limits.append(UpperBound_Mturn)
+	        Fiducial_Fstar10_MINI = -1.045757491 # logarithmic scale: 0.09
+    	    LowerBound_Fstar10_MINI = -3
+        	UpperBound_Fstar10_MINI = 0 
+
+	        param_string_names.append('F_STAR10_MINI')
+    	    param_lower_limits.append(LowerBound_Fstar10_MINI)
+        	param_upper_limits.append(UpperBound_Fstar10_MINI)
+	
+        	# Escape fraction defined for 10^10 Msun halos
+        	param_legend['F_ESC10_MINI'] = True
+	
+    	    Fiducial_Fesc10_MINI = -1.301029996 # logarithmic scale: 0.05
+        	LowerBound_Fesc10_MINI = -3
+	        UpperBound_Fesc10_MINI = 0.
+
+    	    param_string_names.append('F_ESC10_MINI')
+        	param_lower_limits.append(LowerBound_Fesc10_MINI)
+	        param_upper_limits.append(UpperBound_Fesc10_MINI)
+
+		else:
+
+	        # Halo mass threshold for efficient star formation (in Msun)
+    	    param_legend['M_TURN'] = True
+
+        	Fiducial_Mturn = 8.69897     # logarithmic scale: 8 x 10^10
+	        LowerBound_Mturn = 8.
+    	    UpperBound_Mturn = 10.
+
+        	param_string_names.append('M_TURN')
+	        param_lower_limits.append(LowerBound_Mturn)
+    	    param_upper_limits.append(UpperBound_Mturn)
 
         # Star-formation time-scale as a fraction of the Hubble time.
         # This parameter is a free parameter, 
@@ -656,6 +686,8 @@ if __name__ == '__main__':
                 param_legend['ZETA'] = False # Constant inizing efficiency turned off
                 param_legend['TVIR_MIN'] = False # The minimum halo mass hosting sources is defined by M_TURN, M_MIN = M_TURN/10.
                 param_legend['MFP'] = False # Mean free path turned off
+				if MINI_HALO is True:
+                	param_legend['M_TURN'] = False
         else:
                 param_legend['F_STAR10'] = False
                 param_legend['ALPHA_STAR'] = False
@@ -680,6 +712,20 @@ if __name__ == '__main__':
 	param_string_names.append('L_X')
 	param_lower_limits.append(LowerBound_LX)
 	param_upper_limits.append(UpperBound_LX)	
+
+	if MINI_HALO:
+		# Soft band X-ray luminosity, L_X. Used for determining the number of X-ray photons produced per stellar baryon
+		param_legend['L_X_MINI'] = True
+
+		# Set a fiducial value for L_X, and its lower and upper bounds. Not all will be used, depends on what options are set.
+		# Defined as log10(L_X). E.g. 40 = log10(10^40)
+		Fiducial_LX_MINI = 42.5
+		LowerBound_LX_MINI = 40.0
+		UpperBound_LX_MINI = 44.0
+
+		param_string_names.append('L_X_MINI')
+		param_lower_limits.append(LowerBound_LX_MINI)
+		param_upper_limits.append(UpperBound_LX_MINI)	
 
 	# Minimum frequency X-ray photon contributing to IGM heating and ionization
 	param_legend['NU_X_THRESH'] = True
@@ -706,6 +752,19 @@ if __name__ == '__main__':
 	param_lower_limits.append(LowerBound_X_RAY_SPEC_INDEX)
 	param_upper_limits.append(UpperBound_X_RAY_SPEC_INDEX)	
 
+	if MINI_HALO:
+		# X-Ray spectral index at frequencies higher than NU_X_THRESH
+		param_legend['X_RAY_SPEC_INDEX_MINI'] = False#True
+
+		# Set a fiducial value for X_RAY_SPEC_INDEX, and its lower and upper bounds. Not all will be used, depends on what options are set.
+		Fiducial_X_RAY_SPEC_INDEX_MINI = 1.0
+		LowerBound_X_RAY_SPEC_INDEX_MINI = -1.0
+		UpperBound_X_RAY_SPEC_INDEX_MINI = 3.0
+
+		param_string_names.append('X_RAY_SPEC_INDEX_MINI')
+		param_lower_limits.append(LowerBound_X_RAY_SPEC_INDEX_MINI)
+		param_upper_limits.append(UpperBound_X_RAY_SPEC_INDEX_MINI)	
+
 	############### Condition: If Include_Ts_fluc = False, then X-ray heating parameters cannot be varied.  ###############
 	############### Overwrite any param_legend values for the X-ray parameters to False 			###############
 
@@ -713,6 +772,10 @@ if __name__ == '__main__':
 			param_legend['L_X'] = False
 			param_legend['NU_X_THRESH'] = False
 			param_legend['X_RAY_SPEC_INDEX'] = False		
+			if MINI_HALO:
+				param_legend['L_X_MINI'] = False
+				param_legend['X_RAY_SPEC_INDEX_MINI'] = False		
+
 
 
 
@@ -819,7 +882,11 @@ if __name__ == '__main__':
 	Fiducial_Params['ALPHA_STAR'] = Fiducial_AlphaStar
 	Fiducial_Params['F_ESC10'] = Fiducial_Fesc10
 	Fiducial_Params['ALPHA_ESC'] = Fiducial_AlphaEsc
-	Fiducial_Params['M_TURN'] = Fiducial_Mturn
+	if MINI_HALO:
+		Fiducial_Params['F_STAR10_MINI'] = Fiducial_Fstar10_MINI
+		Fiducial_Params['F_ESC10_MINI'] = Fiducial_Fesc10_MINI
+	else:
+		Fiducial_Params['M_TURN'] = Fiducial_Mturn
 	Fiducial_Params['t_STAR'] = Fiducial_t_STAR
 	# New in v1.4 : (3) end
 
@@ -829,6 +896,10 @@ if __name__ == '__main__':
 	Fiducial_Params['L_X'] = Fiducial_LX
 	Fiducial_Params['NU_X_THRESH'] = Fiducial_NU_X_THRESH
 	Fiducial_Params['X_RAY_SPEC_INDEX'] = Fiducial_X_RAY_SPEC_INDEX
+	if MINI_HALO:
+		Fiducial_Params['L_X_MINI'] = Fiducial_LX_MINI
+		Fiducial_Params['X_RAY_SPEC_INDEX_MINI'] = Fiducial_X_RAY_SPEC_INDEX_MINI
+
 
 	Fiducial_Params['NU_X_BAND_MAX'] = NU_X_BAND_MAX
 	Fiducial_Params['NU_X_MAX'] = NU_X_MAX
@@ -881,6 +952,7 @@ if __name__ == '__main__':
 	FlagOptions['USE_IONISATION_FCOLL_TABLE'] = USE_IONISATION_FCOLL_TABLE
 	FlagOptions['USE_MASS_DEPENDENT_ZETA'] = USE_MASS_DEPENDENT_ZETA
 	FlagOptions['USE_GS_FIXED_ERROR'] = GLOBAL_SIGNAL_FIXED_ERROR
+	#no Flag is required for MINI_HALO since it's already a flag in the driver
 	
 	FlagOptions['KEEP_ALL_DATA'] = KEEP_ALL_DATA
 
@@ -947,6 +1019,10 @@ if __name__ == '__main__':
 	if USE_INHOMO_RECO is True and Include_Ts_fluc is False:
 		ErrorString.append("ERROR: Inhomogeneous recombinations can only be used in combination with the full computation of the IGM spin temperature")
 		ErrorString.append("This differs from 21cmFAST, but arises as no intermediate information is stored")
+		ErrorMessage = True
+
+	if MINI_HALO is True and USE_MASS_DEPENDENT_ZETA is False:
+		ErrorString.append("ERROR: Cannot use MINI_HALO when USE_MASS_DEPENDENT_ZETA is False")
 		ErrorMessage = True
 
 	if (len(Redshift) + len(Redshifts_For_Prior)) < 3:
