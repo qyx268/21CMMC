@@ -58,12 +58,15 @@ int main(int argc, char ** argv){
     
     /////////////////   Read in the cosmological parameter data     /////////////////
     sprintf(filename,"WalkerCosmology_%1.6lf_%1.6lf.txt",INDIVIDUAL_ID,INDIVIDUAL_ID_2);
-    F = fopen(filename,"rt");
-    
-    for(i=0;i<TOTAL_COSMOLOGY_FILEPARAMS;i++) {
-        fscanf(F,"%s\t%lf\n",&dummy_string,&PARAM_COSMOLOGY_VALS[i]);
-    }
-    fclose(F);
+	if (F = fopen(filename,"rt")){
+      for(i=0;i<TOTAL_COSMOLOGY_FILEPARAMS;i++) {
+          fscanf(F,"%s\t%lf\n",&dummy_string,&PARAM_COSMOLOGY_VALS[i]);
+      }
+      fclose(F);
+	}
+	else{
+		return 0;
+	}
     
     // Assign these values. Hard-coded, so order is important
     RANDOM_SEED = (unsigned long long)PARAM_COSMOLOGY_VALS[0];
