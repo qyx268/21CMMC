@@ -1,11 +1,12 @@
 Boxes
-Programs/*
-!Programs/*.c
-!Programs/*.py
-!Programs/Makefile
+21CMMC_SourceCode/Programs/*
+!21CMMC_SourceCode/Programs/*.c
+!21CMMC_SourceCode/Programs/*.py
+!21CMMC_SourceCode/Programs/Makefile
 
 delta_T_*_lighttravel
 delTps_estimate_*_lighttravel.txt
 delTps_lightcone_filenames_*.txt
 LF_estimate_*.txt
 AveData_*.txt
+*.pyc

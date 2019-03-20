@@ -23,7 +23,7 @@ QSO_Redshift = 7.0842
 class Likelihood21cmFast_multiz(object):
     
     def __init__(self, Redshifts_For_LF,Muv_values, phi_values, phi_Error, k_values, PS_values, Error_k_values, PS_Error, Redshift, Redshifts_For_Prior, param_legend, Fiducial_Params, FlagOptions, param_string_names, NSplinePoints, 
-                        TsCalc_z, Foreground_cut, Shot_Noise_cut, IncludeLightCone, IncludeLF, ModUncert, PriorLegend, NFValsQSO, PDFValsQSO):
+                        TsCalc_z, Foreground_cut, Shot_Noise_cut, IncludeLightCone, IncludeLF, MINI_HALO, ModUncert, PriorLegend, NFValsQSO, PDFValsQSO):
         self.Redshifts_For_LF = Redshifts_For_LF # New in v1.4
         self.Muv_values = Muv_values   # New in v1.4
         self.phi_values = phi_values   # New in v1.4
@@ -44,6 +44,7 @@ class Likelihood21cmFast_multiz(object):
         self.Shot_Noise_cut = Shot_Noise_cut
         self.IncludeLightCone = IncludeLightCone
         self.IncludeLF = IncludeLF
+        self.MINI_HALO = MINI_HALO
         self.ModUncert = ModUncert
         self.PriorLegend = PriorLegend
         self.NFValsQSO = NFValsQSO
@@ -122,7 +123,7 @@ class Likelihood21cmFast_multiz(object):
         # Add light cone flag
         seq.append("%s"%(LightConeFlag))
         
-	# If mass-dependence on ionising efficiency is allowed. Add the flag here
+    # If mass-dependence on ionising efficiency is allowed. Add the flag here
         if self.FlagOptions['USE_MASS_DEPENDENT_ZETA'] is True:
             seq.append("1")
         else:
@@ -137,7 +138,7 @@ class Likelihood21cmFast_multiz(object):
         if self.IncludeLF is 1:
             seq.append("1")
         elif self.IncludeLF is 2:
-		    seq.append("2")
+            seq.append("2")
         else:
             seq.append("0")
 
@@ -215,23 +216,14 @@ class Likelihood21cmFast_multiz(object):
         else:
             create_file.write("ALPHA_ESC    %s\n"%(self.Fiducial_Params['ALPHA_ESC']))
 
-        if self.param_legend['M_TURN'] is True:    
-            create_file.write("M_TURN    %s\n"%(Decimal(repr(params[parameter_number])).quantize(SIXPLACES)))
-            parameter_number += 1
+        if self.MINI_HALO is True:
+            create_file.write("M_TURN    9999\n")
         else:
-            create_file.write("M_TURN    %s\n"%(self.Fiducial_Params['M_TURN']))
-
-        if self.param_legend['F_STAR10_MINI'] is True:    
-            create_file.write("F_STAR10_MINI    %s\n"%(Decimal(repr(params[parameter_number])).quantize(SIXPLACES)))
-            parameter_number += 1
-        else:
-            create_file.write("F_STAR10_MINI    %s\n"%(self.Fiducial_Params['F_STAR10_MINI']))
-
-        if self.param_legend['F_ESC10_MINI'] is True:    
-            create_file.write("F_ESC10_MINI    %s\n"%(Decimal(repr(params[parameter_number])).quantize(SIXPLACES)))
-            parameter_number += 1
-        else:
-            create_file.write("F_ESC10_MINI    %s\n"%(self.Fiducial_Params['F_ESC10_MINI']))
+            if self.param_legend['M_TURN'] is True:    
+                create_file.write("M_TURN    %s\n"%(Decimal(repr(params[parameter_number])).quantize(SIXPLACES)))
+                parameter_number += 1
+            else:
+                create_file.write("M_TURN    %s\n"%(self.Fiducial_Params['M_TURN']))
 
         if self.param_legend['t_STAR'] is True:    
             create_file.write("t_STAR    %s\n"%(Decimal(repr(params[parameter_number])).quantize(SIXPLACES)))
@@ -279,18 +271,6 @@ class Likelihood21cmFast_multiz(object):
         else:
             create_file.write("X_RAY_SPEC_INDEX    %s\n"%(self.Fiducial_Params['X_RAY_SPEC_INDEX']))
 
-        if self.param_legend['L_X_MINI'] is True:
-            create_file.write("L_X_MINI    %s\n"%(Decimal(repr(params[parameter_number])).quantize(SIXPLACES)))
-            parameter_number += 1
-        else:
-            create_file.write("L_X_MINI    %s\n"%(self.Fiducial_Params['L_X_MINI']))
-
-        if self.param_legend['X_RAY_SPEC_INDEX_MINI'] is True:
-            create_file.write("X_RAY_SPEC_INDEX_MINI    %s\n"%(Decimal(repr(params[parameter_number])).quantize(SIXPLACES)))
-            parameter_number += 1
-        else:
-            create_file.write("X_RAY_SPEC_INDEX_MINI    %s\n"%(self.Fiducial_Params['X_RAY_SPEC_INDEX_MINI']))
-
         if self.param_legend['TVIR_MIN'] is True:
             create_file.write("X_RAY_TVIR_MIN    %s\n"%(Decimal(repr(X_RAY_TVIR_MIN)).quantize(SIXPLACES)))
         else:
@@ -307,6 +287,33 @@ class Likelihood21cmFast_multiz(object):
         if self.IncludeLightCone is False: 
             for i in range(number_redshifts):
                 create_file.write("CO-EVAL-Z    %s\n"%(AllRedshifts[i]))        
+        elif self.MINI_HALO:
+            create_file.write("CO-EVAL-Z    9998\n")
+
+        if self.MINI_HALO is True:
+            if self.param_legend['F_STAR10_MINI'] is True:    
+                create_file.write("F_STAR10_MINI    %s\n"%(Decimal(repr(params[parameter_number])).quantize(SIXPLACES)))
+                parameter_number += 1
+            else:
+                create_file.write("F_STAR10_MINI    %s\n"%(self.Fiducial_Params['F_STAR10_MINI']))
+
+            if self.param_legend['F_ESC10_MINI'] is True:    
+                create_file.write("F_ESC10_MINI    %s\n"%(Decimal(repr(params[parameter_number])).quantize(SIXPLACES)))
+                parameter_number += 1
+            else:
+                create_file.write("F_ESC10_MINI    %s\n"%(self.Fiducial_Params['F_ESC10_MINI']))
+
+            if self.param_legend['L_X_MINI'] is True:
+                create_file.write("L_X_MINI    %s\n"%(Decimal(repr(params[parameter_number])).quantize(SIXPLACES)))
+                parameter_number += 1
+            else:
+                create_file.write("L_X_MINI    %s\n"%(self.Fiducial_Params['L_X_MINI']))
+
+            if self.param_legend['X_RAY_SPEC_INDEX_MINI'] is True:
+                create_file.write("X_RAY_SPEC_INDEX_MINI    %s\n"%(Decimal(repr(params[parameter_number])).quantize(SIXPLACES)))
+                parameter_number += 1
+            else:
+                create_file.write("X_RAY_SPEC_INDEX_MINI    %s\n"%(self.Fiducial_Params['X_RAY_SPEC_INDEX_MINI']))
 
         create_file.close() 
 
@@ -941,4 +948,4 @@ class Likelihood21cmFast_multiz(object):
         return self.Likelihood(ctx)
 
     def setup(self):
-        print "Likelihood Fitting for 21cm Fast" 
+        print("Likelihood Fitting for 21cm Fast" )
