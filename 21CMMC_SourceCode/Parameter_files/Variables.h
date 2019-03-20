@@ -36,7 +36,7 @@
 /* The number of bins for arrays to compute luminosity functions (New in v1.4) */
 #define NBINS_LF (int)100
 
-#define NUM_OF_REDSHIFT_FOR_LF (int)7
+#define NUM_OF_REDSHIFT_FOR_LF (int)4
 // Declaration of various required variables
 
 

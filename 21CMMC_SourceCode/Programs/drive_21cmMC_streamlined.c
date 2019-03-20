@@ -837,7 +837,7 @@ void ComputeLF()
     float Mlim_Fstar_MINI,Fstar_MINI;
 #endif
     // At the moment I just put the redshift list by hand, but this part should be modified.
-    float z_LF[NUM_OF_REDSHIFT_FOR_LF] = {6.00, 7.00, 8.00, 10.00, 15.00, 20.00, 28.00};
+    float z_LF[NUM_OF_REDSHIFT_FOR_LF] = {6.00, 7.00, 8.00, 10.00};
 
     Mlim_Fstar = Mass_limit_bisection((float)Mhalo_min*0.999, (float)Mhalo_max*1.001, ALPHA_STAR, F_STAR10);
 #ifdef MINI_HALO

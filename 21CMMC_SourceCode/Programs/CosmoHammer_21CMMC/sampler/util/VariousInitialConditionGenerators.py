@@ -64,13 +64,7 @@ class UniformPosition(object):
         if self.sampler.param_legend['ALPHA_ESC'] is True:   
             InputValues.append(self.sampler.FiducialParams['ALPHA_ESC'])
 
-        if self.sampler.param_legend['F_STAR10_MINI'] is True:   
-            InputValues.append(self.sampler.FiducialParams['F_STAR10_MINI'])
-
-        if self.sampler.param_legend['F_ESC10_MINI'] is True:   
-            InputValues.append(self.sampler.FiducialParams['F_ESC10_MINI'])
-
-        if self.sampler.param_legend['M_TURN'] is True:   
+        if self.sampler.param_legend['M_TURN'] is True:
             InputValues.append(self.sampler.FiducialParams['M_TURN'])
 
         if self.sampler.param_legend['t_STAR'] is True:   
@@ -88,14 +82,20 @@ class UniformPosition(object):
         if self.sampler.param_legend['L_X'] is True:   
             InputValues.append(self.sampler.FiducialParams['L_X'])    
 
-        if self.sampler.param_legend['L_X_MINI'] is True:   
-            InputValues.append(self.sampler.FiducialParams['L_X_MINI'])    
-
         if self.sampler.param_legend['NU_X_THRESH'] is True:   
             InputValues.append(self.sampler.FiducialParams['NU_X_THRESH'])   
 
         if self.sampler.param_legend['X_RAY_SPEC_INDEX'] is True:   
             InputValues.append(self.sampler.FiducialParams['X_RAY_SPEC_INDEX'])
+
+        if self.sampler.param_legend['F_STAR10_MINI'] is True:   
+            InputValues.append(self.sampler.FiducialParams['F_STAR10_MINI'])
+
+        if self.sampler.param_legend['F_ESC10_MINI'] is True:   
+            InputValues.append(self.sampler.FiducialParams['F_ESC10_MINI'])
+
+        if self.sampler.param_legend['L_X_MINI'] is True:   
+            InputValues.append(self.sampler.FiducialParams['L_X_MINI'])    
 
         if self.sampler.param_legend['X_RAY_SPEC_INDEX_MINI'] is True:   
             InputValues.append(self.sampler.FiducialParams['X_RAY_SPEC_INDEX_MINI'])
