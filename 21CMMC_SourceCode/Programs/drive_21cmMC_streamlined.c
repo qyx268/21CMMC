@@ -923,14 +923,17 @@ void ComputeLF()
         gsl_spline_init(LF2_spline_MINI, Muv_param_MINI, log10phi_MINI, NBINS_LF);
         gsl_spline_init(LF3_spline_MINI, Muv_param_MINI, Mhalo_param, NBINS_LF);
 		for (i=0; i<NBINS_LF; i++) {
-			//  Muv_param_MINI[0] should be the brightest, halos brighter than this should be dominated by atomic cooling
-			if (Muv_param[i] >= -Muv_param_MINI[0]){
+			//  -Muv_param_MINI[0] and -Muv_param_MINI[NBINS_LF-1] should be the faintest and brightest, halos outside this range are considered being dominated by atomic cooling
+			if ((Muv_param[i] <= -Muv_param_MINI[0]) && (Muv_param[i] >= -Muv_param_MINI[NBINS_LF-1])){
 				log10phi_MINI[i] = gsl_spline_eval(LF2_spline_MINI, -Muv_param[i], LF2_spline_acc_MINI);
 				Mhalo_param_MINI[i] = gsl_spline_eval(LF3_spline_MINI, -Muv_param[i], LF3_spline_acc_MINI);
 			}
 			else{
 				log10phi_MINI[i] = -40;
-				Mhalo_param_MINI[i] = Mhalo_max;
+				if (Muv_param[i] > -Muv_param_MINI[0])
+					Mhalo_param_MINI[i] = Mhalo_min;
+				else
+					Mhalo_param_MINI[i] = Mhalo_max;
 			}
 		}
 #endif
