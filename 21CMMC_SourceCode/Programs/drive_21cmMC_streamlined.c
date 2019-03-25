@@ -409,11 +409,11 @@ int main(int argc, char ** argv){
 
     // New in v1.5
 #ifdef MINI_HALO
-    F_STAR10_MINI = pow(10.,PARAM_VALS[20]);
-    F_ESC10_MINI = pow(10.,PARAM_VALS[21]);
+    F_STAR10_MINI = pow(10.,PARAM_VALS[20]) * pow(1e3, ALPHA_STAR);
+    F_ESC_MINI = pow(10.,PARAM_VALS[21]);
     L_X_MINI = pow(10.,PARAM_VALS[22]);
 	X_RAY_SPEC_INDEX_MINI = PARAM_VALS[23];
-    ION_EFF_FACTOR_MINI = N_GAMMA_UV_MINI * F_STAR10_MINI * F_ESC10_MINI;
+    ION_EFF_FACTOR_MINI = N_GAMMA_UV_MINI * F_STAR10_MINI * F_ESC_MINI;
 #endif
 
 #ifndef MINI_HALO
@@ -1413,7 +1413,7 @@ void ComputeTsBoxes() {
 
             /* initialise interpolation of the mean collapse fraction for global reionization.*/
 #ifdef MINI_HALO
-            initialise_FgtrM_st_SFR_spline(zpp_interp_points_SFR, determine_zpp_min, determine_zpp_max, ALPHA_STAR, ALPHA_ESC, F_STAR10, F_ESC10, F_STAR10_MINI, F_ESC10_MINI);
+            initialise_FgtrM_st_SFR_spline(zpp_interp_points_SFR, determine_zpp_min, determine_zpp_max, ALPHA_STAR, ALPHA_ESC, F_STAR10, F_ESC10, F_STAR10_MINI, F_ESC_MINI);
             
             initialise_Xray_FgtrM_st_SFR_spline(zpp_interp_points_SFR, determine_zpp_min, determine_zpp_max, ALPHA_STAR, F_STAR10, F_STAR10_MINI);
 #else

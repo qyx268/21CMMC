@@ -715,24 +715,24 @@ if __name__ == '__main__':
     if MINI_HALO:
 
         # Stellar baryon fraction defined for 10^10 Msun mini halos
-        param_legend['F_STAR10_MINI'] = True   
+        param_legend['F_STAR7_MINI'] = True   
 
         Fiducial_Fstar10_MINI = -1.045757491 # logarithmic scale: 0.09
         LowerBound_Fstar10_MINI = -3
         UpperBound_Fstar10_MINI = 0 
 
-        param_string_names.append('F_STAR10_MINI')
+        param_string_names.append('F_STAR7_MINI')
         param_lower_limits.append(LowerBound_Fstar10_MINI)
         param_upper_limits.append(UpperBound_Fstar10_MINI)
     
         # Escape fraction defined for 10^10 Msun halos
-        param_legend['F_ESC10_MINI'] = True
+        param_legend['F_ESC_MINI'] = True
     
         Fiducial_Fesc10_MINI = -1.301029996 # logarithmic scale: 0.05
         LowerBound_Fesc10_MINI = -3
         UpperBound_Fesc10_MINI = 0.
 
-        param_string_names.append('F_ESC10_MINI')
+        param_string_names.append('F_ESC_MINI')
         param_lower_limits.append(LowerBound_Fesc10_MINI)
         param_upper_limits.append(UpperBound_Fesc10_MINI)
 
@@ -879,8 +879,8 @@ if __name__ == '__main__':
     Fiducial_Params['F_ESC10'] = Fiducial_Fesc10
     Fiducial_Params['ALPHA_ESC'] = Fiducial_AlphaEsc
     if MINI_HALO:
-        Fiducial_Params['F_STAR10_MINI'] = Fiducial_Fstar10_MINI
-        Fiducial_Params['F_ESC10_MINI'] = Fiducial_Fesc10_MINI
+        Fiducial_Params['F_STAR7_MINI'] = Fiducial_Fstar10_MINI
+        Fiducial_Params['F_ESC_MINI'] = Fiducial_Fesc10_MINI
     else:
         Fiducial_Params['M_TURN'] = Fiducial_Mturn
     Fiducial_Params['t_STAR'] = Fiducial_t_STAR

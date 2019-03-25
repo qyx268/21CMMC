@@ -171,7 +171,7 @@ double *dstarlyLW_dt_box, *dstarlyLW_dt_box_MINI;
 double *sum_lyn_MINI, *sum_lyLWn, *sum_lyLWn_MINI;
 double *dstarlya_dt_prefactor_MINI;
 double *dstarlyLW_dt_prefactor, *dstarlyLW_dt_prefactor_MINI;
-double F_STAR10_MINI, F_ESC10_MINI, L_X_MINI, ION_EFF_FACTOR_MINI;
+double F_STAR10_MINI, F_ESC_MINI, L_X_MINI, ION_EFF_FACTOR_MINI;
 double log10_Mcrit_LW_ave;
 double *ST_over_PS_MINI;
 float *J_21_LW, *prev_J_21_LW, log10_Mcrit_mol;

@@ -131,8 +131,8 @@ int main(int argc, char ** argv){
     ALPHA_ESC = PARAM_VALS[3];
     initialiseSplinedSigmaM_quicker(1e5/50.,1e20);
     R_BUBBLE_MAX = 50.;
-    F_STAR10_MINI = pow(10.,PARAM_VALS[20]);
-    F_ESC10_MINI = pow(10.,PARAM_VALS[21]);
+    F_STAR10_MINI = pow(10.,PARAM_VALS[20]) * pow(1e3, ALPHA_STAR);
+    F_ESC_MINI = pow(10.,PARAM_VALS[21]);
     sprintf(cmd,"mkdir -p ../InterpolationTables/Walker_%1.6lf_%1.6lf",INDIVIDUAL_ID,INDIVIDUAL_ID_2); system(cmd);
     init_MHR();
     ComputeTsBoxes();
@@ -189,7 +189,7 @@ void ComputeTsBoxes() {
     }
     sprintf(filename,"../InterpolationTables/Walker_%1.6lf_%1.6lf/zpp_interp_table.bin",INDIVIDUAL_ID,INDIVIDUAL_ID_2); f = fopen(filename, "wb");
 	fwrite(zpp_interp_table, sizeof(float), zpp_interp_points_SFR, f); fclose(f);
-    initialise_FgtrM_st_SFR_spline(zpp_interp_points_SFR, determine_zpp_min, determine_zpp_max, ALPHA_STAR, ALPHA_ESC, F_STAR10, F_ESC10, F_STAR10_MINI, F_ESC10_MINI);
+    initialise_FgtrM_st_SFR_spline(zpp_interp_points_SFR, determine_zpp_min, determine_zpp_max, ALPHA_STAR, ALPHA_ESC, F_STAR10, F_ESC10, F_STAR10_MINI, F_ESC_MINI);
     initialise_Xray_FgtrM_st_SFR_spline(zpp_interp_points_SFR, determine_zpp_min, determine_zpp_max, ALPHA_STAR, F_STAR10, F_STAR10_MINI);
     zp_table = zp;
     counter = 0;

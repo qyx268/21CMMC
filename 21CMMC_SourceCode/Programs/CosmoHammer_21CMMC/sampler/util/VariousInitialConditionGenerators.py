@@ -88,11 +88,11 @@ class UniformPosition(object):
         if self.sampler.param_legend['X_RAY_SPEC_INDEX'] is True:   
             InputValues.append(self.sampler.FiducialParams['X_RAY_SPEC_INDEX'])
 
-        if self.sampler.param_legend['F_STAR10_MINI'] is True:   
-            InputValues.append(self.sampler.FiducialParams['F_STAR10_MINI'])
+        if self.sampler.param_legend['F_STAR7_MINI'] is True:   
+            InputValues.append(self.sampler.FiducialParams['F_STAR7_MINI'])
 
-        if self.sampler.param_legend['F_ESC10_MINI'] is True:   
-            InputValues.append(self.sampler.FiducialParams['F_ESC10_MINI'])
+        if self.sampler.param_legend['F_ESC_MINI'] is True:   
+            InputValues.append(self.sampler.FiducialParams['F_ESC_MINI'])
 
         if self.sampler.param_legend['L_X_MINI'] is True:   
             InputValues.append(self.sampler.FiducialParams['L_X_MINI'])    
