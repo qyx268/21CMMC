@@ -73,7 +73,7 @@ if __name__ == '__main__':
     Include_Ts_fluc = True
 
     # If the full spin temperature computation is to be performed, a redshift must be provided to which to perform the evolution down to.
-    TsCalc_z = 6.0
+    TsCalc_z = 5.5
 
     # Decide whether to use light-cone boxes or co-eval boxes
     # Note that the light-cone can only be generated along the z-direction (21cmFAST could do any arbitrary direction, this only does the z-direction). Should be 
@@ -133,7 +133,7 @@ if __name__ == '__main__':
     # I do not know if it works for the x or y directions, I have not checked (I think it should though). I always work in the z-direction.
     LOS_direction = 2
 
-    USE_GLOBAL_SIGNAL = False
+    USE_GLOBAL_SIGNAL = True
     # Set to true if one wants to use the global signal rather than the 21cm PS to parameter sampling. Note, the mock observations will need to be changed accordingly
     ### NOTE ###
     # If one wants to use the global signal, set IncludeLightCone = True. Setting this to true, will output the global signal at the redshift sampling of the spin temperature
@@ -156,6 +156,7 @@ if __name__ == '__main__':
     # It was a bit too unwieldly to do internally, so I opted for externally dealing with separating the data.
     KEEP_ALL_DATA = True
 
+    USE_EDGES = True
 
 
     ################### Setting up variables for performing the full spin temperature calculation (i.e. Ts.c) ####################################
@@ -182,6 +183,7 @@ if __name__ == '__main__':
     # Expanded the default range to allow for an approximate computation of tau, to be applied as a prior
 
     ####### Note: If spin temperature fluctuations are to be performed, select redshifts that **will** be sampled by the spin temperature algorithm. This will require
+
     # running drive_21cmMC_streamlined once, and outputting the variable 'zp' to see the redshift sampling ########
     
     Redshift = []
@@ -256,10 +258,10 @@ if __name__ == '__main__':
     # NOTE: If the redshifts selected by the user ** is ** at the redshift of the prior, then interpolation is not required, and the prior will be used!
 
     # 1) The Planck prior is modelled as a Gaussian: tau = 0.058 \pm 0.012
-    IncludePlanck = False
+    IncludePlanck = True
     # 2) The McGreer et al. prior is a upper limit on the IGM neutral fraction at 5.9
     # Modelled as a flat, unity prior at x_HI <= 0.06, and a one sided Gaussian at x_HI > 0.06 ( Gaussian of mean 0.06 and one sigma of 0.05 )
-    IncludeMcGreer = False
+    IncludeMcGreer = True
     # 3) The Greig et al. prior is computed directly from the PDF of the IGM neutral fraction for the Small HII reionisation simulation
     IncludeGreig = False
     
@@ -307,20 +309,22 @@ if __name__ == '__main__':
     multi_z_mockobs_PS = []
 
     if USE_GLOBAL_SIGNAL is True:
-    
-        MockObsFileName = 'FaintGalaxies_GlobalSignal'
-#        MockObsFileName = 'BrightGalaxies_GlobalSignal'
-        ModelName = 'FaintGalaxies'
-#        ModelName = 'BrightGalaxies'
 
-        ### NOTE ###
-        # The noise and mock observation of the global signal must be provided in order of decreasing redshift (it'll convert to frequency, which will then be
-        # in increasing order for the spline interpolations)
-        mockobs_k_values = numpy.loadtxt('MockObs/%s/GlobalSignal/%s.txt'%(ModelName,MockObsFileName), usecols=(0,))
-        mockobs_PS_values = numpy.loadtxt('MockObs/%s/GlobalSignal/%s.txt'%(ModelName,MockObsFileName), usecols=(2,))
+        if not USE_EDGES:
+    
+            MockObsFileName = 'FaintGalaxies_GlobalSignal'
+#            MockObsFileName = 'BrightGalaxies_GlobalSignal'
+            ModelName = 'FaintGalaxies'
+#            ModelName = 'BrightGalaxies'
+
+            ### NOTE ###
+            # The noise and mock observation of the global signal must be provided in order of decreasing redshift (it'll convert to frequency, which will then be
+            # in increasing order for the spline interpolations)
+            mockobs_k_values = numpy.loadtxt('MockObs/%s/GlobalSignal/%s.txt'%(ModelName,MockObsFileName), usecols=(0,))
+            mockobs_PS_values = numpy.loadtxt('MockObs/%s/GlobalSignal/%s.txt'%(ModelName,MockObsFileName), usecols=(2,))
         
-        multi_z_mockobs_k.append(mockobs_k_values)
-        multi_z_mockobs_PS.append(mockobs_PS_values)
+            multi_z_mockobs_k.append(mockobs_k_values)
+            multi_z_mockobs_PS.append(mockobs_PS_values)
 
     else:                
 
@@ -377,6 +381,9 @@ if __name__ == '__main__':
     #if IncludeLF is True:
     if IncludeLF:
 
+        if USE_GLOBAL_SIGNAL:
+            ModelName = "GalaxyParams"
+
         for i in range(len(Redshifts_For_LF)):
             obs_Muv_values = numpy.loadtxt('MockObs/%s/LFs/LF_obs_Bouwens_%s.txt'%(ModelName,Redshifts_For_LF[i]), usecols=(0,))
             obs_phi_values = numpy.loadtxt('MockObs/%s/LFs/LF_obs_Bouwens_%s.txt'%(ModelName,Redshifts_For_LF[i]), usecols=(1,))
@@ -406,44 +413,45 @@ if __name__ == '__main__':
     multi_z_Error_PS = []
 
     if USE_GLOBAL_SIGNAL is True:
+        if not USE_EDGES:
 
-        ModelName = 'FaintGalaxies'
-#        ModelName = 'BrightGalaxies'
+            ModelName = 'FaintGalaxies'
+#            ModelName = 'BrightGalaxies'
         
-        ErrorFileName = 'TotalError_FaintGalaxies_%s_%s'%(Telescope_Name,ObsDuration)
-#        ErrorFileName = 'TotalError_BrightGalaxies_%s_%s'%(Telescope_Name,ObsDuration)
+            ErrorFileName = 'TotalError_FaintGalaxies_%s_%s'%(Telescope_Name,ObsDuration)
+#            ErrorFileName = 'TotalError_BrightGalaxies_%s_%s'%(Telescope_Name,ObsDuration)
 
-        # For the global signal, one must define the frequency region over which the global signal will be fit. The user must ensure that the frequency coverage
-        # matches the sampled range of redshifts in the MCMC
-        # The minimum and maximum frequencies (in MHz) for which the global signal will be fit
-        FrequencyMin = 40.
-        FrequencyMax = 200.
+            # For the global signal, one must define the frequency region over which the global signal will be fit. The user must ensure that the frequency coverage
+            # matches the sampled range of redshifts in the MCMC
+            # The minimum and maximum frequencies (in MHz) for which the global signal will be fit
+            FrequencyMin = 40.
+            FrequencyMax = 200.
 
-        # The user can either choose a fixed error on the global signal, or read in from a text file
-        if GLOBAL_SIGNAL_FIXED_ERROR is True:            
-            # Fixed error (in mK) on the 21cm global signal
-            ErrorOnGlobal = 10.
+            # The user can either choose a fixed error on the global signal, or read in from a text file
+            if GLOBAL_SIGNAL_FIXED_ERROR is True:            
+                # Fixed error (in mK) on the 21cm global signal
+                ErrorOnGlobal = 10.
 
-            # The binning (frequency bandwidth) of the global signal. If the user chooses to read from file, this value is not used
-            Bandwidth = 4.
+                # The binning (frequency bandwidth) of the global signal. If the user chooses to read from file, this value is not used
+                Bandwidth = 4.
 
-            # Fill the data with empty lists. It will not be used anyway
-            Error_k_values = []
-            Error_PS_values = []
+                # Fill the data with empty lists. It will not be used anyway
+                Error_k_values = []
+                Error_PS_values = []
 
-        else:                
-            # Read in the global signal noise from file.
-            ### NOTE ###
-            # By reading in from file, this adopts the redshift sampling used in the file. Therefore, make sure that the text file containing the error
-            # includes the requisite redshift sampling that you want (sampling of the full spectrum using spline interpolation, not redshift sampling of the 21cmFAST output)
-            ### NOTE ###
-            # It will use the values set for FrequencyMin and FrequencyMax, so set these values accordingly
+            else:                
+                # Read in the global signal noise from file.
+                ### NOTE ###
+                # By reading in from file, this adopts the redshift sampling used in the file. Therefore, make sure that the text file containing the error
+                # includes the requisite redshift sampling that you want (sampling of the full spectrum using spline interpolation, not redshift sampling of the 21cmFAST output)
+                ### NOTE ###
+                # It will use the values set for FrequencyMin and FrequencyMax, so set these values accordingly
 
-            Error_k_values = numpy.loadtxt('NoiseData/%s/GlobalSignal/%s.txt'%(ModelName,ErrorFileName), usecols=(0,))
-            Error_PS_values = numpy.loadtxt('NoiseData/%s/GlobalSignal/%s.txt'%(ModelName,ErrorFileName), usecols=(1,))
+                Error_k_values = numpy.loadtxt('NoiseData/%s/GlobalSignal/%s.txt'%(ModelName,ErrorFileName), usecols=(0,))
+                Error_PS_values = numpy.loadtxt('NoiseData/%s/GlobalSignal/%s.txt'%(ModelName,ErrorFileName), usecols=(1,))
 
-        multi_z_Error_k.append(Error_k_values)
-        multi_z_Error_PS.append(Error_PS_values)
+            multi_z_Error_k.append(Error_k_values)
+            multi_z_Error_PS.append(Error_PS_values)
 
     else:
         
@@ -537,9 +545,9 @@ if __name__ == '__main__':
     # exponentially decrease below M_TURN Msun, : fduty \propto e^(- M_TURN / M)
 
     # Stellar baryon fraction defined for 10^10 Msun halos
-    param_legend['F_STAR10'] = True   
+    param_legend['F_STAR10'] = False
 
-    Fiducial_Fstar10 = -1.045757491 # logarithmic scale: 0.09
+    Fiducial_Fstar10 = -1.25
     LowerBound_Fstar10 = -3
     UpperBound_Fstar10 = 0 
 
@@ -548,7 +556,7 @@ if __name__ == '__main__':
     param_upper_limits.append(UpperBound_Fstar10)
 
     # Power law index with halo mass
-    param_legend['ALPHA_STAR'] = True 
+    param_legend['ALPHA_STAR'] = False
 
     Fiducial_AlphaStar = 0.5
     LowerBound_AlphaStar = -0.5
@@ -561,7 +569,7 @@ if __name__ == '__main__':
     # Escape fraction defined for 10^10 Msun halos
     param_legend['F_ESC10'] = True
 
-    Fiducial_Fesc10 = -1.301029996 # logarithmic scale: 0.05
+    Fiducial_Fesc10 = -1. # logarithmic scale: 0.05
     LowerBound_Fesc10 = -3
     UpperBound_Fesc10 = 0.
 
@@ -570,7 +578,7 @@ if __name__ == '__main__':
     param_upper_limits.append(UpperBound_Fesc10)
 
     # Power law index with halo mass
-    param_legend['ALPHA_ESC'] = True
+    param_legend['ALPHA_ESC'] = False
 
     Fiducial_AlphaEsc = -0.5
     LowerBound_AlphaEsc = -1.
@@ -581,7 +589,7 @@ if __name__ == '__main__':
     param_upper_limits.append(UpperBound_AlphaEsc)
 
     # Halo mass threshold for efficient star formation (in Msun)
-    param_legend['M_TURN'] = True
+    param_legend['M_TURN'] = False
 
     Fiducial_Mturn = 8.69897     # logarithmic scale: 8 x 10^10
     LowerBound_Mturn = 8.
@@ -595,9 +603,9 @@ if __name__ == '__main__':
     # This parameter is a free parameter, 
     # when 'USE_MASS_DEPENDENT_ZETA' and 'Include_Ts_fluc' are True. (Light cone option?)
     # Also, will be a free parameter with Luminosity function in the next version.
-    param_legend['t_STAR'] = True
+    param_legend['t_STAR'] = False
 
-    Fiducial_t_STAR = 0.8
+    Fiducial_t_STAR = 0.5
     LowerBound_t_STAR = 0.01
     UpperBound_t_STAR = 1.
 
@@ -607,7 +615,7 @@ if __name__ == '__main__':
     # New in v1.4 : (1) end
 
     # Constant ionising efficiency, Zeta
-    param_legend['ZETA'] = True
+    param_legend['ZETA'] = False
 
     # Set a fiducial value for Zeta, and its lower and upper bounds. Not all will be used, depends on what options are set.
     Fiducial_Zeta = 30.0
@@ -619,7 +627,7 @@ if __name__ == '__main__':
     param_upper_limits.append(UpperBound_Zeta)
 
     # Mean ionising photon horizon, R_mfp
-    param_legend['MFP'] = True
+    param_legend['MFP'] = False
 
     if USE_INHOMO_RECO is True:
         # If inhomogeneous recombinations are set, then the mean free path is not varied, but fixed to 50 Mpc
@@ -640,7 +648,7 @@ if __name__ == '__main__':
 
     # Minimum halo mass hosting sources contributing to X-ray heating or ionisation. (Note: Currently version assumes ION_TVIR_MIN = X-RAY_TVIR_MIN a future release
     # will remove this assumption)
-    param_legend['TVIR_MIN'] = True
+    param_legend['TVIR_MIN'] = False
 
     # Set a fiducial value for ION_TVIR_MIN (and X-RAY_TVIR_MIN), and its lower and upper bounds. Not all will be used, depends on what options are set.
     # Defined as log10(ION_TVIR_MIN). E.g. 4.69897 = log10(5x10^4)
@@ -688,7 +696,7 @@ if __name__ == '__main__':
     param_upper_limits.append(UpperBound_LX)    
 
     # Minimum frequency X-ray photon contributing to IGM heating and ionization
-    param_legend['NU_X_THRESH'] = True
+    param_legend['NU_X_THRESH'] = False
 
     # Set a fiducial value for NU_X_THRESH, and its lower and upper bounds. Not all will be used, depends on what options are set.
     # Defined in eV. E.g 500 = 0.5keV
@@ -737,7 +745,8 @@ if __name__ == '__main__':
         param_upper_limits.append(UpperBound_Fesc10_MINI)
 
         # Soft band X-ray luminosity, L_X. Used for determining the number of X-ray photons produced per stellar baryon
-        param_legend['L_X_MINI'] = True
+        # this is not used in the current version, we assume L_X_MINI = L_X
+        param_legend['L_X_MINI'] = False
 
         # Set a fiducial value for L_X, and its lower and upper bounds. Not all will be used, depends on what options are set.
         # Defined as log10(L_X). E.g. 40 = log10(10^40)
@@ -751,6 +760,7 @@ if __name__ == '__main__':
 
         # X-Ray spectral index at frequencies higher than NU_X_THRESH
         param_legend['X_RAY_SPEC_INDEX_MINI'] = False#True
+        # this is not used in the current version, we assume X_RAY_SPEC_INDEX_MINI = X_RAY_SPEC_INDEX
 
         # Set a fiducial value for X_RAY_SPEC_INDEX, and its lower and upper bounds. Not all will be used, depends on what options are set.
         Fiducial_X_RAY_SPEC_INDEX_MINI = 1.0
@@ -760,6 +770,17 @@ if __name__ == '__main__':
         param_string_names.append('X_RAY_SPEC_INDEX_MINI')
         param_lower_limits.append(LowerBound_X_RAY_SPEC_INDEX_MINI)
         param_upper_limits.append(UpperBound_X_RAY_SPEC_INDEX_MINI)    
+
+        # Self-Shielding Factor of H2
+        param_legend['F_H2_SHIELD'] = True
+
+        Fiducial_F_H2_SHIELD = -0.5
+        LowerBound_F_H2_SHIELD = -3.0
+        UpperBound_F_H2_SHIELD = 0.0
+
+        param_string_names.append('F_H2_SHIELD')
+        param_lower_limits.append(LowerBound_F_H2_SHIELD)
+        param_upper_limits.append(UpperBound_F_H2_SHIELD)    
 
     ############### Condition: If Include_Ts_fluc = False, then X-ray heating parameters cannot be varied.  ###############
     ############### Overwrite any param_legend values for the X-ray parameters to False             ###############
@@ -771,8 +792,7 @@ if __name__ == '__main__':
             if MINI_HALO:
                 param_legend['L_X_MINI'] = False
                 param_legend['X_RAY_SPEC_INDEX_MINI'] = False        
-
-
+                param_legend['F_H2_SHIELD'] = False
 
 
     ############### Now set up the cosmological values #######################
@@ -895,6 +915,7 @@ if __name__ == '__main__':
     if MINI_HALO:
         Fiducial_Params['L_X_MINI'] = Fiducial_LX_MINI
         Fiducial_Params['X_RAY_SPEC_INDEX_MINI'] = Fiducial_X_RAY_SPEC_INDEX_MINI
+        Fiducial_Params['F_H2_SHIELD'] = Fiducial_F_H2_SHIELD
 
 
     Fiducial_Params['NU_X_BAND_MAX'] = NU_X_BAND_MAX
@@ -916,7 +937,7 @@ if __name__ == '__main__':
     Fiducial_Params['NS'] = Fiducial_ns
 
     ### Some Global signal parameters ###
-    if USE_GLOBAL_SIGNAL is True:
+    if (USE_GLOBAL_SIGNAL is True) and (USE_EDGES is False):
         Fiducial_Params['MIN_FREQ'] = FrequencyMin
         Fiducial_Params['MAX_FREQ'] = FrequencyMax
 
@@ -945,6 +966,7 @@ if __name__ == '__main__':
     FlagOptions['USE_FCOLL_TABLE'] = UseFcollTable
     FlagOptions['CALC_TS_FLUC'] = Include_Ts_fluc
     FlagOptions['KEEP_GLOBAL_DATA'] = USE_GLOBAL_SIGNAL
+    FlagOptions['USE_EDGES'] = USE_EDGES
     FlagOptions['USE_IONISATION_FCOLL_TABLE'] = USE_IONISATION_FCOLL_TABLE
     FlagOptions['USE_MASS_DEPENDENT_ZETA'] = USE_MASS_DEPENDENT_ZETA
     FlagOptions['USE_GS_FIXED_ERROR'] = GLOBAL_SIGNAL_FIXED_ERROR
@@ -1001,6 +1023,10 @@ if __name__ == '__main__':
         ErrorString.append("Either set IncludeLightCone = True or add more redshifts to either of Redshift or Redshifts_For_Prior lists")
         ErrorString.append("(Or if you are bold, reduce this arbitrary number from 20 to something smaller!)")
         ErrorString.append("(Ensure the chosen redshifts include the endpoints of the global signal redshift (frequency) coverage)")
+        ErrorMessage = True        
+
+    if USE_EDGES is True and USE_GLOBAL_SIGNAL is False:
+        ErrorString.append("ERROR: You might want to use USE_GLOBAL_SIGNAL to skip unnecessary calculations when USE_EDGES.")
         ErrorMessage = True        
 
     if GenerateNewICs is True and (UseFcollTable or USE_IONISATION_FCOLL_TABLE is True):

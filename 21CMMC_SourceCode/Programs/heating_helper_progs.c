@@ -353,11 +353,11 @@ double spectral_emissivity(double nu_norm, int flag)
       if ((nu_norm >= nu_n[i]) && (nu_norm < nu_n[i+1])) {
         // We are in the correct spectral region
         if (Population == 2){
-          result = N0_2[i] / (alpha_S_2[i] + 1) * ( pow(nu_n[i+1], alpha_S_2[i]+1) - pow(nu_norm, alpha_S_2[i]+1) );
+          result = N0_2[i] * (1. - F_H2_SHIELD) / (alpha_S_2[i] + 1) * ( pow(nu_n[i+1], alpha_S_2[i]+1) - pow(nu_norm, alpha_S_2[i]+1) );
           return result > 0 ? result:1e-40;
         }
         else{
-          result = N0_3[i] / (alpha_S_3[i] + 1) * ( pow(nu_n[i+1], alpha_S_3[i]+1) - pow(nu_norm, alpha_S_3[i]+1) );
+          result = N0_3[i] * (1. - F_H2_SHIELD) / (alpha_S_3[i] + 1) * ( pow(nu_n[i+1], alpha_S_3[i]+1) - pow(nu_norm, alpha_S_3[i]+1) );
           return result > 0 ? result:1e-40;
         }
       }

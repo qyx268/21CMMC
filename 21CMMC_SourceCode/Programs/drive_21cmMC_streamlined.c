@@ -411,8 +411,11 @@ int main(int argc, char ** argv){
 #ifdef MINI_HALO
     F_STAR10_MINI = pow(10.,PARAM_VALS[20]) * pow(1e3, ALPHA_STAR);
     F_ESC_MINI = pow(10.,PARAM_VALS[21]);
-    L_X_MINI = pow(10.,PARAM_VALS[22]);
-	X_RAY_SPEC_INDEX_MINI = PARAM_VALS[23];
+    L_X_MINI = L_X;//pow(10.,PARAM_VALS[22]);
+	X_RAY_SPEC_INDEX_MINI = X_RAY_SPEC_INDEX; //PARAM_VALS[23];
+	F_H2_SHIELD = pow(10., PARAM_VALS[24]);
+	if (F_H2_SHIELD > 1) F_H2_SHIELD = 1.0;
+	if (F_H2_SHIELD < 0) F_H2_SHIELD = 0.0;
     ION_EFF_FACTOR_MINI = N_GAMMA_UV_MINI * F_STAR10_MINI * F_ESC_MINI;
 #endif
 
@@ -848,13 +851,13 @@ void ComputeLF()
     lnMhalo_max = log(Mhalo_max*1.001);
     dlnMhalo = (lnMhalo_max - lnMhalo_min)/(double)(NBINS_LF - 1);
 
-	printf("Calculating LF...\n");
+	//printf("Calculating LF...\n");
     for (i_z=0; i_z<NUM_OF_REDSHIFT_FOR_LF; i_z++) {
 #ifdef MINI_HALO
 		Mcrit_atom = atomic_cooling_threshold(z_LF[i_z]);
 		Mmin_ave = pow(10., gsl_spline_eval(log10_Mmin_ave_spline, 0.-z_LF[i_z], log10_Mmin_ave_spline_acc));
 		Mmin_MINI_ave = pow(10., gsl_spline_eval(log10_Mmin_MINI_ave_spline, 0.-z_LF[i_z], log10_Mmin_MINI_ave_spline_acc));
-		printf("z=%.1f, Mcrit_atom=%5.2e, Mmin_ave=%5.2e, Mmin_MINI_ave=%5.2e\n", z_LF[i_z], Mcrit_atom, Mmin_ave, Mmin_MINI_ave);
+		//printf("z=%.1f, Mcrit_atom=%5.2e, Mmin_ave=%5.2e, Mmin_MINI_ave=%5.2e\n", z_LF[i_z], Mcrit_atom, Mmin_ave, Mmin_MINI_ave);
 #endif
 
         for (i=0; i<NBINS_LF; i++) {

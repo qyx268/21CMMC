@@ -17,6 +17,9 @@ SIXPLACES = Decimal(10) ** -6       # same as Decimal('0.000001')
 
 McGreer_Redshift = 5.9
 
+FREQ_EDGES = 78.
+WIDTH_EDGES = 19.
+
 # The redshift of the QSO
 QSO_Redshift = 7.0842
 
@@ -315,6 +318,12 @@ class Likelihood21cmFast_multiz(object):
             else:
                 create_file.write("X_RAY_SPEC_INDEX_MINI    %s\n"%(self.Fiducial_Params['X_RAY_SPEC_INDEX_MINI']))
 
+            if self.param_legend['F_H2_SHIELD'] is True:
+                create_file.write("F_H2_SHIELD    %s\n"%(Decimal(repr(params[parameter_number])).quantize(SIXPLACES)))
+                parameter_number += 1
+            else:
+                create_file.write("F_H2_SHIELD    %s\n"%(self.Fiducial_Params['F_H2_SHIELD']))
+
         create_file.close() 
 
         if self.FlagOptions['GENERATE_NEW_ICS'] is True:
@@ -397,51 +406,66 @@ class Likelihood21cmFast_multiz(object):
                 PS_values_estimate = PS_values_estimate[::-1]
 
             # Converting the redshifts to frequencies for the interpolation (must be in increasing order, it is by default redshift which is decreasing)
-            FrequencyValues_mock = np.zeros(len(self.k_values[0]))
+            if self.FlagOptions['USE_EDGES'] is False:
+                FrequencyValues_mock = np.zeros(len(self.k_values[0]))
             FrequencyValues_model = np.zeros(len(k_values_estimate))
 
             # Shouldn't need two, as they should be the same sampling. However, just done it for now
-            for j in range(len(self.k_values[0])):
-                FrequencyValues_mock[j] = ((2.99792e8)/(.2112*(1. + self.k_values[0][j])))/(1e6)
+            if self.FlagOptions['USE_EDGES'] is False:
+                for j in range(len(self.k_values[0])):
+                    FrequencyValues_mock[j] = ((2.99792e8)/(.2112*(1. + self.k_values[0][j])))/(1e6)
 
             for j in range(len(k_values_estimate)):    
                 FrequencyValues_model[j] = ((2.99792e8)/(.2112*(1. + k_values_estimate[j])))/(1e6)
 
-            splined_mock = interpolate.splrep(FrequencyValues_mock,self.PS_values[0],s=0)
+            if self.FlagOptions['USE_EDGES'] is False:
+                splined_mock = interpolate.splrep(FrequencyValues_mock,self.PS_values[0],s=0)
             splined_model = interpolate.splrep(FrequencyValues_model,PS_values_estimate,s=0)
 
-            FrequencyMin = self.Fiducial_Params['MIN_FREQ']
-            FrequencyMax = self.Fiducial_Params['MAX_FREQ']
-
-            if self.FlagOptions['USE_GS_FIXED_ERROR'] is True: 
-                ErrorOnGlobal = self.Fiducial_Params['CONST_ERROR']
-                Bandwidth = self.Fiducial_Params['BANDWIDTH']
-
-                FrequencyBins = int(np.floor((FrequencyMax-FrequencyMin)/Bandwidth)) + 1
-
-                for j in range(FrequencyBins):
-
-                    FrequencyVal = FrequencyMin + Bandwidth*j        
-
-                    MockPS_val = interpolate.splev(FrequencyVal,splined_mock,der=0)
-
-                    ModelPS_val = interpolate.splev(FrequencyVal,splined_model,der=0)
-                    
-                    total_sum += np.square( (MockPS_val - ModelPS_val)/ErrorOnGlobal ) 
+            if self.FlagOptions['USE_EDGES'] is True:
+                f = InterpolatedUnivariateSpline(FrequencyValues_model,PS_values_estimate,k=4)
+                cr_pts = np.append(f.derivative().roots(), (FrequencyValues_model[0], FrequencyValues_model[-1]))
+                cr_vals = f(f.derivative().roots())
+                if (len(cr_vals) == 0):
+                    total_sum += 10000000000.
+                    #print "Walker_%s: no minimumm on deltaTb-nu curve..."%StringArgument_other
+                else:
+                    total_sum += np.square((cr_pts[np.argmin(cr_vals)] - FREQ_EDGES ) / WIDTH_EDGES * 2.)
+                    #print "Walker_%s: minimum of deltaTb is at nu=%.2f"%(StringArgument_other, cr_pts[np.argmin(cr_vals)])
 
             else:
+                FrequencyMin = self.Fiducial_Params['MIN_FREQ']
+                FrequencyMax = self.Fiducial_Params['MAX_FREQ']
 
-                for j in range(len(self.Error_k_values[0])):
+                if self.FlagOptions['USE_GS_FIXED_ERROR'] is True: 
+                    ErrorOnGlobal = self.Fiducial_Params['CONST_ERROR']
+                    Bandwidth = self.Fiducial_Params['BANDWIDTH']
 
-                    FrequencyVal = ((2.99792e8)/(.2112*(1. + self.Error_k_values[0][j])))/(1e6)
+                    FrequencyBins = int(np.floor((FrequencyMax-FrequencyMin)/Bandwidth)) + 1
 
-                    if FrequencyVal >= FrequencyMin and FrequencyVal <= FrequencyMax:
+                    for j in range(FrequencyBins):
+
+                        FrequencyVal = FrequencyMin + Bandwidth*j        
 
                         MockPS_val = interpolate.splev(FrequencyVal,splined_mock,der=0)
 
                         ModelPS_val = interpolate.splev(FrequencyVal,splined_model,der=0)
+                    
+                        total_sum += np.square( (MockPS_val - ModelPS_val)/ErrorOnGlobal ) 
+
+                else:
+
+                    for j in range(len(self.Error_k_values[0])):
+
+                        FrequencyVal = ((2.99792e8)/(.2112*(1. + self.Error_k_values[0][j])))/(1e6)
+
+                        if FrequencyVal >= FrequencyMin and FrequencyVal <= FrequencyMax:
+
+                            MockPS_val = interpolate.splev(FrequencyVal,splined_mock,der=0)
+
+                            ModelPS_val = interpolate.splev(FrequencyVal,splined_model,der=0)
                         
-                        total_sum += np.square( (MockPS_val - ModelPS_val)/self.PS_Error[0][j] ) 
+                            total_sum += np.square( (MockPS_val - ModelPS_val)/self.PS_Error[0][j] ) 
 
             # New in v1.4
             #if self.IncludeLF is True:

@@ -100,6 +100,9 @@ class UniformPosition(object):
         if self.sampler.param_legend['X_RAY_SPEC_INDEX_MINI'] is True:   
             InputValues.append(self.sampler.FiducialParams['X_RAY_SPEC_INDEX_MINI'])
 
+        if self.sampler.param_legend['F_H2_SHIELD'] is True:   
+            InputValues.append(self.sampler.FiducialParams['F_H2_SHIELD'])
+
         if self.sampler.param_legend['SIGMA_8'] is True:
             InputValues.append(self.sampler.FiducialParams['SIGMA_8'])
 

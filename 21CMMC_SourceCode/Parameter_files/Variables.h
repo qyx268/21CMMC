@@ -7,14 +7,14 @@
 /* The minimum file length containing the relevant astrophysical parameters, plus related information requisite for computing the 21cm signal. This number should remain fixed,
  unless additional parameters are to be added and suitably varied. This number ** does not ** include the redshift sampling (i.e. if the co-eval box option is set. That comes
  through at the command line, where number of redshifts is provided.   */
-#define TOTAL_AVAILABLE_PARAMS (int) (24)
+#define TOTAL_AVAILABLE_PARAMS (int) (25)
 
 /* A text file containing the cosmological parameters that can be varied within 21CMMC. This number is fixed, and includes the standard 6 parameter Lambda-CDM cosmological parameters,
  and also a random initial seed for generating the initial conditions (if this option is set). Note that OMEGA_L is assumed to be 1 - OMEGA_M, therefore it is unnecessary to vary OMEGA_L */
 #define TOTAL_COSMOLOGY_FILEPARAMS (int)7
 
 /* Allows the output of the global averaged quantities in the computation of the IGM spin temperature. Used for de-bugging purposes only */
-#define OUTPUT_AVE  1
+#define OUTPUT_AVE  0
 
 /* Whether or not to print the text files containing the neutral fraction or 21cm PS files */
 #define PRINT_FILES (int)1
@@ -164,7 +164,7 @@ float ***Fcollz_SFR_Xray_high_table_MINI;
 fftwf_complex **deltax_prev_filtered;
 float prev_mean_f_coll_st, prev_mean_f_coll_st_MINI;
 float *prev_overdense_small_min, *prev_overdense_small_bin_width_inv, *prev_overdense_large_min, *prev_overdense_large_bin_width_inv;
-double X_RAY_SPEC_INDEX_MINI;
+double X_RAY_SPEC_INDEX_MINI, F_H2_SHIELD;
 double **freq_int_heat_tbl_MINI,**freq_int_ion_tbl_MINI,**freq_int_lya_tbl_MINI,**freq_int_heat_tbl_diff_MINI,**freq_int_ion_tbl_diff_MINI,**freq_int_lya_tbl_diff_MINI;
 double *dxheat_dt_box_MINI, *dxion_source_dt_box_MINI, *dxlya_dt_box_MINI, *dstarlya_dt_box_MINI;
 double *dstarlyLW_dt_box, *dstarlyLW_dt_box_MINI;
