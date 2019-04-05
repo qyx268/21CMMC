@@ -21,7 +21,6 @@ COSMO_FILES = 	${PARAMETER_DIR}/COSMOLOGY.H \
 # object files
 OBJ_FILES = perturb_field \
 	drive_21cmMC_streamlined\
-	generate_tables\
 	SplitMockObservation \
 	CreateFcollTable\
 	CreateSmoothedDensityBoxes \
@@ -42,11 +41,6 @@ perturb_field:	perturb_field.c \
 	${COSMO_FILES}
 
 	${CC} ${CPPFLAGS} -o perturb_field perturb_field.c ${LDFLAGS}
-
-generate_tables: generate_tables.c \
-	${COSMO_FILES} \
-
-	${CC} ${CPPFLAGS} -o generate_tables generate_tables.c ${LDFLAGS} 
 
 drive_21cmMC_streamlined: drive_21cmMC_streamlined.c \
 	${COSMO_FILES} \
