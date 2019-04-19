@@ -156,7 +156,10 @@ if __name__ == '__main__':
     # It was a bit too unwieldly to do internally, so I opted for externally dealing with separating the data.
     KEEP_ALL_DATA = True
 
+    # use EDGES timing
     USE_EDGES = True
+    # use EDGES width too
+    USE_EDGES_FWHM = True
 
 
     ################### Setting up variables for performing the full spin temperature calculation (i.e. Ts.c) ####################################
@@ -967,6 +970,7 @@ if __name__ == '__main__':
     FlagOptions['CALC_TS_FLUC'] = Include_Ts_fluc
     FlagOptions['KEEP_GLOBAL_DATA'] = USE_GLOBAL_SIGNAL
     FlagOptions['USE_EDGES'] = USE_EDGES
+    FlagOptions['USE_EDGES_FWHM'] = USE_EDGES_FWHM
     FlagOptions['USE_IONISATION_FCOLL_TABLE'] = USE_IONISATION_FCOLL_TABLE
     FlagOptions['USE_MASS_DEPENDENT_ZETA'] = USE_MASS_DEPENDENT_ZETA
     FlagOptions['USE_GS_FIXED_ERROR'] = GLOBAL_SIGNAL_FIXED_ERROR
@@ -993,6 +997,9 @@ if __name__ == '__main__':
         os.system(command)
         if IncludeLF:
             command = "mkdir %s/LFData"%(Create_Output_Directory)
+            os.system(command)
+        if USE_EDGES:
+            command = "mkdir %s/FreqTbminData"%(Create_Output_Directory)
             os.system(command)
 
     FlagOptions['KEEP_ALL_DATA_FILENAME'] = Create_Output_Directory
@@ -1027,6 +1034,10 @@ if __name__ == '__main__':
 
     if USE_EDGES is True and USE_GLOBAL_SIGNAL is False:
         ErrorString.append("ERROR: You might want to use USE_GLOBAL_SIGNAL to skip unnecessary calculations when USE_EDGES.")
+        ErrorMessage = True        
+
+    if USE_EDGES is False and USE_EDGES_FWHM is True:
+        ErrorString.append("ERROR: You might want to set USE_EDGES to True if USE_EDGES_FWHM.")
         ErrorMessage = True        
 
     if GenerateNewICs is True and (UseFcollTable or USE_IONISATION_FCOLL_TABLE is True):
@@ -1113,16 +1124,16 @@ if __name__ == '__main__':
                     params = params,
                     likelihoodComputationChain=chain,
                     filePrefix="%s"%(File_String),
-                    walkersRatio=2,
+                    walkersRatio= 60,
                     FiducialParams=Fiducial_Params,
                     param_legend=param_legend,
                     LowerBound_XRAY=X_RAY_TVIR_LB,
                     UpperBound_XRAY=X_RAY_TVIR_UB,
                     SpinTz=TsCalc_z,
                     burninIterations=1,
-                    sampleIterations=1,
+                    sampleIterations=3000,
                     filethin = 1,
-                    threadCount=2,
+                    threadCount=150,
                     reuseBurnin=False
                    )
 

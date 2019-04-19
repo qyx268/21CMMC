@@ -18,7 +18,11 @@ SIXPLACES = Decimal(10) ** -6       # same as Decimal('0.000001')
 McGreer_Redshift = 5.9
 
 FREQ_EDGES = 78.
-WIDTH_EDGES = 19.
+FREQ_ERR_EDGES = 1.
+FWHM_EDGES = 19.
+FWHM_ERR_UPP_EDGES = 4.
+FWHM_ERR_LOW_EDGES = 2.
+# follow this to do asymmetric errors (https://www.phas.ubc.ca/~oser/p509/Lec_10.pdf)
 
 # The redshift of the QSO
 QSO_Redshift = 7.0842
@@ -430,7 +434,30 @@ class Likelihood21cmFast_multiz(object):
                     total_sum += 10000000000.
                     #print "Walker_%s: no minimumm on deltaTb-nu curve..."%StringArgument_other
                 else:
-                    total_sum += np.square((cr_pts[np.argmin(cr_vals)] - FREQ_EDGES ) / WIDTH_EDGES * 2.)
+                    Freq_Tbmin = cr_pts[np.argmin(cr_vals)]
+                    total_sum += np.square((Freq_Tbmin - FREQ_EDGES ) / FREQ_ERR_EDGES)
+
+                    if self.FlagOptions['USE_EDGES_FWHM'] is True:
+                        Freqs_HM= InterpolatedUnivariateSpline(FrequencyValues_model, PS_values_estimate-f(Freq_Tbmin) * 0.5, k=3).roots()
+                        if len(Freqs_HM) == 2:
+                            FWHM = Freqs_HM[1] - Freqs_HM[0]
+                            total_sum += np.square(FWHM - FWHM_EDGES) / (FWHM_ERR_UPP_EDGES * FWHM_ERR_LOW_EDGES + (FWHM_ERR_UPP_EDGES - FWHM_ERR_LOW_EDGES) * (FWHM - FWHM_EDGES))
+                            if self.FlagOptions['KEEP_ALL_DATA'] is True:
+                                np.savetxt("%s/FreqTbminData/FreqTbmim_%s_%s.txt"%(self.FlagOptions['KEEP_ALL_DATA_FILENAME'], Individual_ID,Decimal(repr(params[0])).quantize(SIXPLACES)), [Freq_Tbmin, Freqs_HM[0], Freqs_HM[1], FWHM])
+                        elif len(Freqs_HM) == 1:
+                            if Freqs_HM[0] > Freq_Tbmin:
+                                FWHM = Freqs_HM[0] - FrequencyValues_model[0]
+                                if self.FlagOptions['KEEP_ALL_DATA'] is True:
+                                    np.savetxt("%s/FreqTbminData/FreqTbmim_%s_%s.txt"%(self.FlagOptions['KEEP_ALL_DATA_FILENAME'], Individual_ID,Decimal(repr(params[0])).quantize(SIXPLACES)), [Freq_Tbmin, FrequencyValues_model[0], Freqs_HM[0], FWHM])
+                            else:
+                                FWHM = FrequencyValues_model[-1] - Freqs_HM[0]
+                                if self.FlagOptions['KEEP_ALL_DATA'] is True:
+                                    np.savetxt("%s/FreqTbminData/FreqTbmim_%s_%s.txt"%(self.FlagOptions['KEEP_ALL_DATA_FILENAME'], Individual_ID,Decimal(repr(params[0])).quantize(SIXPLACES)), [Freq_Tbmin, Freqs_HM[0], FrequencyValues_model[-1], FWHM])
+                            total_sum += np.square(FWHM - FWHM_EDGES) / (FWHM_ERR_UPP_EDGES * FWHM_ERR_LOW_EDGES + (FWHM_ERR_UPP_EDGES - FWHM_ERR_LOW_EDGES) * (FWHM - FWHM_EDGES))
+                        else:
+                            total_sum += 10000000000.
+                    elif self.FlagOptions['KEEP_ALL_DATA'] is True:
+                        np.savetxt("%s/FreqTbminData/FreqTbmim_%s_%s.txt"%(self.FlagOptions['KEEP_ALL_DATA_FILENAME'], Individual_ID,Decimal(repr(params[0])).quantize(SIXPLACES)), [Freq_Tbmin,])
                     #print "Walker_%s: minimum of deltaTb is at nu=%.2f"%(StringArgument_other, cr_pts[np.argmin(cr_vals)])
 
             else:
