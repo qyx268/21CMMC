@@ -3007,6 +3007,7 @@ float ComputeIonisationBoxes(int sample_index, float REDSHIFT_SAMPLE, float PREV
         
         LAST_FILTER_STEP = 0;
      
+		// YQ: I don't think this line has any meaning, but whatever...
         initialiseSplinedSigmaM(M_MIN,1e16);
         
         first_step_R = 1;
