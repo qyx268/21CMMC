@@ -692,7 +692,7 @@ if __name__ == '__main__':
     # Defined as log10(L_X). E.g. 40 = log10(10^40)
     Fiducial_LX = 40.5
     LowerBound_LX = 38.0
-    UpperBound_LX = 42.0
+    UpperBound_LX = 44.0
 
     param_string_names.append('L_X')
     param_lower_limits.append(LowerBound_LX)
@@ -712,7 +712,7 @@ if __name__ == '__main__':
     param_upper_limits.append(UpperBound_NU_X_THRESH)    
 
     # X-Ray spectral index at frequencies higher than NU_X_THRESH
-    param_legend['X_RAY_SPEC_INDEX'] = False#True
+    param_legend['X_RAY_SPEC_INDEX'] = True
 
     # Set a fiducial value for X_RAY_SPEC_INDEX, and its lower and upper bounds. Not all will be used, depends on what options are set.
     Fiducial_X_RAY_SPEC_INDEX = 1.0
@@ -775,7 +775,7 @@ if __name__ == '__main__':
         param_upper_limits.append(UpperBound_X_RAY_SPEC_INDEX_MINI)    
 
         # Self-Shielding Factor of H2
-        param_legend['F_H2_SHIELD'] = True
+        param_legend['F_H2_SHIELD'] = False
 
         Fiducial_F_H2_SHIELD = -0.5
         LowerBound_F_H2_SHIELD = -3.0
