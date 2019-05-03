@@ -36,7 +36,7 @@
 /* The number of bins for arrays to compute luminosity functions (New in v1.4) */
 #define NBINS_LF (int)100
 
-#define NUM_OF_REDSHIFT_FOR_LF (int)4
+#define NUM_OF_REDSHIFT_FOR_LF (int)6
 // Declaration of various required variables
 
 
@@ -150,8 +150,8 @@ float *z_re, *Gamma12;
 fftwf_complex *N_rec_unfiltered, *N_rec_filtered;
 
 // Mini halos
-#ifdef MINI_HALO
 double *aveJ_21_LW, *aveJ_21_LW_MINI, *aveJ_alpha, *aveJ_alpha_MINI, *aveXheat, *aveXheat_MINI, *aveNion, *aveNion_MINI;
+#ifdef MINI_HALO
 double *log10_Fcoll_spline_SFR_MINI;
 float *Fcoll_spline_SFR_MINI;
 double **prev_log10_Fcoll_spline_SFR_MINI;

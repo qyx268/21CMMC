@@ -860,7 +860,7 @@ void ComputeLF()
     float Mlim_Fstar_MINI,Fstar_MINI;
 #endif
     // At the moment I just put the redshift list by hand, but this part should be modified.
-    float z_LF[NUM_OF_REDSHIFT_FOR_LF] = {6.00, 7.00, 8.00, 10.00};
+    float z_LF[NUM_OF_REDSHIFT_FOR_LF] = {6.00, 7.00, 8.00, 10.00, 13.00, 15.00};
 
     Mlim_Fstar = Mass_limit_bisection((float)Mhalo_min*0.999, (float)Mhalo_max*1.001, ALPHA_STAR, F_STAR10);
 #ifdef MINI_HALO
@@ -1555,7 +1555,7 @@ void ComputeTsBoxes() {
         
         // This is the main loop for calculating the IGM spin temperature. Structure drastically different from Ts.c in 21cmFAST, however algorithm and computation remain the same.
         while (zp > REDSHIFT){
-            
+
             // check if we will next compute the spin temperature (i.e. if this is the final zp step)
             if (Ts_verbose || (((1.+zp) / ZPRIME_STEP_FACTOR) < (REDSHIFT+1)) )
                 COMPUTE_Ts = 1;
@@ -2281,16 +2281,16 @@ void ComputeTsBoxes() {
 
                                 Ts[box_ct] = TS_fast;
                                 
-                                if(OUTPUT_AVE) {
+                                if(STORE_DATA || OUTPUT_AVE) {
                                     J_alpha_ave += J_alpha_tot;
                                     xalpha_ave += xa_tilde_fast;
                                     Xheat_ave += ( dxheat_dzp );
-                                    Xheat_ave_MINI += ( dxheat_dzp_MINI );
                                     Xion_ave += ( dt_dzp*dxion_source_dt_box[box_ct] );
                                     Ts_ave += TS_fast;
                                     Tk_ave += T;
 #ifdef MINI_HALO
                                     J_alpha_ave_MINI += J_alpha_tot_MINI;
+                                    Xheat_ave_MINI += ( dxheat_dzp_MINI );
                                     J_LW_ave += dstarlyLW_dt_box[box_ct];
                                     J_LW_ave_MINI += dstarlyLW_dt_box_MINI[box_ct];
 #endif
