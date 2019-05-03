@@ -583,7 +583,7 @@ if __name__ == '__main__':
     # Power law index with halo mass
     param_legend['ALPHA_ESC'] = False
 
-    Fiducial_AlphaEsc = -0.5
+    Fiducial_AlphaEsc = 0.
     LowerBound_AlphaEsc = -1.
     UpperBound_AlphaEsc = 0.5
 
