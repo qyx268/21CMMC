@@ -699,7 +699,7 @@ if __name__ == '__main__':
     param_upper_limits.append(UpperBound_LX)    
 
     # Minimum frequency X-ray photon contributing to IGM heating and ionization
-    param_legend['NU_X_THRESH'] = False
+    param_legend['NU_X_THRESH'] = True
 
     # Set a fiducial value for NU_X_THRESH, and its lower and upper bounds. Not all will be used, depends on what options are set.
     # Defined in eV. E.g 500 = 0.5keV
@@ -712,7 +712,7 @@ if __name__ == '__main__':
     param_upper_limits.append(UpperBound_NU_X_THRESH)    
 
     # X-Ray spectral index at frequencies higher than NU_X_THRESH
-    param_legend['X_RAY_SPEC_INDEX'] = True
+    param_legend['X_RAY_SPEC_INDEX'] = False
 
     # Set a fiducial value for X_RAY_SPEC_INDEX, and its lower and upper bounds. Not all will be used, depends on what options are set.
     Fiducial_X_RAY_SPEC_INDEX = 1.0
