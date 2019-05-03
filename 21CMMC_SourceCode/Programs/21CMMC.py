@@ -73,7 +73,7 @@ if __name__ == '__main__':
     Include_Ts_fluc = True
 
     # If the full spin temperature computation is to be performed, a redshift must be provided to which to perform the evolution down to.
-    TsCalc_z = 5.5
+    TsCalc_z = 5.8
 
     # Decide whether to use light-cone boxes or co-eval boxes
     # Note that the light-cone can only be generated along the z-direction (21cmFAST could do any arbitrary direction, this only does the z-direction). Should be 

@@ -151,6 +151,7 @@ fftwf_complex *N_rec_unfiltered, *N_rec_filtered;
 
 // Mini halos
 #ifdef MINI_HALO
+double *aveJ_21_LW, *aveJ_21_LW_MINI, *aveJ_alpha, *aveJ_alpha_MINI, *aveXheat, *aveXheat_MINI, *aveNion, *aveNion_MINI;
 double *log10_Fcoll_spline_SFR_MINI;
 float *Fcoll_spline_SFR_MINI;
 double **prev_log10_Fcoll_spline_SFR_MINI;

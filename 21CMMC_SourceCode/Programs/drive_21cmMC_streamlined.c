@@ -113,7 +113,7 @@ int main(int argc, char ** argv){
     
     // The standard build of 21cmFAST requires openmp for the FFTs. 21CMMC does not, however, for some computing architectures, I found it important to include this
     omp_set_num_threads(1);
-	flag_generate_tables = 0;
+    flag_generate_tables = 0;
     
     char filename[500];
     char dummy_string[500];
@@ -123,7 +123,7 @@ int main(int argc, char ** argv){
     
     int i,j,k,temp_int,temp_int2, counter;
     float z_prime,prev_z_prime;
-	float nf_ave;
+    float nf_ave;
     
     unsigned long long ct;
 
@@ -355,7 +355,7 @@ int main(int argc, char ** argv){
         // Probably should do free the memory properly here...
         return 0;
     }
-	LOG10MTURN_INT = (double) ((LOG10MTURN_MAX+9e-8 - LOG10MTURN_MIN)) / ((double) (LOG10MTURN_NUM - 1.));
+    LOG10MTURN_INT = (double) ((LOG10MTURN_MAX+9e-8 - LOG10MTURN_MIN)) / ((double) (LOG10MTURN_NUM - 1.));
 #endif
     
     ///////////////// Hard coded assignment of parameters, but can't do much about it (problem of merging C and Python code) //////////////////////////////////
@@ -412,10 +412,10 @@ int main(int argc, char ** argv){
     F_STAR10_MINI = pow(10.,PARAM_VALS[20]) * pow(1e3, ALPHA_STAR);
     F_ESC_MINI = pow(10.,PARAM_VALS[21]);
     L_X_MINI = L_X;//pow(10.,PARAM_VALS[22]);
-	X_RAY_SPEC_INDEX_MINI = X_RAY_SPEC_INDEX; //PARAM_VALS[23];
-	F_H2_SHIELD = pow(10., PARAM_VALS[24]);
-	if (F_H2_SHIELD > 1) F_H2_SHIELD = 1.0;
-	if (F_H2_SHIELD < 0) F_H2_SHIELD = 0.0;
+    X_RAY_SPEC_INDEX_MINI = X_RAY_SPEC_INDEX; //PARAM_VALS[23];
+    F_H2_SHIELD = pow(10., PARAM_VALS[24]);
+    if (F_H2_SHIELD > 1) F_H2_SHIELD = 1.0;
+    if (F_H2_SHIELD < 0) F_H2_SHIELD = 0.0;
     ION_EFF_FACTOR_MINI = N_GAMMA_UV_MINI * F_STAR10_MINI * F_ESC_MINI;
 #endif
 
@@ -578,6 +578,14 @@ int main(int argc, char ** argv){
     if(STORE_DATA) {
         aveNF = calloc(N_USER_REDSHIFT,sizeof(double));
         aveTb = calloc(N_USER_REDSHIFT,sizeof(double));
+        aveJ_21_LW = calloc(N_USER_REDSHIFT,sizeof(double));
+        aveJ_21_LW_MINI = calloc(N_USER_REDSHIFT,sizeof(double));
+        aveJ_alpha = calloc(N_USER_REDSHIFT,sizeof(double));
+        aveJ_alpha_MINI = calloc(N_USER_REDSHIFT,sizeof(double));
+        aveXheat = calloc(N_USER_REDSHIFT,sizeof(double));
+        aveXheat_MINI = calloc(N_USER_REDSHIFT,sizeof(double));
+        aveNion = calloc(N_USER_REDSHIFT,sizeof(double));
+        aveNion_MINI = calloc(N_USER_REDSHIFT,sizeof(double));
     }
     
     // if GenerateNewICs == 1, generate the new initial conditions. This calculates the initial conditions in fourier space, and stores the relevant boxes in memory only (nothing is written to file)
@@ -606,8 +614,8 @@ int main(int argc, char ** argv){
 #ifdef MINI_HALO
         J_21_LW = (float *) fftwf_malloc(sizeof(float)*HII_TOT_NUM_PIXELS);
         prev_J_21_LW = (float *) fftwf_malloc(sizeof(float)*HII_TOT_NUM_PIXELS);
-		log10_Mcrit_LW_unfiltered = (fftwf_complex *) fftwf_malloc(sizeof(fftwf_complex)*HII_KSPACE_NUM_PIXELS);
-		log10_Mcrit_LW_filtered = (fftwf_complex *) fftwf_malloc(sizeof(fftwf_complex)*HII_KSPACE_NUM_PIXELS);
+        log10_Mcrit_LW_unfiltered = (fftwf_complex *) fftwf_malloc(sizeof(fftwf_complex)*HII_KSPACE_NUM_PIXELS);
+        log10_Mcrit_LW_filtered = (fftwf_complex *) fftwf_malloc(sizeof(fftwf_complex)*HII_KSPACE_NUM_PIXELS);
 #endif 
         
         for (ct=0; ct<HII_TOT_NUM_PIXELS; ct++) {
@@ -629,9 +637,9 @@ int main(int argc, char ** argv){
     } //  end if INHOMO_RECO
     
 #ifdef MINI_HALO
-	// this is basically what we do in ComputeIonisationBoxes, we need this to determine how large
-	// deltax_prev_filtered shoule be, which will store the filtered deltax in the previous snapshot
-	// at all filtering scales... and also prev_Fcoll, and prev_Fcoll_MINI. They all need to be initialized!.
+    // this is basically what we do in ComputeIonisationBoxes, we need this to determine how large
+    // deltax_prev_filtered shoule be, which will store the filtered deltax in the previous snapshot
+    // at all filtering scales... and also prev_Fcoll, and prev_Fcoll_MINI. They all need to be initialized!.
     R=fmax(R_BUBBLE_MIN, (L_FACTOR*BOX_LEN/(float)HII_DIM));
     
     int N_RSTEPS, counter_R, ii, x, y, z;
@@ -643,47 +651,47 @@ int main(int argc, char ** argv){
     }
 
     N_RSTEPS = counter + 1;
-	deltax_prev_filtered = (fftwf_complex**)fftwf_malloc(N_RSTEPS*sizeof(fftwf_complex *));
-	prev_Fcoll           = (float**) calloc(N_RSTEPS,sizeof(float *));
-	prev_Fcoll_MINI      = (float**) calloc(N_RSTEPS,sizeof(float *));
-	prev_overdense_small_min = (float *) calloc(N_RSTEPS,sizeof(float));
-	prev_overdense_large_min = (float *) calloc(N_RSTEPS,sizeof(float));
-	prev_overdense_small_bin_width_inv = (float *) calloc(N_RSTEPS,sizeof(float));
-	prev_overdense_large_bin_width_inv = (float *) calloc(N_RSTEPS,sizeof(float));
+    deltax_prev_filtered = (fftwf_complex**)fftwf_malloc(N_RSTEPS*sizeof(fftwf_complex *));
+    prev_Fcoll           = (float**) calloc(N_RSTEPS,sizeof(float *));
+    prev_Fcoll_MINI      = (float**) calloc(N_RSTEPS,sizeof(float *));
+    prev_overdense_small_min = (float *) calloc(N_RSTEPS,sizeof(float));
+    prev_overdense_large_min = (float *) calloc(N_RSTEPS,sizeof(float));
+    prev_overdense_small_bin_width_inv = (float *) calloc(N_RSTEPS,sizeof(float));
+    prev_overdense_large_bin_width_inv = (float *) calloc(N_RSTEPS,sizeof(float));
 
-	prev_log10_Fcoll_spline_SFR = (double **) calloc(N_RSTEPS,sizeof(double *));
-	prev_Fcoll_spline_SFR = (float **) calloc(N_RSTEPS,sizeof(float *));
-	prev_log10_Fcoll_spline_SFR_MINI = (double **) calloc(N_RSTEPS,sizeof(double *));
-	prev_Fcoll_spline_SFR_MINI = (float **) calloc(N_RSTEPS,sizeof(float *));
+    prev_log10_Fcoll_spline_SFR = (double **) calloc(N_RSTEPS,sizeof(double *));
+    prev_Fcoll_spline_SFR = (float **) calloc(N_RSTEPS,sizeof(float *));
+    prev_log10_Fcoll_spline_SFR_MINI = (double **) calloc(N_RSTEPS,sizeof(double *));
+    prev_Fcoll_spline_SFR_MINI = (float **) calloc(N_RSTEPS,sizeof(float *));
 
-	for (ii=0; ii<N_RSTEPS;ii++){
-		deltax_prev_filtered[ii] = (fftwf_complex *) fftwf_malloc(sizeof(fftwf_complex)*HII_KSPACE_NUM_PIXELS);
-		prev_Fcoll[ii]           = (float *) calloc(HII_TOT_NUM_PIXELS,sizeof(float));
-		prev_Fcoll_MINI[ii]      = (float *) calloc(HII_TOT_NUM_PIXELS,sizeof(float));
+    for (ii=0; ii<N_RSTEPS;ii++){
+        deltax_prev_filtered[ii] = (fftwf_complex *) fftwf_malloc(sizeof(fftwf_complex)*HII_KSPACE_NUM_PIXELS);
+        prev_Fcoll[ii]           = (float *) calloc(HII_TOT_NUM_PIXELS,sizeof(float));
+        prev_Fcoll_MINI[ii]      = (float *) calloc(HII_TOT_NUM_PIXELS,sizeof(float));
 
-    	prev_log10_Fcoll_spline_SFR[ii] = calloc(NSFR_low*LOG10MTURN_NUM,sizeof(double));
-    	prev_Fcoll_spline_SFR[ii] = calloc(NSFR_high*LOG10MTURN_NUM,sizeof(float));
-    	prev_log10_Fcoll_spline_SFR_MINI[ii] = calloc(NSFR_low*LOG10MTURN_NUM,sizeof(double));
-    	prev_Fcoll_spline_SFR_MINI[ii] = calloc(NSFR_high*LOG10MTURN_NUM,sizeof(float));
+        prev_log10_Fcoll_spline_SFR[ii] = calloc(NSFR_low*LOG10MTURN_NUM,sizeof(double));
+        prev_Fcoll_spline_SFR[ii] = calloc(NSFR_high*LOG10MTURN_NUM,sizeof(float));
+        prev_log10_Fcoll_spline_SFR_MINI[ii] = calloc(NSFR_low*LOG10MTURN_NUM,sizeof(double));
+        prev_Fcoll_spline_SFR_MINI[ii] = calloc(NSFR_high*LOG10MTURN_NUM,sizeof(float));
 
-		for (x=0; x<HII_DIM; x++){
-			for (y=0; y<HII_DIM; y++){
-				for (z=0; z<HII_DIM; z++){
-					*((float *)deltax_prev_filtered[ii] + HII_R_FFT_INDEX(x,y,z)) = -1.5;
-					prev_Fcoll[ii][HII_R_INDEX(x,y,z)] = 0.0;
-					prev_Fcoll_MINI[ii][HII_R_INDEX(x,y,z)] = 0.0;
-				}
-			}
-		}
-	}
+        for (x=0; x<HII_DIM; x++){
+            for (y=0; y<HII_DIM; y++){
+                for (z=0; z<HII_DIM; z++){
+                    *((float *)deltax_prev_filtered[ii] + HII_R_FFT_INDEX(x,y,z)) = -1.5;
+                    prev_Fcoll[ii][HII_R_INDEX(x,y,z)] = 0.0;
+                    prev_Fcoll_MINI[ii][HII_R_INDEX(x,y,z)] = 0.0;
+                }
+            }
+        }
+    }
 
-	//to record the evolution of log10_Mmin_ave for LF calculation
-	log10_Mmin_ave = calloc(N_USER_REDSHIFT, sizeof(double));
-	log10_Mmin_MINI_ave = calloc(N_USER_REDSHIFT, sizeof(double));
-	log10_Mmin_ave_spline_acc = gsl_interp_accel_alloc();
-	log10_Mmin_ave_spline = gsl_spline_alloc(gsl_interp_cspline, N_USER_REDSHIFT);
-	log10_Mmin_MINI_ave_spline_acc = gsl_interp_accel_alloc();
-	log10_Mmin_MINI_ave_spline = gsl_spline_alloc(gsl_interp_cspline, N_USER_REDSHIFT);
+    //to record the evolution of log10_Mmin_ave for LF calculation
+    log10_Mmin_ave = calloc(N_USER_REDSHIFT, sizeof(double));
+    log10_Mmin_MINI_ave = calloc(N_USER_REDSHIFT, sizeof(double));
+    log10_Mmin_ave_spline_acc = gsl_interp_accel_alloc();
+    log10_Mmin_ave_spline = gsl_spline_alloc(gsl_interp_cspline, N_USER_REDSHIFT);
+    log10_Mmin_MINI_ave_spline_acc = gsl_interp_accel_alloc();
+    log10_Mmin_MINI_ave_spline = gsl_spline_alloc(gsl_interp_cspline, N_USER_REDSHIFT);
 #endif
         
     /////////////////   Calculate the filtering scales for all the relevant smoothing scales for the HII_BUBBLES excursion set formalism    /////////////////
@@ -714,13 +722,17 @@ int main(int argc, char ** argv){
         sprintf(filename, "AveData_%f_%f.txt",INDIVIDUAL_ID,INDIVIDUAL_ID_2);
         F=fopen(filename, "wt");
         for(i=0;i<N_USER_REDSHIFT;i++) {
+#ifdef MINI_HALO
+            fprintf(F,"%e\t%e\t%e\t%e\t%e\t%e\t%e\t%e\t%e\t%e\t%e\n",redshifts[i],aveNF[i],aveTb[i],aveJ_21_LW[i],aveJ_21_LW_MINI[i],aveJ_alpha[i],aveJ_alpha_MINI[i],aveXheat[i],aveXheat_MINI[i],aveNion[i],aveNion_MINI[i]);
+#else
             fprintf(F,"%e\t%e\t%e\n",redshifts[i],aveNF[i],aveTb[i]);
+#endif
         }
         fclose(F);
     }
     
     // Output the text-file containing the file names of all the 21cm PS calculated from the light-cone boxes
-	
+    
     if(USE_LIGHTCONE) {
         
         sprintf(filename, "delTps_lightcone_filenames_%f_%f.txt",INDIVIDUAL_ID,INDIVIDUAL_ID_2);
@@ -732,17 +744,17 @@ int main(int argc, char ** argv){
     }
     
 #ifdef MINI_HALO
-	if (USE_LF){
-		// so that redshifts is increasing... :)
-		for (i=0; i<N_USER_REDSHIFT; i++){
-			redshifts[i] *= -1.;
-		}
-		gsl_spline_init(log10_Mmin_ave_spline, redshifts, log10_Mmin_ave, N_USER_REDSHIFT);
-		gsl_spline_init(log10_Mmin_MINI_ave_spline, redshifts, log10_Mmin_MINI_ave, N_USER_REDSHIFT);
-		init_LF_arrays();
-		ComputeLF();
-		destroy_LF_arrays();
-	}
+    if (USE_LF){
+        // so that redshifts is increasing... :)
+        for (i=0; i<N_USER_REDSHIFT; i++){
+            redshifts[i] *= -1.;
+        }
+        gsl_spline_init(log10_Mmin_ave_spline, redshifts, log10_Mmin_ave, N_USER_REDSHIFT);
+        gsl_spline_init(log10_Mmin_MINI_ave_spline, redshifts, log10_Mmin_MINI_ave, N_USER_REDSHIFT);
+        init_LF_arrays();
+        ComputeLF();
+        destroy_LF_arrays();
+    }
 #endif
     
     // De-allocate all arrays etc. that have been allocated and used
@@ -757,6 +769,14 @@ int main(int argc, char ** argv){
     if(STORE_DATA) {
         free(aveNF);
         free(aveTb);
+        free(aveJ_21_LW);
+        free(aveJ_21_LW_MINI);
+        free(aveJ_alpha);
+        free(aveJ_alpha_MINI);
+        free(aveXheat);
+        free(aveXheat_MINI);
+        free(aveNion);
+        free(aveNion_MINI);
     }
     free(redshifts);
     
@@ -783,36 +803,36 @@ int main(int argc, char ** argv){
     fftwf_free(z_re);
     fftwf_free(Gamma12);
 #ifdef MINI_HALO
-	fftwf_free(log10_Mcrit_LW_unfiltered); 
-	fftwf_free(log10_Mcrit_LW_filtered);
+    fftwf_free(log10_Mcrit_LW_unfiltered); 
+    fftwf_free(log10_Mcrit_LW_filtered);
     fftwf_free(J_21_LW);
     fftwf_free(prev_J_21_LW);
-	for (ii=0; ii<N_RSTEPS;ii++){
-		fftwf_free(deltax_prev_filtered[ii]);
-		free(prev_Fcoll[ii]);
-		free(prev_Fcoll_MINI[ii]);
-    	free(prev_log10_Fcoll_spline_SFR[ii]);
-    	free(prev_Fcoll_spline_SFR[ii]);
-    	free(prev_log10_Fcoll_spline_SFR_MINI[ii]);
-    	free(prev_Fcoll_spline_SFR_MINI[ii]);
-	}
-	fftwf_free(deltax_prev_filtered);
-	free(prev_Fcoll);
-	free(prev_Fcoll_MINI);
+    for (ii=0; ii<N_RSTEPS;ii++){
+        fftwf_free(deltax_prev_filtered[ii]);
+        free(prev_Fcoll[ii]);
+        free(prev_Fcoll_MINI[ii]);
+        free(prev_log10_Fcoll_spline_SFR[ii]);
+        free(prev_Fcoll_spline_SFR[ii]);
+        free(prev_log10_Fcoll_spline_SFR_MINI[ii]);
+        free(prev_Fcoll_spline_SFR_MINI[ii]);
+    }
+    fftwf_free(deltax_prev_filtered);
+    free(prev_Fcoll);
+    free(prev_Fcoll_MINI);
     free(prev_log10_Fcoll_spline_SFR);
     free(prev_Fcoll_spline_SFR);
     free(prev_log10_Fcoll_spline_SFR_MINI);
     free(prev_Fcoll_spline_SFR_MINI);
-	free(prev_overdense_small_min);
-	free(prev_overdense_large_min);
-	free(prev_overdense_small_bin_width_inv);
-	free(prev_overdense_large_bin_width_inv);
-	free(log10_Mmin_ave);
-	free(log10_Mmin_MINI_ave);
-	gsl_interp_accel_free(log10_Mmin_ave_spline_acc);
-	gsl_interp_accel_free(log10_Mmin_MINI_ave_spline_acc);
-	gsl_spline_free(log10_Mmin_ave_spline);
-	gsl_spline_free(log10_Mmin_MINI_ave_spline);
+    free(prev_overdense_small_min);
+    free(prev_overdense_large_min);
+    free(prev_overdense_small_bin_width_inv);
+    free(prev_overdense_large_bin_width_inv);
+    free(log10_Mmin_ave);
+    free(log10_Mmin_MINI_ave);
+    gsl_interp_accel_free(log10_Mmin_ave_spline_acc);
+    gsl_interp_accel_free(log10_Mmin_MINI_ave_spline_acc);
+    gsl_spline_free(log10_Mmin_ave_spline);
+    gsl_spline_free(log10_Mmin_MINI_ave_spline);
 #endif
     
 //    printf("END, time=%06.2f min\n", (double)clock()/CLOCKS_PER_SEC/60.0);
@@ -835,8 +855,8 @@ void ComputeLF()
     double Mhalo_i, lnMhalo_min, lnMhalo_max, lnMhalo_lo, lnMhalo_hi, dlnM;
     float Mlim_Fstar,Fstar;
 #ifdef MINI_HALO
-	double Mcrit_atom, Mmin_ave ,Mmin_MINI_ave;
-	double SFRparam_MINI, Muv_1_MINI, Muv_2_MINI, dMuvdMhalo_MINI;
+    double Mcrit_atom, Mmin_ave ,Mmin_MINI_ave;
+    double SFRparam_MINI, Muv_1_MINI, Muv_2_MINI, dMuvdMhalo_MINI;
     float Mlim_Fstar_MINI,Fstar_MINI;
 #endif
     // At the moment I just put the redshift list by hand, but this part should be modified.
@@ -851,13 +871,13 @@ void ComputeLF()
     lnMhalo_max = log(Mhalo_max*1.001);
     dlnMhalo = (lnMhalo_max - lnMhalo_min)/(double)(NBINS_LF - 1);
 
-	//printf("Calculating LF...\n");
+    //printf("Calculating LF...\n");
     for (i_z=0; i_z<NUM_OF_REDSHIFT_FOR_LF; i_z++) {
 #ifdef MINI_HALO
-		Mcrit_atom = atomic_cooling_threshold(z_LF[i_z]);
-		Mmin_ave = pow(10., gsl_spline_eval(log10_Mmin_ave_spline, 0.-z_LF[i_z], log10_Mmin_ave_spline_acc));
-		Mmin_MINI_ave = pow(10., gsl_spline_eval(log10_Mmin_MINI_ave_spline, 0.-z_LF[i_z], log10_Mmin_MINI_ave_spline_acc));
-		//printf("z=%.1f, Mcrit_atom=%5.2e, Mmin_ave=%5.2e, Mmin_MINI_ave=%5.2e\n", z_LF[i_z], Mcrit_atom, Mmin_ave, Mmin_MINI_ave);
+        Mcrit_atom = atomic_cooling_threshold(z_LF[i_z]);
+        Mmin_ave = pow(10., gsl_spline_eval(log10_Mmin_ave_spline, 0.-z_LF[i_z], log10_Mmin_ave_spline_acc));
+        Mmin_MINI_ave = pow(10., gsl_spline_eval(log10_Mmin_MINI_ave_spline, 0.-z_LF[i_z], log10_Mmin_MINI_ave_spline_acc));
+        //printf("z=%.1f, Mcrit_atom=%5.2e, Mmin_ave=%5.2e, Mmin_MINI_ave=%5.2e\n", z_LF[i_z], Mcrit_atom, Mmin_ave, Mmin_MINI_ave);
 #endif
 
         for (i=0; i<NBINS_LF; i++) {
@@ -920,25 +940,25 @@ void ComputeLF()
 #endif
         }
 #ifdef MINI_HALO
-		for (i=0; i<NBINS_LF; i++) {
-			Muv_param_MINI[i] *= -1.;
-		}
+        for (i=0; i<NBINS_LF; i++) {
+            Muv_param_MINI[i] *= -1.;
+        }
         gsl_spline_init(LF2_spline_MINI, Muv_param_MINI, log10phi_MINI, NBINS_LF);
         gsl_spline_init(LF3_spline_MINI, Muv_param_MINI, Mhalo_param, NBINS_LF);
-		for (i=0; i<NBINS_LF; i++) {
-			//  -Muv_param_MINI[0] and -Muv_param_MINI[NBINS_LF-1] should be the faintest and brightest, halos outside this range are considered being dominated by atomic cooling
-			if ((Muv_param[i] <= -Muv_param_MINI[0]) && (Muv_param[i] >= -Muv_param_MINI[NBINS_LF-1])){
-				log10phi_MINI[i] = gsl_spline_eval(LF2_spline_MINI, -Muv_param[i], LF2_spline_acc_MINI);
-				Mhalo_param_MINI[i] = gsl_spline_eval(LF3_spline_MINI, -Muv_param[i], LF3_spline_acc_MINI);
-			}
-			else{
-				log10phi_MINI[i] = -40;
-				if (Muv_param[i] > -Muv_param_MINI[0])
-					Mhalo_param_MINI[i] = Mhalo_min;
-				else
-					Mhalo_param_MINI[i] = Mhalo_max;
-			}
-		}
+        for (i=0; i<NBINS_LF; i++) {
+            //  -Muv_param_MINI[0] and -Muv_param_MINI[NBINS_LF-1] should be the faintest and brightest, halos outside this range are considered being dominated by atomic cooling
+            if ((Muv_param[i] <= -Muv_param_MINI[0]) && (Muv_param[i] >= -Muv_param_MINI[NBINS_LF-1])){
+                log10phi_MINI[i] = gsl_spline_eval(LF2_spline_MINI, -Muv_param[i], LF2_spline_acc_MINI);
+                Mhalo_param_MINI[i] = gsl_spline_eval(LF3_spline_MINI, -Muv_param[i], LF3_spline_acc_MINI);
+            }
+            else{
+                log10phi_MINI[i] = -40;
+                if (Muv_param[i] > -Muv_param_MINI[0])
+                    Mhalo_param_MINI[i] = Mhalo_min;
+                else
+                    Mhalo_param_MINI[i] = Mhalo_max;
+            }
+        }
 #endif
         if(PRINT_FILES) {
             sprintf(filename, "LF_estimate_%f_%f_%.6f.txt",INDIVIDUAL_ID,INDIVIDUAL_ID_2,z_LF[i_z]);
@@ -973,7 +993,7 @@ void ComputeTsBoxes() {
     
     double Tk_ave, J_alpha_ave, xalpha_ave, J_alpha_tot, Xheat_ave, Xion_ave, nuprime, Ts_ave, lower_int_limit,Luminosity_converstion_factor,T_inv_TS_fast_inv, nfgave, nf_ave;
 #ifdef MINI_HALO
-	double J_LW_ave, Luminosity_converstion_factor_MINI;
+    double J_LW_ave, Luminosity_converstion_factor_MINI, J_alpha_tot_MINI, J_alpha_ave_MINI, J_LW_ave_MINI,dxheat_dzp_MINI,Xheat_ave_MINI;
 #endif
     double dadia_dzp, dcomp_dzp, dxheat_dt, dxion_source_dt, dxion_sink_dt, T, x_e, dxe_dzp, n_b, dspec_dzp, dxheat_dzp, dxlya_dt, dstarlya_dt, fcoll_R;
     double Trad_fast,xc_fast,xc_inverse,TS_fast,TSold_fast,xa_tilde_fast,TS_prefactor,xa_tilde_prefactor,T_inv,T_inv_sq,xi_power,xa_tilde_fast_arg,Trad_fast_inv,TS_fast_inv,dcomp_dzp_prefactor;
@@ -987,7 +1007,7 @@ void ComputeTsBoxes() {
     
     double curr_delNL0, inverse_val,prefactor_1,prefactor_2,dfcoll_dz_val, density_eval1, density_eval2, grid_sigmaTmin, grid_dens_val, dens_grad, dens_width;
 #ifdef MINI_HALO
-	double prefactor_2_MINI, dfcoll_dz_val_MINI;
+    double prefactor_2_MINI, dfcoll_dz_val_MINI;
 #endif
 
     float M_MIN_WDM =  M_J_WDM();
@@ -1011,7 +1031,7 @@ void ComputeTsBoxes() {
     float fcoll_interp_min, fcoll_interp_bin_width, fcoll_interp_bin_width_inv, fcoll_interp_val1, fcoll_interp_val2, dens_val;
     float fcoll_interp_high_min, fcoll_interp_high_bin_width, fcoll_interp_high_bin_width_inv;
     int dens_int;
-	float dens_diff;
+    float dens_diff;
     
     float ave_fcoll_float, dfcoll_dz_val_float, fcoll_float;
     
@@ -1020,9 +1040,9 @@ void ComputeTsBoxes() {
     int redshift_int_fcollz,redshift_int_fcollz_Xray;
 
 #ifdef MINI_HALO
-	float log10_Mcrit_LW_val, log10_Mcrit_LW_diff, log10_Mcrit_LW_ave_table_fcollz;
-	int log10_Mcrit_LW_int, log10_Mcrit_LW_ave_int_fcollz;
-	float *log10_Mcrit_LW[NUM_FILTER_STEPS_FOR_Ts];
+    float log10_Mcrit_LW_val, log10_Mcrit_LW_diff, log10_Mcrit_LW_ave_table_fcollz;
+    int log10_Mcrit_LW_int, log10_Mcrit_LW_ave_int_fcollz;
+    float *log10_Mcrit_LW[NUM_FILTER_STEPS_FOR_Ts];
 #endif
     
     
@@ -1035,17 +1055,17 @@ void ComputeTsBoxes() {
     double X_RAY_Tvir_BinWidth;
     // New in v1.4
     int arr_num;
-	float zp_table, zpp_integrand;
+    float zp_table, zpp_integrand;
     float fcoll;
     float Splined_Fcoll,Splined_Fcollzp_mean,Splined_Fcollzpp_X_mean;
     // New in v1.5
 #ifdef MINI_HALO
-	int index_left, index_right;
-	float zpp_integrand_MINI;
+    int index_left, index_right;
+    float zpp_integrand_MINI;
 
     float fcoll_MINI_left, fcoll_MINI_right, fcoll_MINI;
     float Splined_Fcoll_MINI,Splined_Fcollzp_mean_MINI_left, Splined_Fcollzp_mean_MINI_right, Splined_Fcollzp_mean_MINI;
-	float Splined_Fcollzpp_X_mean_MINI_left, Splined_Fcollzpp_X_mean_MINI_right, Splined_Fcollzpp_X_mean_MINI;
+    float Splined_Fcollzpp_X_mean_MINI_left, Splined_Fcollzpp_X_mean_MINI_right, Splined_Fcollzpp_X_mean_MINI;
 #endif
 
     
@@ -1082,8 +1102,8 @@ void ComputeTsBoxes() {
         }
     }
 #ifdef MINI_HALO
-	prev_mean_f_coll_st = 0.0;
-	prev_mean_f_coll_st_MINI = 0.0;
+    prev_mean_f_coll_st = 0.0;
+    prev_mean_f_coll_st_MINI = 0.0;
 #endif
     
     if(SHORTEN_FCOLL) {
@@ -1101,8 +1121,8 @@ void ComputeTsBoxes() {
     init_21cmMC_Ts_arrays();
 #ifdef MINI_HALO
     for (R_ct=0; R_ct<NUM_FILTER_STEPS_FOR_Ts; R_ct++){
-		log10_Mcrit_LW[R_ct] = (float *) calloc(HII_TOT_NUM_PIXELS, sizeof(float));
-	}
+        log10_Mcrit_LW[R_ct] = (float *) calloc(HII_TOT_NUM_PIXELS, sizeof(float));
+    }
 #endif
     
     ///////////////////////////////  BEGIN INITIALIZATION   //////////////////////////////
@@ -1547,12 +1567,12 @@ void ComputeTsBoxes() {
                 redshift_int_fcollz = (int)floor( ( zp - determine_zpp_min )/zpp_bin_width );
                 
                 redshift_table_fcollz_diff = ( zp - determine_zpp_min - zpp_bin_width*(float)redshift_int_fcollz ) / zpp_bin_width;
-				
+                
                 Splined_Fcollzp_mean = Fcollz_val[redshift_int_fcollz] + redshift_table_fcollz_diff *( Fcollz_val[redshift_int_fcollz+1] - Fcollz_val[redshift_int_fcollz] );
-				if (Splined_Fcollzp_mean < 0.) Splined_Fcollzp_mean = 1e-40;
+                if (Splined_Fcollzp_mean < 0.) Splined_Fcollzp_mean = 1e-40;
 #ifdef MINI_HALO
-				log10_Mcrit_mol = log10(lyman_werner_threshold(zp, 0.));
-				log10_Mcrit_LW_ave = 0.0;
+                log10_Mcrit_mol = log10(lyman_werner_threshold(zp, 0.));
+                log10_Mcrit_LW_ave = 0.0;
                 for (i=0; i<HII_DIM; i++){
                   for (j=0; j<HII_DIM; j++){
                     for (k=0; k<HII_DIM; k++){
@@ -1563,18 +1583,18 @@ void ComputeTsBoxes() {
                 }
                 log10_Mcrit_LW_ave /= HII_TOT_NUM_PIXELS;
 
-				log10_Mcrit_LW_ave_int_fcollz = (int)floor( ( log10_Mcrit_LW_ave - LOG10MTURN_MIN) / LOG10MTURN_INT);
-				log10_Mcrit_LW_ave_table_fcollz = LOG10MTURN_MIN + LOG10MTURN_INT * (float)log10_Mcrit_LW_ave_int_fcollz;
-				index_left  = redshift_int_fcollz + zpp_interp_points_SFR * log10_Mcrit_LW_ave_int_fcollz;
-				index_right = redshift_int_fcollz + zpp_interp_points_SFR * (log10_Mcrit_LW_ave_int_fcollz+1);
+                log10_Mcrit_LW_ave_int_fcollz = (int)floor( ( log10_Mcrit_LW_ave - LOG10MTURN_MIN) / LOG10MTURN_INT);
+                log10_Mcrit_LW_ave_table_fcollz = LOG10MTURN_MIN + LOG10MTURN_INT * (float)log10_Mcrit_LW_ave_int_fcollz;
+                index_left  = redshift_int_fcollz + zpp_interp_points_SFR * log10_Mcrit_LW_ave_int_fcollz;
+                index_right = redshift_int_fcollz + zpp_interp_points_SFR * (log10_Mcrit_LW_ave_int_fcollz+1);
 
                 Splined_Fcollzp_mean_MINI_left = Fcollz_val_MINI[index_left] + redshift_table_fcollz_diff * ( Fcollz_val_MINI[index_left + 1] - Fcollz_val_MINI[index_left] );
                 Splined_Fcollzp_mean_MINI_right = Fcollz_val_MINI[index_right] + redshift_table_fcollz_diff * ( Fcollz_val_MINI[index_right + 1] - Fcollz_val_MINI[index_right] );
-				Splined_Fcollzp_mean_MINI = Splined_Fcollzp_mean_MINI_left + (log10_Mcrit_LW_ave - log10_Mcrit_LW_ave_table_fcollz) / LOG10MTURN_INT * ( Splined_Fcollzp_mean_MINI_right - Splined_Fcollzp_mean_MINI_left );
-				if (Splined_Fcollzp_mean_MINI < 0.) Splined_Fcollzp_mean_MINI = 1e-40;
+                Splined_Fcollzp_mean_MINI = Splined_Fcollzp_mean_MINI_left + (log10_Mcrit_LW_ave - log10_Mcrit_LW_ave_table_fcollz) / LOG10MTURN_INT * ( Splined_Fcollzp_mean_MINI_right - Splined_Fcollzp_mean_MINI_left );
+                if (Splined_Fcollzp_mean_MINI < 0.) Splined_Fcollzp_mean_MINI = 1e-40;
 
-				// NEED TO FILTER Mcrit_LW!!!
-				/*** Transform unfiltered box to k-space to prepare for filtering ***/
+                // NEED TO FILTER Mcrit_LW!!!
+                /*** Transform unfiltered box to k-space to prepare for filtering ***/
                 if(USE_FFTW_WISDOM) {
                     plan = fftwf_plan_dft_r2c_3d(HII_DIM, HII_DIM, HII_DIM, (float *)log10_Mcrit_LW_unfiltered, (fftwf_complex *)log10_Mcrit_LW_unfiltered, FFTW_WISDOM_ONLY);
                 }
@@ -1582,8 +1602,8 @@ void ComputeTsBoxes() {
                     plan = fftwf_plan_dft_r2c_3d(HII_DIM, HII_DIM, HII_DIM, (float *)log10_Mcrit_LW_unfiltered, (fftwf_complex *)log10_Mcrit_LW_unfiltered, FFTW_ESTIMATE);
                 }
                 fftwf_execute(plan);
-				for (ct=0; ct<HII_KSPACE_NUM_PIXELS; ct++)
-					log10_Mcrit_LW_unfiltered[ct] /= (float)HII_TOT_NUM_PIXELS;
+                for (ct=0; ct<HII_KSPACE_NUM_PIXELS; ct++)
+                    log10_Mcrit_LW_unfiltered[ct] /= (float)HII_TOT_NUM_PIXELS;
 
                 if ( Splined_Fcollzp_mean + Splined_Fcollzp_mean_MINI < 1e-15 )
 #else
@@ -1640,35 +1660,35 @@ void ComputeTsBoxes() {
                 fcoll_R_array[R_ct] = 0.0;
 
 #ifdef MINI_HALO
-				memcpy(log10_Mcrit_LW_filtered, log10_Mcrit_LW_unfiltered, sizeof(fftwf_complex)*HII_KSPACE_NUM_PIXELS);
-				if (R_ct > 0){// don't filter on cell size
-				  HII_filter(log10_Mcrit_LW_filtered, HEAT_FILTER, R_values[R_ct]);
-				}
-				// now fft back to real space
+                memcpy(log10_Mcrit_LW_filtered, log10_Mcrit_LW_unfiltered, sizeof(fftwf_complex)*HII_KSPACE_NUM_PIXELS);
+                if (R_ct > 0){// don't filter on cell size
+                  HII_filter(log10_Mcrit_LW_filtered, HEAT_FILTER, R_values[R_ct]);
+                }
+                // now fft back to real space
                 if(USE_FFTW_WISDOM) {
                     plan = fftwf_plan_dft_c2r_3d(HII_DIM, HII_DIM, HII_DIM, (fftwf_complex *)log10_Mcrit_LW_filtered, (float *)log10_Mcrit_LW_filtered, FFTW_WISDOM_ONLY);
                 }
-	            else {
-    	            plan = fftwf_plan_dft_c2r_3d(HII_DIM, HII_DIM, HII_DIM, (fftwf_complex *)log10_Mcrit_LW_filtered, (float *)log10_Mcrit_LW_filtered, FFTW_ESTIMATE);
-        	    }
-				fftwf_execute(plan);
+                else {
+                    plan = fftwf_plan_dft_c2r_3d(HII_DIM, HII_DIM, HII_DIM, (fftwf_complex *)log10_Mcrit_LW_filtered, (float *)log10_Mcrit_LW_filtered, FFTW_ESTIMATE);
+                }
+                fftwf_execute(plan);
 
-				log10_Mcrit_LW_ave = 0; //recalculate it at this filtering scale
-				for (i=0; i<HII_DIM; i++){
-				  for (j=0; j<HII_DIM; j++){
-					for (k=0; k<HII_DIM; k++){
-					  log10_Mcrit_LW[R_ct][HII_R_INDEX(i,j,k)] = *((float *) log10_Mcrit_LW_filtered + HII_R_FFT_INDEX(i,j,k));
-					  if(log10_Mcrit_LW[R_ct][HII_R_INDEX(i,j,k)] < log10_Mcrit_mol)
-						  log10_Mcrit_LW[R_ct][HII_R_INDEX(i,j,k)] = log10_Mcrit_mol;
-					  if (log10_Mcrit_LW[R_ct][HII_R_INDEX(i,j,k)] > LOG10MTURN_MAX)
-						  log10_Mcrit_LW[R_ct][HII_R_INDEX(i,j,k)] = LOG10MTURN_MAX;
-					  log10_Mcrit_LW_ave += log10_Mcrit_LW[R_ct][HII_R_INDEX(i,j,k)];
-					}
-				  }
-				}
-				log10_Mcrit_LW_ave /= HII_TOT_NUM_PIXELS;
-				log10_Mcrit_LW_ave_int_fcollz = (int)floor( ( log10_Mcrit_LW_ave - LOG10MTURN_MIN) / LOG10MTURN_INT);
-				log10_Mcrit_LW_ave_table_fcollz = LOG10MTURN_MIN + LOG10MTURN_INT * (float)log10_Mcrit_LW_ave_int_fcollz;
+                log10_Mcrit_LW_ave = 0; //recalculate it at this filtering scale
+                for (i=0; i<HII_DIM; i++){
+                  for (j=0; j<HII_DIM; j++){
+                    for (k=0; k<HII_DIM; k++){
+                      log10_Mcrit_LW[R_ct][HII_R_INDEX(i,j,k)] = *((float *) log10_Mcrit_LW_filtered + HII_R_FFT_INDEX(i,j,k));
+                      if(log10_Mcrit_LW[R_ct][HII_R_INDEX(i,j,k)] < log10_Mcrit_mol)
+                          log10_Mcrit_LW[R_ct][HII_R_INDEX(i,j,k)] = log10_Mcrit_mol;
+                      if (log10_Mcrit_LW[R_ct][HII_R_INDEX(i,j,k)] > LOG10MTURN_MAX)
+                          log10_Mcrit_LW[R_ct][HII_R_INDEX(i,j,k)] = LOG10MTURN_MAX;
+                      log10_Mcrit_LW_ave += log10_Mcrit_LW[R_ct][HII_R_INDEX(i,j,k)];
+                    }
+                  }
+                }
+                log10_Mcrit_LW_ave /= HII_TOT_NUM_PIXELS;
+                log10_Mcrit_LW_ave_int_fcollz = (int)floor( ( log10_Mcrit_LW_ave - LOG10MTURN_MIN) / LOG10MTURN_INT);
+                log10_Mcrit_LW_ave_table_fcollz = LOG10MTURN_MIN + LOG10MTURN_INT * (float)log10_Mcrit_LW_ave_int_fcollz;
 #endif
 
                 if (USE_MASS_DEPENDENT_ZETA) { 
@@ -1679,18 +1699,18 @@ void ComputeTsBoxes() {
                     redshift_table_fcollz_diff_Xray = ( zpp - determine_zpp_min - zpp_bin_width*(float)redshift_int_fcollz_Xray ) /zpp_bin_width;
                     
                     Splined_Fcollzpp_X_mean = FcollzX_val[redshift_int_fcollz_Xray] + redshift_table_fcollz_diff_Xray *( FcollzX_val[redshift_int_fcollz_Xray+1] - FcollzX_val[redshift_int_fcollz_Xray] );
-					if (Splined_Fcollzpp_X_mean < 0.) Splined_Fcollzpp_X_mean = 1e-40;
+                    if (Splined_Fcollzpp_X_mean < 0.) Splined_Fcollzpp_X_mean = 1e-40;
 
                     ST_over_PS[R_ct] = pow(1.+zpp, -X_RAY_SPEC_INDEX)*fabs(dzpp_for_evolve);
                     ST_over_PS[R_ct] *= Splined_Fcollzpp_X_mean;
 #ifdef MINI_HALO
-					index_left = redshift_int_fcollz_Xray + zpp_interp_points_SFR * log10_Mcrit_LW_ave_int_fcollz;
-					index_right = redshift_int_fcollz_Xray + zpp_interp_points_SFR * (log10_Mcrit_LW_ave_int_fcollz + 1);
-					// for log10_Mcrit_LW_ave_int_fcollz, we don't know how it evovles, so just use the same...
-	                Splined_Fcollzpp_X_mean_MINI_left = FcollzX_val_MINI[index_left] +  redshift_table_fcollz_diff_Xray * ( FcollzX_val_MINI[index_left + 1] - FcollzX_val_MINI[index_left] );
-        	        Splined_Fcollzpp_X_mean_MINI_right = FcollzX_val_MINI[index_right] + redshift_table_fcollz_diff_Xray * ( FcollzX_val_MINI[index_right + 1] - FcollzX_val_MINI[index_right]);
-					Splined_Fcollzpp_X_mean_MINI = Splined_Fcollzpp_X_mean_MINI_left + (log10_Mcrit_LW_ave - log10_Mcrit_LW_ave_table_fcollz) / LOG10MTURN_INT * ( Splined_Fcollzpp_X_mean_MINI_right - Splined_Fcollzpp_X_mean_MINI_left );
-					if (Splined_Fcollzpp_X_mean_MINI < 0.) Splined_Fcollzpp_X_mean_MINI = 1e-40;
+                    index_left = redshift_int_fcollz_Xray + zpp_interp_points_SFR * log10_Mcrit_LW_ave_int_fcollz;
+                    index_right = redshift_int_fcollz_Xray + zpp_interp_points_SFR * (log10_Mcrit_LW_ave_int_fcollz + 1);
+                    // for log10_Mcrit_LW_ave_int_fcollz, we don't know how it evovles, so just use the same...
+                    Splined_Fcollzpp_X_mean_MINI_left = FcollzX_val_MINI[index_left] +  redshift_table_fcollz_diff_Xray * ( FcollzX_val_MINI[index_left + 1] - FcollzX_val_MINI[index_left] );
+                    Splined_Fcollzpp_X_mean_MINI_right = FcollzX_val_MINI[index_right] + redshift_table_fcollz_diff_Xray * ( FcollzX_val_MINI[index_right + 1] - FcollzX_val_MINI[index_right]);
+                    Splined_Fcollzpp_X_mean_MINI = Splined_Fcollzpp_X_mean_MINI_left + (log10_Mcrit_LW_ave - log10_Mcrit_LW_ave_table_fcollz) / LOG10MTURN_INT * ( Splined_Fcollzpp_X_mean_MINI_right - Splined_Fcollzpp_X_mean_MINI_left );
+                    if (Splined_Fcollzpp_X_mean_MINI < 0.) Splined_Fcollzpp_X_mean_MINI = 1e-40;
 
                     ST_over_PS_MINI[R_ct] = pow(1.+zpp, -X_RAY_SPEC_INDEX_MINI)*fabs(dzpp_for_evolve);
                     ST_over_PS_MINI[R_ct] *= Splined_Fcollzpp_X_mean_MINI;
@@ -1761,8 +1781,8 @@ void ComputeTsBoxes() {
                 sum_lyn[R_ct] = 0;
 #ifdef MINI_HALO
                 sum_lyn_MINI[R_ct] = 0;
-				sum_lyLWn[R_ct] = 0;
-				sum_lyLWn_MINI[R_ct] = 0;
+                sum_lyLWn[R_ct] = 0;
+                sum_lyLWn_MINI[R_ct] = 0;
 #endif
                 for (n_ct=NSPEC_MAX; n_ct>=2; n_ct--){
                     if (zpp > zmax(zp, n_ct))
@@ -1770,14 +1790,14 @@ void ComputeTsBoxes() {
                 
                     nuprime = nu_n(n_ct)*(1.+zpp)/(1.0+zp);
 #ifdef MINI_HALO
-					sum_lyn[R_ct]  += frecycle(n_ct) * spectral_emissivity(nuprime, 0, 2);
-					sum_lyn_MINI[R_ct] += frecycle(n_ct) * spectral_emissivity(nuprime, 0, 3);
-					if (nuprime < NU_LW_THRESH / NUIONIZATION)
-						nuprime = NU_LW_THRESH / NUIONIZATION;
-					if (nuprime >= nu_n(n_ct + 1))
-						continue;
-					sum_lyLWn[R_ct]  += spectral_emissivity(nuprime, 3, 2);
-					sum_lyLWn_MINI[R_ct] += spectral_emissivity(nuprime, 3, 3);
+                    sum_lyn[R_ct]  += frecycle(n_ct) * spectral_emissivity(nuprime, 0, 2);
+                    sum_lyn_MINI[R_ct] += frecycle(n_ct) * spectral_emissivity(nuprime, 0, 3);
+                    if (nuprime < NU_LW_THRESH / NUIONIZATION)
+                        nuprime = NU_LW_THRESH / NUIONIZATION;
+                    if (nuprime >= nu_n(n_ct + 1))
+                        continue;
+                    sum_lyLWn[R_ct]  += spectral_emissivity(nuprime, 3, 2);
+                    sum_lyLWn_MINI[R_ct] += spectral_emissivity(nuprime, 3, 3);
 #else
                     sum_lyn[R_ct] += frecycle(n_ct) * spectral_emissivity(nuprime, 0);
 #endif
@@ -1859,7 +1879,7 @@ void ComputeTsBoxes() {
         
             J_alpha_ave = xalpha_ave = Xheat_ave = Xion_ave = 0.;
 #ifdef MINI_HALO
-			J_LW_ave = 0.;
+            J_alpha_ave_MINI = J_LW_ave = J_LW_ave_MINI = Xheat_ave_MINI = 0.;
 #endif
         
             // Extra pre-factors etc. are defined here, as they are independent of the density field, and only have to be computed once per z' or R_ct, rather than each box_ct
@@ -1978,9 +1998,9 @@ void ComputeTsBoxes() {
                     
                         curr_dens = delNL0[R_ct][box_ct]*zpp_growth[R_ct];
 #ifdef MINI_HALO
-						log10_Mcrit_LW_val = ( log10_Mcrit_LW[R_ct][box_ct] - LOG10MTURN_MIN) / LOG10MTURN_INT;
-						log10_Mcrit_LW_int = (int)floorf( log10_Mcrit_LW_val );
-						log10_Mcrit_LW_diff = log10_Mcrit_LW_val - (float)log10_Mcrit_LW_int;
+                        log10_Mcrit_LW_val = ( log10_Mcrit_LW[R_ct][box_ct] - LOG10MTURN_MIN) / LOG10MTURN_INT;
+                        log10_Mcrit_LW_int = (int)floorf( log10_Mcrit_LW_val );
+                        log10_Mcrit_LW_diff = log10_Mcrit_LW_val - (float)log10_Mcrit_LW_int;
 #endif
                         
                         // Note: Be careful how I have defined this. I have done this for optimisation rather than readability
@@ -1999,7 +2019,7 @@ void ComputeTsBoxes() {
                                     dens_val = (log10f(curr_dens+1.) - fcoll_interp_min)*fcoll_interp_bin_width_inv;
                                         
                                     dens_int = (int)floorf( dens_val );
-									dens_diff = dens_val - (float)dens_int;
+                                    dens_diff = dens_val - (float)dens_int;
                                     
                                     fcoll = log10_Fcollz_SFR_Xray_low_table[counter][R_ct][dens_int]*(1.-dens_diff) + log10_Fcollz_SFR_Xray_low_table[counter][R_ct][dens_int+1]*dens_diff;
                                     
@@ -2008,12 +2028,12 @@ void ComputeTsBoxes() {
                                     // The log(10) is implicitly in the interpolation table already
                                     fcoll = expf(fcoll);
 #ifdef MINI_HALO
-									index_left = dens_int+log10_Mcrit_LW_int*NSFR_low;
-									index_right = dens_int+(log10_Mcrit_LW_int+1)*NSFR_low;
+                                    index_left = dens_int+log10_Mcrit_LW_int*NSFR_low;
+                                    index_right = dens_int+(log10_Mcrit_LW_int+1)*NSFR_low;
                                     fcoll_MINI_left = log10_Fcollz_SFR_Xray_low_table_MINI[counter][R_ct][index_left]*(1.-dens_diff) + log10_Fcollz_SFR_Xray_low_table_MINI[counter][R_ct][index_left+1]*dens_diff;
                                     fcoll_MINI_right = log10_Fcollz_SFR_Xray_low_table_MINI[counter][R_ct][index_right]*(1.-dens_diff) + log10_Fcollz_SFR_Xray_low_table_MINI[counter][R_ct][index_right+1]*dens_diff;
-									fcoll_MINI = fcoll_MINI_left * (1.-log10_Mcrit_LW_diff) + fcoll_MINI_right * log10_Mcrit_LW_diff;
-									fcoll_MINI = expf(fcoll_MINI);
+                                    fcoll_MINI = fcoll_MINI_left * (1.-log10_Mcrit_LW_diff) + fcoll_MINI_right * log10_Mcrit_LW_diff;
+                                    fcoll_MINI = expf(fcoll_MINI);
 #endif
                                 }
                             }
@@ -2023,15 +2043,15 @@ void ComputeTsBoxes() {
                                     dens_val = (curr_dens - fcoll_interp_high_min)*fcoll_interp_high_bin_width_inv;
                                     
                                     dens_int = (int)floorf( dens_val );
-									dens_diff = dens_val - (float)dens_int;
+                                    dens_diff = dens_val - (float)dens_int;
 
                                     fcoll = Fcollz_SFR_Xray_high_table[counter][R_ct][dens_int]*(1.-dens_diff) + Fcollz_SFR_Xray_high_table[counter][R_ct][dens_int+1]*dens_diff;
 #ifdef MINI_HALO
-									index_left = dens_int+log10_Mcrit_LW_int*NSFR_high;
-									index_right = dens_int+(log10_Mcrit_LW_int+1)*NSFR_high;
-									fcoll_MINI_left = Fcollz_SFR_Xray_high_table_MINI[counter][R_ct][index_left]*(1.-dens_diff) + Fcollz_SFR_Xray_high_table_MINI[counter][R_ct][index_left+1]*dens_diff;
-									fcoll_MINI_right = Fcollz_SFR_Xray_high_table_MINI[counter][R_ct][index_right]*(1.-dens_diff) + Fcollz_SFR_Xray_high_table_MINI[counter][R_ct][index_right+1]*dens_diff;
-									fcoll_MINI = fcoll_MINI_left * (1 + (float)log10_Mcrit_LW_int - log10_Mcrit_LW_val) + fcoll_MINI_right * (log10_Mcrit_LW_val - (float)log10_Mcrit_LW_int);
+                                    index_left = dens_int+log10_Mcrit_LW_int*NSFR_high;
+                                    index_right = dens_int+(log10_Mcrit_LW_int+1)*NSFR_high;
+                                    fcoll_MINI_left = Fcollz_SFR_Xray_high_table_MINI[counter][R_ct][index_left]*(1.-dens_diff) + Fcollz_SFR_Xray_high_table_MINI[counter][R_ct][index_left+1]*dens_diff;
+                                    fcoll_MINI_right = Fcollz_SFR_Xray_high_table_MINI[counter][R_ct][index_right]*(1.-dens_diff) + Fcollz_SFR_Xray_high_table_MINI[counter][R_ct][index_right+1]*dens_diff;
+                                    fcoll_MINI = fcoll_MINI_left * (1 + (float)log10_Mcrit_LW_int - log10_Mcrit_LW_val) + fcoll_MINI_right * (log10_Mcrit_LW_val - (float)log10_Mcrit_LW_int);
 #endif
 
                                 }
@@ -2041,7 +2061,7 @@ void ComputeTsBoxes() {
                                     fcoll = pow(10.,10.);
 //                                    fcoll = 1.;
 #ifdef MINI_HALO
-									fcoll_MINI = pow(10.,10.);
+                                    fcoll_MINI = pow(10.,10.);
 #endif
                                 }
                             }
@@ -2106,7 +2126,7 @@ void ComputeTsBoxes() {
                                 dxlya_dt_box[box_ct] += (dfcoll_dz_val*(double)SFR_for_integrals_Rct[box_ct]*( (freq_int_lya_tbl_diff[m_xHII_low_box[box_ct]][R_ct])*inverse_val_box[box_ct] + freq_int_lya_tbl[m_xHII_low_box[box_ct]][R_ct] ));
                                 dstarlya_dt_box[box_ct] += (double)SFR_for_integrals_Rct[box_ct]*dstarlya_dt_prefactor[R_ct];
 #ifdef MINI_HALO
-								dstarlyLW_dt_box[box_ct] += (double)SFR_for_integrals_Rct[box_ct]*dstarlyLW_dt_prefactor[R_ct];;
+                                dstarlyLW_dt_box[box_ct] += (double)SFR_for_integrals_Rct[box_ct]*dstarlyLW_dt_prefactor[R_ct];;
 #endif
                                 
                             }
@@ -2114,7 +2134,7 @@ void ComputeTsBoxes() {
                                 dxlya_dt_box[box_ct] += 0.;
                                 dstarlya_dt_box[box_ct] += 0.;
 #ifdef MINI_HALO
-								dstarlyLW_dt_box[box_ct] += 0.;
+                                dstarlyLW_dt_box[box_ct] += 0.;
 #endif
                             }
                         }
@@ -2133,13 +2153,13 @@ void ComputeTsBoxes() {
                             if(ave_fcoll_MINI!=0.) {
                                 dxlya_dt_box_MINI[box_ct] += (dfcoll_dz_val_MINI*(double)SFR_for_integrals_Rct_MINI[box_ct]*( (freq_int_lya_tbl_diff_MINI[m_xHII_low_box[box_ct]][R_ct])*inverse_val_box[box_ct] + freq_int_lya_tbl_MINI[m_xHII_low_box[box_ct]][R_ct] ));
                                 dstarlya_dt_box_MINI[box_ct] += (double)SFR_for_integrals_Rct_MINI[box_ct]*dstarlya_dt_prefactor_MINI[R_ct];
-								dstarlyLW_dt_box_MINI[box_ct] += (double)SFR_for_integrals_Rct_MINI[box_ct]*dstarlyLW_dt_prefactor_MINI[R_ct];;
+                                dstarlyLW_dt_box_MINI[box_ct] += (double)SFR_for_integrals_Rct_MINI[box_ct]*dstarlyLW_dt_prefactor_MINI[R_ct];;
                                 
                             }
                             else {
                                 dxlya_dt_box_MINI[box_ct] += 0.;
                                 dstarlya_dt_box_MINI[box_ct] += 0.;
-								dstarlyLW_dt_box_MINI[box_ct] += 0.;
+                                dstarlyLW_dt_box_MINI[box_ct] += 0.;
                             }
                         }
 #endif
@@ -2157,7 +2177,7 @@ void ComputeTsBoxes() {
                                 dxlya_dt_box[box_ct] *= const_zp_prefactor*prefactor_1 * (1.+delNL0[0][box_ct]*growth_factor_zp);
                                 dstarlya_dt_box[box_ct] *= prefactor_2;
 #ifdef MINI_HALO
-								dstarlyLW_dt_box[box_ct] *= prefactor_2 * (hplank * 1e21);
+                                dstarlyLW_dt_box[box_ct] *= prefactor_2 * (hplank * 1e21);
 #endif
                             }
 #ifdef MINI_HALO
@@ -2166,7 +2186,7 @@ void ComputeTsBoxes() {
                             if (COMPUTE_Ts){
                                 dxlya_dt_box_MINI[box_ct] *= const_zp_prefactor_MINI*prefactor_1 * (1.+delNL0[0][box_ct]*growth_factor_zp);
                                 dstarlya_dt_box_MINI[box_ct] *= prefactor_2_MINI;
-								dstarlyLW_dt_box_MINI[box_ct] *= prefactor_2_MINI * (hplank * 1e21);
+                                dstarlyLW_dt_box_MINI[box_ct] *= prefactor_2_MINI * (hplank * 1e21);
                             }
 #endif
                             
@@ -2196,10 +2216,9 @@ void ComputeTsBoxes() {
                             dcomp_dzp = dcomp_dzp_prefactor*(x_e/(1.0+x_e+f_He))*( Trad_fast - T );
                             
                             // lastly, X-ray heating
-#ifdef MINI_HALO
-                            dxheat_dzp = (dxheat_dt_box[box_ct] + dxheat_dt_box_MINI[box_ct])* dt_dzp * 2.0 / 3.0 / k_B / (1.0+x_e);
-#else
                             dxheat_dzp = dxheat_dt_box[box_ct] * dt_dzp * 2.0 / 3.0 / k_B / (1.0+x_e);
+#ifdef MINI_HALO
+                            dxheat_dzp_MINI = dxheat_dt_box_MINI[box_ct]* dt_dzp * 2.0 / 3.0 / k_B / (1.0+x_e);
 #endif
                             
                             //update quantities
@@ -2210,6 +2229,9 @@ void ComputeTsBoxes() {
                                 x_e = 0;
                             if (T < MAX_TK) {
                                 T += ( dxheat_dzp + dcomp_dzp + dspec_dzp + dadia_dzp ) * dzp;
+#ifdef MINI_HALO
+                                T += dxheat_dzp_MINI * dzp;
+#endif
                             }
                             
                             if (T<0){ // spurious bahaviour of the trapazoidalintegrator. generally overcooling in underdensities
@@ -2222,8 +2244,8 @@ void ComputeTsBoxes() {
                             if (COMPUTE_Ts){
                                 J_alpha_tot = dxlya_dt_box[box_ct] + dstarlya_dt_box[box_ct]; //not really d/dz, but the lya flux
 #ifdef MINI_HALO
-                                J_alpha_tot += dxlya_dt_box_MINI[box_ct] + dstarlya_dt_box_MINI[box_ct]; //not really d/dz, but the lya flux
-								J_21_LW[box_ct] = dstarlyLW_dt_box[box_ct] + dstarlyLW_dt_box_MINI[box_ct];
+                                J_alpha_tot_MINI = dxlya_dt_box_MINI[box_ct] + dstarlya_dt_box_MINI[box_ct]; //not really d/dz, but the lya flux
+                                J_21_LW[box_ct] = dstarlyLW_dt_box[box_ct] + dstarlyLW_dt_box_MINI[box_ct];
 #endif
 
                                 // Note: to make the code run faster, the get_Ts function call to evaluate the spin temperature was replaced with the code below.
@@ -2234,10 +2256,10 @@ void ComputeTsBoxes() {
                                 xc_fast = (1.0+delNL0[0][box_ct]*growth_factor_zp)*xc_inverse*( (1.0-x_e)*No*kappa_10_float(T,0) + x_e*N_b0*kappa_10_elec_float(T,0) + x_e*No*kappa_10_pH_float(T,0) );
 
                                 xi_power = TS_prefactor * cbrt((1.0+delNL0[0][box_ct]*growth_factor_zp)*(1.0-x_e)*T_inv_sq);
-                                xa_tilde_fast_arg = xa_tilde_prefactor*J_alpha_tot*pow( 1.0 + 2.98394*xi_power + 1.53583*xi_power*xi_power + 3.85289*xi_power*xi_power*xi_power, -1. );
+                                xa_tilde_fast_arg = xa_tilde_prefactor*(J_alpha_tot+J_alpha_tot_MINI)*pow( 1.0 + 2.98394*xi_power + 1.53583*xi_power*xi_power + 3.85289*xi_power*xi_power*xi_power, -1. );
                             
                                 // New in v1.4
-                                if (fabs(J_alpha_tot) > 1.0e-20) { // Must use WF effect
+                                if (fabs(J_alpha_tot+J_alpha_tot_MINI) > 1.0e-20) { // Must use WF effect
                                     TS_fast = Trad_fast;
                                     TSold_fast = 0.0;
                                     while (fabs(TS_fast-TSold_fast)/TS_fast > 1.0e-3) {
@@ -2263,11 +2285,14 @@ void ComputeTsBoxes() {
                                     J_alpha_ave += J_alpha_tot;
                                     xalpha_ave += xa_tilde_fast;
                                     Xheat_ave += ( dxheat_dzp );
+                                    Xheat_ave_MINI += ( dxheat_dzp_MINI );
                                     Xion_ave += ( dt_dzp*dxion_source_dt_box[box_ct] );
                                     Ts_ave += TS_fast;
                                     Tk_ave += T;
 #ifdef MINI_HALO
-									J_LW_ave += J_21_LW[box_ct];
+                                    J_alpha_ave_MINI += J_alpha_tot_MINI;
+                                    J_LW_ave += dstarlyLW_dt_box[box_ct];
+                                    J_LW_ave_MINI += dstarlyLW_dt_box_MINI[box_ct];
 #endif
                                 }
                             }
@@ -2400,7 +2425,7 @@ void ComputeTsBoxes() {
                                 TS_fast = (1.0+xa_tilde_fast+xc_fast)*pow(Trad_fast_inv+xa_tilde_fast*( T_inv + 0.405535*T_inv*pow(TS_fast,-1.) - 0.405535*T_inv_sq ) + xc_fast*T_inv,-1.);
                             }
                         }
-						else { // Collisions only
+                        else { // Collisions only
                             TS_fast = (1.0 + xc_fast)/(Trad_fast_inv + xc_fast*T_inv);
                             xa_tilde_fast = 0.0;
                         }
@@ -2443,6 +2468,7 @@ void ComputeTsBoxes() {
                     else {
                         nf_ave = ComputeIonisationBoxes(i_z,redshifts[i_z],redshifts[i_z-1]);
                     }
+                    break;
                 }
             }
             
@@ -2451,7 +2477,7 @@ void ComputeTsBoxes() {
             // compute new average values
             x_e_ave /= (double)HII_TOT_NUM_PIXELS;
             
-            if(OUTPUT_AVE) {
+            if(STORE_DATA || OUTPUT_AVE) {
                 Ts_ave /= (double)HII_TOT_NUM_PIXELS;
                 Tk_ave /= (double)HII_TOT_NUM_PIXELS;
                 J_alpha_ave /= (double)HII_TOT_NUM_PIXELS;
@@ -2459,11 +2485,24 @@ void ComputeTsBoxes() {
                 Xheat_ave /= (double)HII_TOT_NUM_PIXELS;
                 Xion_ave /= (double)HII_TOT_NUM_PIXELS;
 #ifdef MINI_HALO
+                J_alpha_ave_MINI /= (double)HII_TOT_NUM_PIXELS;
+                Xheat_ave_MINI /= (double)HII_TOT_NUM_PIXELS;
                 J_LW_ave /= (double)HII_TOT_NUM_PIXELS;
+                J_LW_ave_MINI /= (double)HII_TOT_NUM_PIXELS;
+                aveJ_21_LW[i_z] = J_LW_ave;
+                aveJ_21_LW_MINI[i_z] = J_LW_ave_MINI;
+                aveJ_alpha[i_z] = J_alpha_ave;
+                aveJ_alpha_MINI[i_z] = J_alpha_ave_MINI;
+                aveXheat[i_z] = Xheat_ave;
+                aveXheat_MINI[i_z] = Xheat_ave_MINI;
+                aveNion[i_z] = Splined_Fcollzp_mean * ION_EFF_FACTOR;
+                aveNion_MINI[i_z] = Splined_Fcollzp_mean_MINI * ION_EFF_FACTOR_MINI;
 #endif
+            }
         
 #ifdef MINI_HALO
-                printf("zp = %.2f nf_ave = %e Ts_ave = %e x_e_ave = %e Tk_ave = %e J_alpha_ave = %e xalpha_ave = %e Xheat_ave = %e Xion_ave = %e J_LW_ave = %e\n",zp,nf_ave,Ts_ave,x_e_ave,Tk_ave,J_alpha_ave,xalpha_ave,Xheat_ave,Xion_ave,J_LW_ave*1e-21);
+            if(OUTPUT_AVE) {
+                printf("zp = %.2f nf_ave = %e Ts_ave = %e x_e_ave = %e Tk_ave = %e J_alpha_ave = %e (%e) xalpha_ave = %e Xheat_ave = %e (%e) Xion_ave = %e J_LW_ave = %e (%e)\n",zp,nf_ave,Ts_ave,x_e_ave,Tk_ave,J_alpha_ave,J_alpha_ave_MINI,xalpha_ave,Xheat_ave,Xheat_ave_MINI,Xion_ave,J_LW_ave*1e-21, J_LW_ave_MINI * 1e-21);
 #else
                 printf("zp = %.2f nf_ave = %e Ts_ave = %e x_e_ave = %e Tk_ave = %e J_alpha_ave = %e xalpha_ave = %e Xheat_ave = %e Xion_ave = %e\n",zp,nf_ave,Ts_ave,x_e_ave,Tk_ave,J_alpha_ave,xalpha_ave,Xheat_ave,Xion_ave);
 #endif
@@ -2480,21 +2519,21 @@ void ComputeTsBoxes() {
         destroy_21cmMC_Ts_arrays();
         destruct_heat();
 #ifdef MINI_HALO
-	    for (R_ct=0; R_ct<NUM_FILTER_STEPS_FOR_Ts; R_ct++){
-		    free(log10_Mcrit_LW[R_ct]); 
-		}
+        for (R_ct=0; R_ct<NUM_FILTER_STEPS_FOR_Ts; R_ct++){
+            free(log10_Mcrit_LW[R_ct]); 
+        }
 #endif
     }
     
-	if(!USE_MASS_DEPENDENT_ZETA) {
+    if(!USE_MASS_DEPENDENT_ZETA) {
         for(i=0;i<Numzp_for_table;i++) {
-        	for(j=0;j<X_RAY_Tvir_POINTS;j++) {
-            	free(Fcoll_R_Table[i][j]);
-	        }
-    	    free(Fcoll_R_Table[i]);
-    	}
-    	free(Fcoll_R_Table);
-	}
+            for(j=0;j<X_RAY_Tvir_POINTS;j++) {
+                free(Fcoll_R_Table[i][j]);
+            }
+            free(Fcoll_R_Table[i]);
+        }
+        free(Fcoll_R_Table);
+    }
 }
 
 float ComputeIonisationBoxes(int sample_index, float REDSHIFT_SAMPLE, float PREV_REDSHIFT) {
@@ -2519,11 +2558,11 @@ float ComputeIonisationBoxes(int sample_index, float REDSHIFT_SAMPLE, float PREV
 #ifdef MINI_HALO
     float Splined_Fcoll_left, Splined_Fcoll_right;
     float Splined_Fcoll_MINI,Splined_Fcoll_MINI_left, Splined_Fcoll_MINI_right;
-	float prev_dens;
+    float prev_dens;
     float prev_Splined_Fcoll,prev_Splined_Fcoll_left,prev_Splined_Fcoll_right;
     float prev_Splined_Fcoll_MINI,prev_Splined_Fcoll_MINI_left, prev_Splined_Fcoll_MINI_right;
-	double ST_over_PS_HII_MINI, mean_f_coll_st_MINI, f_coll_MINI, f_coll_min_MINI;
-	int index_left, index_right;
+    double ST_over_PS_HII_MINI, mean_f_coll_st_MINI, f_coll_MINI, f_coll_min_MINI;
+    int index_left, index_right;
 #endif
     
     double t_ast, dfcolldt, Gamma_R_prefactor, rec, dNrec;
@@ -2534,11 +2573,11 @@ float ComputeIonisationBoxes(int sample_index, float REDSHIFT_SAMPLE, float PREV
     
     int redshift_int_fcollz;
 #ifdef MINI_HALO
-	double Gamma_R_prefactor_MINI;
-	double log10_Mmin, log10_Mmin_MINI;
-	float log10_Mmin_ave_table_fcollz, log10_Mmin_MINI_ave_table_fcollz,log10_Mmin_ave_table_fcollz_diff,log10_Mmin_MINI_ave_table_fcollz_diff;
-	int log10_Mmin_ave_int_fcollz, log10_Mmin_MINI_ave_int_fcollz;
-	double Mcrit_atom, Mcrit_RE, Mcrit_LW, log10_Mcrit_atom, log10_Mcrit_mol, Mmin, Mmin_MINI;
+    double Gamma_R_prefactor_MINI;
+    double log10_Mmin, log10_Mmin_MINI;
+    float log10_Mmin_ave_table_fcollz, log10_Mmin_MINI_ave_table_fcollz,log10_Mmin_ave_table_fcollz_diff,log10_Mmin_MINI_ave_table_fcollz_diff;
+    int log10_Mmin_ave_int_fcollz, log10_Mmin_MINI_ave_int_fcollz;
+    double Mcrit_atom, Mcrit_RE, Mcrit_LW, log10_Mcrit_atom, log10_Mcrit_mol, Mmin, Mmin_MINI;
 #endif
     
     float ln_10;
@@ -2549,8 +2588,8 @@ float ComputeIonisationBoxes(int sample_index, float REDSHIFT_SAMPLE, float PREV
     
     int overdense_int;
 #ifdef MINI_HALO
-	float log10_Mmin_val, log10_Mmin_MINI_val, log10_Mmin_diff, log10_Mmin_MINI_diff, prev_dens_val, prev_dens_diff, dens_diff;
-	int   log10_Mmin_int, log10_Mmin_MINI_int, prev_overdense_int;
+    float log10_Mmin_val, log10_Mmin_MINI_val, log10_Mmin_diff, log10_Mmin_MINI_diff, prev_dens_val, prev_dens_diff, dens_diff;
+    int   log10_Mmin_int, log10_Mmin_MINI_int, prev_overdense_int;
 #endif
     
     overdense_large_min = 1.5*0.999;
@@ -2572,7 +2611,7 @@ float ComputeIonisationBoxes(int sample_index, float REDSHIFT_SAMPLE, float PREV
     float RSD_pos_new, RSD_pos_new_boundary_low,RSD_pos_new_boundary_high, fraction_within, fraction_outside, cell_distance;
     float Mlim_Fstar, Mlim_Fesc; // New in v1.4
 #ifdef MINI_HALO
-	float Mlim_Fstar_MINI;
+    float Mlim_Fstar_MINI;
 #endif
 
     float min_density, max_density;
@@ -2736,34 +2775,34 @@ float ComputeIonisationBoxes(int sample_index, float REDSHIFT_SAMPLE, float PREV
     //set the minimum source mass
     if (USE_MASS_DEPENDENT_ZETA) {
 #ifdef MINI_HALO
-		Mcrit_atom                 = atomic_cooling_threshold(REDSHIFT_SAMPLE);
-		log10_Mcrit_atom           = log10(Mcrit_atom);
-		log10_Mcrit_mol            = log10(lyman_werner_threshold(REDSHIFT_SAMPLE, 0.));
-		log10_Mmin_ave[sample_index] = 0.;
-		log10_Mmin_MINI_ave[sample_index] = 0.;
-		for (x=0; x<HII_DIM; x++){
-			for (y=0; y<HII_DIM; y++){
-				for (z=0; z<HII_DIM; z++){
-					Mcrit_RE        = reionization_feedback(REDSHIFT_SAMPLE, Gamma12[HII_R_INDEX(x, y, z)], z_re[HII_R_INDEX(x, y, z)]);
-					Mcrit_LW        = lyman_werner_threshold(REDSHIFT_SAMPLE, prev_J_21_LW[HII_R_INDEX(x, y, z)]);
-					Mmin            = Mcrit_RE > Mcrit_atom ? Mcrit_RE : Mcrit_atom;
-					Mmin_MINI       = Mcrit_RE > Mcrit_LW   ? Mcrit_RE : Mcrit_LW;
-					log10_Mmin      = log10(Mmin);
-					log10_Mmin_MINI = log10(Mmin_MINI);
-					prev_J_21_LW[HII_R_INDEX(x, y, z)] = J_21_LW[HII_R_INDEX(x, y, z)];
+        Mcrit_atom                 = atomic_cooling_threshold(REDSHIFT_SAMPLE);
+        log10_Mcrit_atom           = log10(Mcrit_atom);
+        log10_Mcrit_mol            = log10(lyman_werner_threshold(REDSHIFT_SAMPLE, 0.));
+        log10_Mmin_ave[sample_index] = 0.;
+        log10_Mmin_MINI_ave[sample_index] = 0.;
+        for (x=0; x<HII_DIM; x++){
+            for (y=0; y<HII_DIM; y++){
+                for (z=0; z<HII_DIM; z++){
+                    Mcrit_RE        = reionization_feedback(REDSHIFT_SAMPLE, Gamma12[HII_R_INDEX(x, y, z)], z_re[HII_R_INDEX(x, y, z)]);
+                    Mcrit_LW        = lyman_werner_threshold(REDSHIFT_SAMPLE, prev_J_21_LW[HII_R_INDEX(x, y, z)]);
+                    Mmin            = Mcrit_RE > Mcrit_atom ? Mcrit_RE : Mcrit_atom;
+                    Mmin_MINI       = Mcrit_RE > Mcrit_LW   ? Mcrit_RE : Mcrit_LW;
+                    log10_Mmin      = log10(Mmin);
+                    log10_Mmin_MINI = log10(Mmin_MINI);
+                    prev_J_21_LW[HII_R_INDEX(x, y, z)] = J_21_LW[HII_R_INDEX(x, y, z)];
 
-					*((float *)log10_Mmin_unfiltered + HII_R_FFT_INDEX(x,y,z))      = log10_Mmin;
-					*((float *)log10_Mmin_MINI_unfiltered + HII_R_FFT_INDEX(x,y,z)) = log10_Mmin_MINI;
+                    *((float *)log10_Mmin_unfiltered + HII_R_FFT_INDEX(x,y,z))      = log10_Mmin;
+                    *((float *)log10_Mmin_MINI_unfiltered + HII_R_FFT_INDEX(x,y,z)) = log10_Mmin_MINI;
 
-					log10_Mmin_ave[sample_index]      += log10_Mmin;
-					log10_Mmin_MINI_ave[sample_index] += log10_Mmin_MINI;
-				}
-			}
-		}
-		log10_Mmin_ave[sample_index]      /= HII_TOT_NUM_PIXELS;
-		log10_Mmin_MINI_ave[sample_index] /= HII_TOT_NUM_PIXELS;
-		Mmin                 = pow(10., log10_Mmin_ave[sample_index]);
-		Mmin_MINI            = pow(10., log10_Mmin_MINI_ave[sample_index]);
+                    log10_Mmin_ave[sample_index]      += log10_Mmin;
+                    log10_Mmin_MINI_ave[sample_index] += log10_Mmin_MINI;
+                }
+            }
+        }
+        log10_Mmin_ave[sample_index]      /= HII_TOT_NUM_PIXELS;
+        log10_Mmin_MINI_ave[sample_index] /= HII_TOT_NUM_PIXELS;
+        Mmin                 = pow(10., log10_Mmin_ave[sample_index]);
+        Mmin_MINI            = pow(10., log10_Mmin_MINI_ave[sample_index]);
         M_MIN = 1e5;
         Mlim_Fstar = Mass_limit_bisection(M_MIN, 1e16,  ALPHA_STAR, F_STAR10);
         Mlim_Fesc = Mass_limit_bisection(M_MIN, 1e16, ALPHA_ESC, F_ESC10);
@@ -2801,23 +2840,23 @@ float ComputeIonisationBoxes(int sample_index, float REDSHIFT_SAMPLE, float PREV
             redshift_table_fcollz_diff = ( REDSHIFT_SAMPLE - determine_zpp_min - zpp_bin_width*(float)redshift_int_fcollz ) / zpp_bin_width;
 
 #ifdef MINI_HALO
-			mean_f_coll_st = prev_mean_f_coll_st + FgtrM_st_SFR(dicke(REDSHIFT_SAMPLE), Mmin, ALPHA_STAR, ALPHA_ESC, F_STAR10, F_ESC10, Mlim_Fstar, Mlim_Fesc);
-			mean_f_coll_st_MINI = prev_mean_f_coll_st_MINI + FgtrM_st_SFR_MINI(dicke(REDSHIFT_SAMPLE), Mmin_MINI, Mcrit_atom, ALPHA_STAR, F_STAR10_MINI, Mlim_Fstar_MINI);
+            mean_f_coll_st = prev_mean_f_coll_st + FgtrM_st_SFR(dicke(REDSHIFT_SAMPLE), Mmin, ALPHA_STAR, ALPHA_ESC, F_STAR10, F_ESC10, Mlim_Fstar, Mlim_Fesc);
+            mean_f_coll_st_MINI = prev_mean_f_coll_st_MINI + FgtrM_st_SFR_MINI(dicke(REDSHIFT_SAMPLE), Mmin_MINI, Mcrit_atom, ALPHA_STAR, F_STAR10_MINI, Mlim_Fstar_MINI);
 
-			// to do the CONTEMPORANEOUS_DUTYCYCLE, we need to calculate the prev_mean_... with the current Mturns
-			if(sample_index > 0) 
-			{
-				mean_f_coll_st -= FgtrM_st_SFR(dicke(PREV_REDSHIFT), Mmin, ALPHA_STAR, ALPHA_ESC, F_STAR10, F_ESC10, Mlim_Fstar, Mlim_Fesc);
-				mean_f_coll_st_MINI -= FgtrM_st_SFR_MINI(dicke(PREV_REDSHIFT), Mmin_MINI, Mcrit_atom, ALPHA_STAR, F_STAR10_MINI, Mlim_Fstar_MINI);
-    		}
+            // to do the CONTEMPORANEOUS_DUTYCYCLE, we need to calculate the prev_mean_... with the current Mturns
+            if(sample_index > 0) 
+            {
+                mean_f_coll_st -= FgtrM_st_SFR(dicke(PREV_REDSHIFT), Mmin, ALPHA_STAR, ALPHA_ESC, F_STAR10, F_ESC10, Mlim_Fstar, Mlim_Fesc);
+                mean_f_coll_st_MINI -= FgtrM_st_SFR_MINI(dicke(PREV_REDSHIFT), Mmin_MINI, Mcrit_atom, ALPHA_STAR, F_STAR10_MINI, Mlim_Fstar_MINI);
+            }
 
-			// record into the prev_mean to do CONTEMPORANEOUS_DUTYCYCLE at next snapshot
-			prev_mean_f_coll_st = mean_f_coll_st;
-			prev_mean_f_coll_st_MINI = mean_f_coll_st_MINI;
+            // record into the prev_mean to do CONTEMPORANEOUS_DUTYCYCLE at next snapshot
+            prev_mean_f_coll_st = mean_f_coll_st;
+            prev_mean_f_coll_st_MINI = mean_f_coll_st_MINI;
 
-			// below is to calculate the minimum f_coll following v1.4
-			//f_coll_min = FgtrM_st_SFR(dicke(Z_HEAT_MAX), Mmin, ALPHA_STAR, ALPHA_ESC, F_STAR10, F_ESC10, Mlim_Fstar, Mlim_Fesc);
-			//f_coll_min_MINI = FgtrM_st_SFR_MINI(dicke(Z_HEAT_MAX), Mmin_MINI, Mcrit_atom, ALPHA_STAR, F_STAR10_MINI, Mlim_Fstar_MINI);
+            // below is to calculate the minimum f_coll following v1.4
+            //f_coll_min = FgtrM_st_SFR(dicke(Z_HEAT_MAX), Mmin, ALPHA_STAR, ALPHA_ESC, F_STAR10, F_ESC10, Mlim_Fstar, Mlim_Fesc);
+            //f_coll_min_MINI = FgtrM_st_SFR_MINI(dicke(Z_HEAT_MAX), Mmin_MINI, Mcrit_atom, ALPHA_STAR, F_STAR10_MINI, Mlim_Fstar_MINI);
 #else
             mean_f_coll_st = Fcollz_val[redshift_int_fcollz] + redshift_table_fcollz_diff *( Fcollz_val[redshift_int_fcollz+1] - Fcollz_val[redshift_int_fcollz] );
             
@@ -2841,7 +2880,7 @@ float ComputeIonisationBoxes(int sample_index, float REDSHIFT_SAMPLE, float PREV
 #else
     if (mean_f_coll_st*ION_EFF_FACTOR < HII_ROUND_ERR) // way too small to ionize anything...
 #endif
-	{
+    {
         //printf( "The ST mean collapse fraction is %e, which is much smaller than the effective critical collapse fraction of %e\n I will just declare everything to be neutral\n", mean_f_coll_st, f_coll_crit);
 
         // find the neutral fraction
@@ -2948,12 +2987,12 @@ float ComputeIonisationBoxes(int sample_index, float REDSHIFT_SAMPLE, float PREV
         for (ct=0; ct<HII_KSPACE_NUM_PIXELS; ct++){
             deltax_unfiltered[ct] /= (HII_TOT_NUM_PIXELS+0.0);
         }
-	
+    
 #ifdef MINI_HALO
-		for (ct=0; ct<HII_KSPACE_NUM_PIXELS; ct++){
-			log10_Mmin_unfiltered[ct] /= (double)HII_TOT_NUM_PIXELS;
-			log10_Mmin_MINI_unfiltered[ct] /= (double)HII_TOT_NUM_PIXELS;
-		}
+        for (ct=0; ct<HII_KSPACE_NUM_PIXELS; ct++){
+            log10_Mmin_unfiltered[ct] /= (double)HII_TOT_NUM_PIXELS;
+            log10_Mmin_MINI_unfiltered[ct] /= (double)HII_TOT_NUM_PIXELS;
+        }
 #endif
 
         if(USE_TS_FLUCT) {
@@ -3007,7 +3046,7 @@ float ComputeIonisationBoxes(int sample_index, float REDSHIFT_SAMPLE, float PREV
         
         LAST_FILTER_STEP = 0;
      
-		// YQ: I don't think this line has any meaning, but whatever...
+        // YQ: I don't think this line has any meaning, but whatever...
         initialiseSplinedSigmaM(M_MIN,1e16);
         
         first_step_R = 1;
@@ -3044,8 +3083,8 @@ float ComputeIonisationBoxes(int sample_index, float REDSHIFT_SAMPLE, float PREV
                 }
                 HII_filter(deltax_filtered, HII_FILTER, R);
 #ifdef MINI_HALO
-				HII_filter(log10_Mmin_filtered, HII_FILTER, R);
-				HII_filter(log10_Mmin_MINI_filtered, HII_FILTER, R);
+                HII_filter(log10_Mmin_filtered, HII_FILTER, R);
+                HII_filter(log10_Mmin_MINI_filtered, HII_FILTER, R);
 #endif
             }
             
@@ -3147,16 +3186,16 @@ float ComputeIonisationBoxes(int sample_index, float REDSHIFT_SAMPLE, float PREV
                             max_density = *((float *)deltax_filtered + HII_R_FFT_INDEX(x,y,z));
                         }
 #ifdef MINI_HALO
-						// M_MINa cannot be less than Mcrit_atom
-			            if (*((float *)log10_Mmin_filtered + HII_R_FFT_INDEX(x,y,z)) < log10_Mcrit_atom)
-			              *((float *)log10_Mmin_filtered + HII_R_FFT_INDEX(x,y,z)) = log10_Mcrit_atom;
-			            if (*((float *)log10_Mmin_filtered + HII_R_FFT_INDEX(x,y,z)) > LOG10MTURN_MAX)
-			              *((float *)log10_Mmin_filtered + HII_R_FFT_INDEX(x,y,z)) = LOG10MTURN_MAX;
-			            // M_MINa cannot be less than Mcrit_mol
-		        	    if (*((float *)log10_Mmin_MINI_filtered + HII_R_FFT_INDEX(x,y,z)) < log10_Mcrit_mol)
-		                  *((float *)log10_Mmin_MINI_filtered + HII_R_FFT_INDEX(x,y,z))  = log10_Mcrit_mol;
-		  		        if (*((float *)log10_Mmin_MINI_filtered + HII_R_FFT_INDEX(x,y,z)) > LOG10MTURN_MAX)
-		      	      	  *((float *)log10_Mmin_MINI_filtered + HII_R_FFT_INDEX(x,y,z)) = LOG10MTURN_MAX;
+                        // M_MINa cannot be less than Mcrit_atom
+                        if (*((float *)log10_Mmin_filtered + HII_R_FFT_INDEX(x,y,z)) < log10_Mcrit_atom)
+                          *((float *)log10_Mmin_filtered + HII_R_FFT_INDEX(x,y,z)) = log10_Mcrit_atom;
+                        if (*((float *)log10_Mmin_filtered + HII_R_FFT_INDEX(x,y,z)) > LOG10MTURN_MAX)
+                          *((float *)log10_Mmin_filtered + HII_R_FFT_INDEX(x,y,z)) = LOG10MTURN_MAX;
+                        // M_MINa cannot be less than Mcrit_mol
+                        if (*((float *)log10_Mmin_MINI_filtered + HII_R_FFT_INDEX(x,y,z)) < log10_Mcrit_mol)
+                          *((float *)log10_Mmin_MINI_filtered + HII_R_FFT_INDEX(x,y,z))  = log10_Mcrit_mol;
+                          if (*((float *)log10_Mmin_MINI_filtered + HII_R_FFT_INDEX(x,y,z)) > LOG10MTURN_MAX)
+                              *((float *)log10_Mmin_MINI_filtered + HII_R_FFT_INDEX(x,y,z)) = LOG10MTURN_MAX;
 #endif
                     }
                 }
@@ -3228,12 +3267,12 @@ float ComputeIonisationBoxes(int sample_index, float REDSHIFT_SAMPLE, float PREV
                             curr_dens = *((float *)deltax_filtered + HII_R_FFT_INDEX(x,y,z));
 #ifdef MINI_HALO
                             prev_dens = *((float *)deltax_prev_filtered[counter_R] + HII_R_FFT_INDEX(x,y,z));
-							log10_Mmin_val = ( *((float *)log10_Mmin_filtered + HII_R_FFT_INDEX(x,y,z)) - LOG10MTURN_MIN) / LOG10MTURN_INT;
-							log10_Mmin_int = (int)floorf( log10_Mmin_val );
-							log10_Mmin_diff = log10_Mmin_val - (float)log10_Mmin_int;
-							log10_Mmin_MINI_val = ( *((float *)log10_Mmin_MINI_filtered + HII_R_FFT_INDEX(x,y,z)) - LOG10MTURN_MIN) / LOG10MTURN_INT;
-							log10_Mmin_MINI_int = (int)floorf( log10_Mmin_MINI_val );
-							log10_Mmin_MINI_diff = log10_Mmin_MINI_val - (float)log10_Mmin_MINI_int;
+                            log10_Mmin_val = ( *((float *)log10_Mmin_filtered + HII_R_FFT_INDEX(x,y,z)) - LOG10MTURN_MIN) / LOG10MTURN_INT;
+                            log10_Mmin_int = (int)floorf( log10_Mmin_val );
+                            log10_Mmin_diff = log10_Mmin_val - (float)log10_Mmin_int;
+                            log10_Mmin_MINI_val = ( *((float *)log10_Mmin_MINI_filtered + HII_R_FFT_INDEX(x,y,z)) - LOG10MTURN_MIN) / LOG10MTURN_INT;
+                            log10_Mmin_MINI_int = (int)floorf( log10_Mmin_MINI_val );
+                            log10_Mmin_MINI_diff = log10_Mmin_MINI_val - (float)log10_Mmin_MINI_int;
 #endif
                         
                            // New in v1.4
@@ -3256,20 +3295,20 @@ float ComputeIonisationBoxes(int sample_index, float REDSHIFT_SAMPLE, float PREV
                                     else {
                                         prev_dens_val = (log10f(prev_dens+1.) - prev_overdense_small_min[counter_R])*prev_overdense_small_bin_width_inv[counter_R];
                                         prev_overdense_int = (int)floorf( prev_dens_val );
-										prev_dens_diff = prev_dens_val - (float)prev_overdense_int;
+                                        prev_dens_diff = prev_dens_val - (float)prev_overdense_int;
 
-										index_left = prev_overdense_int+log10_Mmin_int*NSFR_low;
-										index_right = prev_overdense_int+(log10_Mmin_int+1)*NSFR_low;
+                                        index_left = prev_overdense_int+log10_Mmin_int*NSFR_low;
+                                        index_right = prev_overdense_int+(log10_Mmin_int+1)*NSFR_low;
                                         prev_Splined_Fcoll_left = prev_log10_Fcoll_spline_SFR[counter_R][index_left]*(1.-prev_dens_diff) + prev_log10_Fcoll_spline_SFR[counter_R][index_left+1]*prev_dens_diff;
                                         prev_Splined_Fcoll_right = prev_log10_Fcoll_spline_SFR[counter_R][index_right]*(1.-prev_dens_diff) + prev_log10_Fcoll_spline_SFR[counter_R][index_right+1]*prev_dens_diff;
-										prev_Splined_Fcoll = prev_Splined_Fcoll_left * (1. - log10_Mmin_diff) + prev_Splined_Fcoll_right * log10_Mmin_diff;
+                                        prev_Splined_Fcoll = prev_Splined_Fcoll_left * (1. - log10_Mmin_diff) + prev_Splined_Fcoll_right * log10_Mmin_diff;
                                         prev_Splined_Fcoll = expf(prev_Splined_Fcoll);
                                         
-										index_left = prev_overdense_int+log10_Mmin_MINI_int*NSFR_low;
-										index_right = prev_overdense_int+(log10_Mmin_MINI_int+1)*NSFR_low;
+                                        index_left = prev_overdense_int+log10_Mmin_MINI_int*NSFR_low;
+                                        index_right = prev_overdense_int+(log10_Mmin_MINI_int+1)*NSFR_low;
                                         prev_Splined_Fcoll_MINI_left = prev_log10_Fcoll_spline_SFR_MINI[counter_R][index_left]*(1.-prev_dens_diff) + prev_log10_Fcoll_spline_SFR_MINI[counter_R][index_left+1]*prev_dens_diff;
                                         prev_Splined_Fcoll_MINI_right = prev_log10_Fcoll_spline_SFR_MINI[counter_R][index_right]*(1.-prev_dens_diff) + prev_log10_Fcoll_spline_SFR_MINI[counter_R][index_right+1]*prev_dens_diff;
-										prev_Splined_Fcoll_MINI = prev_Splined_Fcoll_MINI_left * (1. - log10_Mmin_MINI_diff) + prev_Splined_Fcoll_MINI_right * log10_Mmin_MINI_diff;
+                                        prev_Splined_Fcoll_MINI = prev_Splined_Fcoll_MINI_left * (1. - log10_Mmin_MINI_diff) + prev_Splined_Fcoll_MINI_right * log10_Mmin_MINI_diff;
                                         prev_Splined_Fcoll_MINI = expf(prev_Splined_Fcoll_MINI);
 
                                     }
@@ -3279,19 +3318,19 @@ float ComputeIonisationBoxes(int sample_index, float REDSHIFT_SAMPLE, float PREV
                                         
                                         prev_dens_val = (prev_dens - prev_overdense_large_min[counter_R])*prev_overdense_large_bin_width_inv[counter_R];
                                         prev_overdense_int = (int)floorf( prev_dens_val );
-										prev_dens_diff = prev_dens_val - (float)prev_overdense_int;
+                                        prev_dens_diff = prev_dens_val - (float)prev_overdense_int;
 
-										index_left = prev_overdense_int+log10_Mmin_int*NSFR_high;
-										index_right = prev_overdense_int+(log10_Mmin_int+1)*NSFR_high;
+                                        index_left = prev_overdense_int+log10_Mmin_int*NSFR_high;
+                                        index_right = prev_overdense_int+(log10_Mmin_int+1)*NSFR_high;
                                         prev_Splined_Fcoll_left = prev_Fcoll_spline_SFR[counter_R][index_left]*(1.-prev_dens_diff) + prev_Fcoll_spline_SFR[counter_R][index_left+1]*prev_dens_diff;
                                         prev_Splined_Fcoll_right = prev_Fcoll_spline_SFR[counter_R][index_right]*(1.-prev_dens_diff) + prev_Fcoll_spline_SFR[counter_R][index_right+1]*prev_dens_diff;
-										prev_Splined_Fcoll = prev_Splined_Fcoll_left * (1. - log10_Mmin_diff) + prev_Splined_Fcoll_right * log10_Mmin_diff;
+                                        prev_Splined_Fcoll = prev_Splined_Fcoll_left * (1. - log10_Mmin_diff) + prev_Splined_Fcoll_right * log10_Mmin_diff;
 
-										index_left = prev_overdense_int+log10_Mmin_MINI_int*NSFR_high;
-										index_right = prev_overdense_int+(log10_Mmin_MINI_int+1)*NSFR_high;
+                                        index_left = prev_overdense_int+log10_Mmin_MINI_int*NSFR_high;
+                                        index_right = prev_overdense_int+(log10_Mmin_MINI_int+1)*NSFR_high;
                                         prev_Splined_Fcoll_MINI_left = prev_Fcoll_spline_SFR_MINI[counter_R][index_left]*(1.-prev_dens_diff) + prev_Fcoll_spline_SFR_MINI[counter_R][index_left+1]*prev_dens_diff;
                                         prev_Splined_Fcoll_MINI_right = prev_Fcoll_spline_SFR_MINI[counter_R][index_right]*(1.-prev_dens_diff) + prev_Fcoll_spline_SFR_MINI[counter_R][index_right+1]*prev_dens_diff;
-										prev_Splined_Fcoll_MINI = prev_Splined_Fcoll_MINI_left * (1. - log10_Mmin_MINI_diff) + prev_Splined_Fcoll_MINI_right * log10_Mmin_MINI_diff;
+                                        prev_Splined_Fcoll_MINI = prev_Splined_Fcoll_MINI_left * (1. - log10_Mmin_MINI_diff) + prev_Splined_Fcoll_MINI_right * log10_Mmin_MINI_diff;
                                     }
                                     else {
                                         prev_Splined_Fcoll = 1.;
@@ -3308,20 +3347,20 @@ float ComputeIonisationBoxes(int sample_index, float REDSHIFT_SAMPLE, float PREV
                                     else {
                                         dens_val = (log10f(curr_dens+1.) - overdense_small_min)*overdense_small_bin_width_inv;
                                         overdense_int = (int)floorf( dens_val );
-										dens_diff = dens_val - (float)overdense_int;
+                                        dens_diff = dens_val - (float)overdense_int;
 
-										index_left = overdense_int+log10_Mmin_int*NSFR_low;
-										index_right = overdense_int+(log10_Mmin_int+1)*NSFR_low;
+                                        index_left = overdense_int+log10_Mmin_int*NSFR_low;
+                                        index_right = overdense_int+(log10_Mmin_int+1)*NSFR_low;
                                         Splined_Fcoll_left = log10_Fcoll_spline_SFR[index_left]*(1.-dens_diff) + log10_Fcoll_spline_SFR[index_left+1]*dens_diff;
                                         Splined_Fcoll_right = log10_Fcoll_spline_SFR[index_right]*(1.-dens_diff) + log10_Fcoll_spline_SFR[index_right+1]*dens_diff;
-										Splined_Fcoll = Splined_Fcoll_left * (1. - log10_Mmin_diff) + Splined_Fcoll_right * log10_Mmin_diff;
+                                        Splined_Fcoll = Splined_Fcoll_left * (1. - log10_Mmin_diff) + Splined_Fcoll_right * log10_Mmin_diff;
                                         Splined_Fcoll = expf(Splined_Fcoll);
                                         
-										index_left = overdense_int+log10_Mmin_MINI_int*NSFR_low;
-										index_right = overdense_int+(log10_Mmin_MINI_int+1)*NSFR_low;
+                                        index_left = overdense_int+log10_Mmin_MINI_int*NSFR_low;
+                                        index_right = overdense_int+(log10_Mmin_MINI_int+1)*NSFR_low;
                                         Splined_Fcoll_MINI_left = log10_Fcoll_spline_SFR_MINI[index_left]*(1.-dens_diff) + log10_Fcoll_spline_SFR_MINI[index_left+1]*dens_diff;
                                         Splined_Fcoll_MINI_right = log10_Fcoll_spline_SFR_MINI[index_right]*(1.-dens_diff) + log10_Fcoll_spline_SFR_MINI[index_right+1]*dens_diff;
-										Splined_Fcoll_MINI = Splined_Fcoll_MINI_left * (1. - log10_Mmin_MINI_diff) + Splined_Fcoll_MINI_right * log10_Mmin_MINI_diff;
+                                        Splined_Fcoll_MINI = Splined_Fcoll_MINI_left * (1. - log10_Mmin_MINI_diff) + Splined_Fcoll_MINI_right * log10_Mmin_MINI_diff;
                                         Splined_Fcoll_MINI = expf(Splined_Fcoll_MINI);
                                     }
                                 }
@@ -3330,19 +3369,19 @@ float ComputeIonisationBoxes(int sample_index, float REDSHIFT_SAMPLE, float PREV
                                         
                                         dens_val = (curr_dens - overdense_large_min)*overdense_large_bin_width_inv;
                                         overdense_int = (int)floorf( dens_val );
-										dens_diff = dens_val - (float)overdense_int;
+                                        dens_diff = dens_val - (float)overdense_int;
 
-										index_left = overdense_int+log10_Mmin_int*NSFR_high;
-										index_right = overdense_int+(log10_Mmin_int+1)*NSFR_high;
+                                        index_left = overdense_int+log10_Mmin_int*NSFR_high;
+                                        index_right = overdense_int+(log10_Mmin_int+1)*NSFR_high;
                                         Splined_Fcoll_left = Fcoll_spline_SFR[index_left]*(1.-dens_diff) + Fcoll_spline_SFR[index_left+1]*dens_diff;
                                         Splined_Fcoll_right = Fcoll_spline_SFR[index_right]*(1.-dens_diff) + Fcoll_spline_SFR[index_right+1]*dens_diff;
-										Splined_Fcoll = Splined_Fcoll_left * (1. - log10_Mmin_diff) + Splined_Fcoll_right * log10_Mmin_diff;
+                                        Splined_Fcoll = Splined_Fcoll_left * (1. - log10_Mmin_diff) + Splined_Fcoll_right * log10_Mmin_diff;
 
-										index_left = overdense_int+log10_Mmin_MINI_int*NSFR_high;
-										index_right = overdense_int+(log10_Mmin_MINI_int+1)*NSFR_high;
+                                        index_left = overdense_int+log10_Mmin_MINI_int*NSFR_high;
+                                        index_right = overdense_int+(log10_Mmin_MINI_int+1)*NSFR_high;
                                         Splined_Fcoll_MINI_left = Fcoll_spline_SFR_MINI[index_left]*(1.-dens_diff) + Fcoll_spline_SFR_MINI[index_left+1]*dens_diff;
                                         Splined_Fcoll_MINI_right = Fcoll_spline_SFR_MINI[index_right]*(1.-dens_diff) + Fcoll_spline_SFR_MINI[index_right+1]*dens_diff;
-										Splined_Fcoll_MINI = Splined_Fcoll_MINI_left * (1. - log10_Mmin_MINI_diff) + Splined_Fcoll_MINI_right * log10_Mmin_MINI_diff;
+                                        Splined_Fcoll_MINI = Splined_Fcoll_MINI_left * (1. - log10_Mmin_MINI_diff) + Splined_Fcoll_MINI_right * log10_Mmin_MINI_diff;
                                     }
                                     else {
                                         Splined_Fcoll = 1.;
@@ -3397,24 +3436,24 @@ float ComputeIonisationBoxes(int sample_index, float REDSHIFT_SAMPLE, float PREV
                         
                             // save the value of the collasped fraction into the Fcoll array
 #ifdef MINI_HALO
-							if (Splined_Fcoll > 1.) Splined_Fcoll = 1.;
-							if (Splined_Fcoll < 0.) Splined_Fcoll = 1e-40;
-							if (Splined_Fcoll_MINI > 1.) Splined_Fcoll_MINI = 1.;
-							if (Splined_Fcoll_MINI < 0.) Splined_Fcoll_MINI = 1e-40;
+                            if (Splined_Fcoll > 1.) Splined_Fcoll = 1.;
+                            if (Splined_Fcoll < 0.) Splined_Fcoll = 1e-40;
+                            if (Splined_Fcoll_MINI > 1.) Splined_Fcoll_MINI = 1.;
+                            if (Splined_Fcoll_MINI < 0.) Splined_Fcoll_MINI = 1e-40;
 
-							if (prev_Splined_Fcoll > 1.) prev_Splined_Fcoll = 1.;
-							if (prev_Splined_Fcoll < 0.) prev_Splined_Fcoll = 1e-40;
-							if (prev_Splined_Fcoll_MINI > 1.) prev_Splined_Fcoll_MINI = 1.;
-							if (prev_Splined_Fcoll_MINI < 0.) prev_Splined_Fcoll_MINI = 1e-40;
+                            if (prev_Splined_Fcoll > 1.) prev_Splined_Fcoll = 1.;
+                            if (prev_Splined_Fcoll < 0.) prev_Splined_Fcoll = 1e-40;
+                            if (prev_Splined_Fcoll_MINI > 1.) prev_Splined_Fcoll_MINI = 1.;
+                            if (prev_Splined_Fcoll_MINI < 0.) prev_Splined_Fcoll_MINI = 1e-40;
 
                             Fcoll[HII_R_INDEX(x,y,z)] = prev_Fcoll[counter_R][HII_R_INDEX(x,y,z)] + Splined_Fcoll - prev_Splined_Fcoll;
                             Fcoll_MINI[HII_R_INDEX(x,y,z)] = prev_Fcoll_MINI[counter_R][HII_R_INDEX(x,y,z)] + Splined_Fcoll_MINI - prev_Splined_Fcoll_MINI;
 
-							if (Fcoll[HII_R_INDEX(x,y,z)] > 1.) Fcoll[HII_R_INDEX(x,y,z)] = 1.;
-							if (Fcoll_MINI[HII_R_INDEX(x,y,z)] > 1.) Fcoll_MINI[HII_R_INDEX(x,y,z)] = 1.;
+                            if (Fcoll[HII_R_INDEX(x,y,z)] > 1.) Fcoll[HII_R_INDEX(x,y,z)] = 1.;
+                            if (Fcoll_MINI[HII_R_INDEX(x,y,z)] > 1.) Fcoll_MINI[HII_R_INDEX(x,y,z)] = 1.;
 
-							prev_Fcoll[counter_R][HII_R_INDEX(x,y,z)] = Fcoll[HII_R_INDEX(x,y,z)];
-							prev_Fcoll_MINI[counter_R][HII_R_INDEX(x,y,z)] = Fcoll_MINI[HII_R_INDEX(x,y,z)];
+                            prev_Fcoll[counter_R][HII_R_INDEX(x,y,z)] = Fcoll[HII_R_INDEX(x,y,z)];
+                            prev_Fcoll_MINI[counter_R][HII_R_INDEX(x,y,z)] = Fcoll_MINI[HII_R_INDEX(x,y,z)];
 
                             f_coll      += Fcoll[HII_R_INDEX(x,y,z)];
                             f_coll_MINI += Fcoll_MINI[HII_R_INDEX(x,y,z)];
@@ -3465,7 +3504,7 @@ float ComputeIonisationBoxes(int sample_index, float REDSHIFT_SAMPLE, float PREV
             ST_over_PS_HII = mean_f_coll_st/f_coll;
 #ifdef MINI_HALO
             ST_over_PS_HII_MINI = mean_f_coll_st_MINI/f_coll_MINI;
-			//printf("ST_over_PS_HII=%g, ST_over_PS_HII_MINI=%g, mean_f_coll_st=%g, mean_f_coll_st_MINI=%g, f_coll=%g, f_coll_MINI=%g\n",ST_over_PS_HII, ST_over_PS_HII_MINI, mean_f_coll_st, mean_f_coll_st_MINI, f_coll, f_coll_MINI);
+            //printf("ST_over_PS_HII=%g, ST_over_PS_HII_MINI=%g, mean_f_coll_st=%g, mean_f_coll_st_MINI=%g, f_coll=%g, f_coll_MINI=%g\n",ST_over_PS_HII, ST_over_PS_HII_MINI, mean_f_coll_st, mean_f_coll_st_MINI, f_coll, f_coll_MINI);
 #endif
             
             //////////////////////////////  MAIN LOOP THROUGH THE BOX ///////////////////////////////////
@@ -3479,7 +3518,7 @@ float ComputeIonisationBoxes(int sample_index, float REDSHIFT_SAMPLE, float PREV
             
             Gamma_R_prefactor /= t_ast;
 #ifdef MINI_HALO
-			Gamma_R_prefactor_MINI = Gamma_R_prefactor / ION_EFF_FACTOR * ION_EFF_FACTOR_MINI;
+            Gamma_R_prefactor_MINI = Gamma_R_prefactor / ION_EFF_FACTOR * ION_EFF_FACTOR_MINI;
 #endif
             
             if(!USE_FCOLL_IONISATION_TABLE) {
@@ -3586,7 +3625,7 @@ float ComputeIonisationBoxes(int sample_index, float REDSHIFT_SAMPLE, float PREV
 #else
                         if ( (f_coll*ION_EFF_FACTOR > xHI_from_xrays*(1.0+rec)) )
 #endif
-						{ //IONIZED!!
+                        { //IONIZED!!
                             
                             // if this is the first crossing of the ionization barrier for this cell (largest R), record the gamma
                             // this assumes photon-starved growth of HII regions...  breaks down post EoR
@@ -3628,21 +3667,21 @@ float ComputeIonisationBoxes(int sample_index, float REDSHIFT_SAMPLE, float PREV
 #endif
                             
                             if (ave_N_min_cell < N_POISSON){
-								if (ave_N_min_cell < 0.2){
-									f_coll=0;
+                                if (ave_N_min_cell < 0.2){
+                                    f_coll=0;
 #ifdef MINI_HALO
-									f_coll_MINI=0;
+                                    f_coll_MINI=0;
 #endif
-								}
-								else{
-	                                N_min_cell = (int) gsl_ran_poisson(r, N_POISSON) * ave_N_min_cell / (float) N_POISSON;
+                                }
+                                else{
+                                    N_min_cell = (int) gsl_ran_poisson(r, N_POISSON) * ave_N_min_cell / (float) N_POISSON;
 #ifdef MINI_HALO
-                                	f_coll = N_min_cell * M_MIN / (pixel_mass*(1. + curr_dens)) * ((f_coll / (f_coll + f_coll_MINI)));
-                                	f_coll_MINI = N_min_cell * M_MIN / (pixel_mass*(1. + curr_dens)) - f_coll;
+                                    f_coll = N_min_cell * M_MIN / (pixel_mass*(1. + curr_dens)) * ((f_coll / (f_coll + f_coll_MINI)));
+                                    f_coll_MINI = N_min_cell * M_MIN / (pixel_mass*(1. + curr_dens)) - f_coll;
 #else
-                                	f_coll = N_min_cell * M_MIN / (pixel_mass*(1. + curr_dens));
+                                    f_coll = N_min_cell * M_MIN / (pixel_mass*(1. + curr_dens));
 #endif
-								}
+                                }
                             }
 
                             res_xH = xHI_from_xrays - f_coll * ION_EFF_FACTOR;
@@ -3677,29 +3716,29 @@ float ComputeIonisationBoxes(int sample_index, float REDSHIFT_SAMPLE, float PREV
             }
 
 #ifdef MINI_HALO
-		    //copy deltax_filtered to deltax_prev_filtered
+            //copy deltax_filtered to deltax_prev_filtered
             for (x=0; x<HII_DIM; x++){
                 for (y=0; y<HII_DIM; y++){
                     for (z=0; z<HII_DIM; z++){
                         *((float *)deltax_prev_filtered[counter_R] + HII_R_FFT_INDEX(x,y,z)) = *((float *)deltax_filtered + HII_R_FFT_INDEX(x,y,z)); 
-					}
-				}
-			}
-			prev_overdense_large_min[counter_R] = overdense_large_min;
-			prev_overdense_small_min[counter_R] = overdense_small_min;
-			prev_overdense_large_bin_width_inv[counter_R] = overdense_large_bin_width_inv;
-			prev_overdense_small_bin_width_inv[counter_R] = overdense_small_bin_width_inv;
-			// store the result into prev_... to do the CONTEMPORANEOUS_DUTYCYCLE
-			for (j=0;j<LOG10MTURN_NUM;j++){
-				for (i=0; i<NSFR_low; i++){
-					prev_log10_Fcoll_spline_SFR[counter_R][i+j*NSFR_low] = log10_Fcoll_spline_SFR[i+j*NSFR_low];
-					prev_log10_Fcoll_spline_SFR_MINI[counter_R][i+j*NSFR_low] = log10_Fcoll_spline_SFR_MINI[i+j*NSFR_low];
-				}
-				for(i=0;i<NSFR_high;i++) {
-					prev_Fcoll_spline_SFR[counter_R][i+j*NSFR_high] = Fcoll_spline_SFR[i+j*NSFR_high];
-					prev_Fcoll_spline_SFR_MINI[counter_R][i+j*NSFR_high] = Fcoll_spline_SFR_MINI[i+j*NSFR_high];
-				}
-			}
+                    }
+                }
+            }
+            prev_overdense_large_min[counter_R] = overdense_large_min;
+            prev_overdense_small_min[counter_R] = overdense_small_min;
+            prev_overdense_large_bin_width_inv[counter_R] = overdense_large_bin_width_inv;
+            prev_overdense_small_bin_width_inv[counter_R] = overdense_small_bin_width_inv;
+            // store the result into prev_... to do the CONTEMPORANEOUS_DUTYCYCLE
+            for (j=0;j<LOG10MTURN_NUM;j++){
+                for (i=0; i<NSFR_low; i++){
+                    prev_log10_Fcoll_spline_SFR[counter_R][i+j*NSFR_low] = log10_Fcoll_spline_SFR[i+j*NSFR_low];
+                    prev_log10_Fcoll_spline_SFR_MINI[counter_R][i+j*NSFR_low] = log10_Fcoll_spline_SFR_MINI[i+j*NSFR_low];
+                }
+                for(i=0;i<NSFR_high;i++) {
+                    prev_Fcoll_spline_SFR[counter_R][i+j*NSFR_high] = Fcoll_spline_SFR[i+j*NSFR_high];
+                    prev_Fcoll_spline_SFR_MINI[counter_R][i+j*NSFR_high] = Fcoll_spline_SFR_MINI[i+j*NSFR_high];
+                }
+            }
 #endif
             
             if(first_step_R) {
@@ -4445,7 +4484,7 @@ float ComputeIonisationBoxes(int sample_index, float REDSHIFT_SAMPLE, float PREV
     free(slice_index);
     
     destroy_21cmMC_HII_arrays(skip_deallocate);
-	return nf;	
+    return nf;    
 }
 
 void ComputeInitialConditions() {
@@ -5631,7 +5670,7 @@ void GeneratePS(int CO_EVAL, double AverageTb) {
 
 void init_21cmMC_HII_arrays() {
     
-	int i,j;
+    int i,j;
     Overdense_spline_GL_low = calloc(Nlow,sizeof(float));
     Fcoll_spline_GL_low = calloc(Nlow,sizeof(float));
     second_derivs_low_GL = calloc(Nlow,sizeof(float));
@@ -5650,10 +5689,10 @@ void init_21cmMC_HII_arrays() {
     deltax = (float *) calloc(HII_TOT_FFT_NUM_PIXELS,sizeof(float));
     Fcoll = (float *) calloc(HII_TOT_NUM_PIXELS,sizeof(float));
 #ifdef MINI_HALO
-	log10_Mmin_unfiltered      = (fftwf_complex *) fftwf_malloc(sizeof(fftwf_complex)*HII_KSPACE_NUM_PIXELS);
-	log10_Mmin_filtered        = (fftwf_complex *) fftwf_malloc(sizeof(fftwf_complex)*HII_KSPACE_NUM_PIXELS);
-	log10_Mmin_MINI_unfiltered = (fftwf_complex *) fftwf_malloc(sizeof(fftwf_complex)*HII_KSPACE_NUM_PIXELS);
-	log10_Mmin_MINI_filtered   = (fftwf_complex *) fftwf_malloc(sizeof(fftwf_complex)*HII_KSPACE_NUM_PIXELS);
+    log10_Mmin_unfiltered      = (fftwf_complex *) fftwf_malloc(sizeof(fftwf_complex)*HII_KSPACE_NUM_PIXELS);
+    log10_Mmin_filtered        = (fftwf_complex *) fftwf_malloc(sizeof(fftwf_complex)*HII_KSPACE_NUM_PIXELS);
+    log10_Mmin_MINI_unfiltered = (fftwf_complex *) fftwf_malloc(sizeof(fftwf_complex)*HII_KSPACE_NUM_PIXELS);
+    log10_Mmin_MINI_filtered   = (fftwf_complex *) fftwf_malloc(sizeof(fftwf_complex)*HII_KSPACE_NUM_PIXELS);
     Fcoll_MINI = (float *) calloc(HII_TOT_NUM_PIXELS,sizeof(float));
 #endif
     xH = (float *)calloc(HII_TOT_NUM_PIXELS,sizeof(float));
@@ -5720,7 +5759,7 @@ void init_21cmMC_Ts_arrays() {
     
     zpp_growth = (float *)calloc(NUM_FILTER_STEPS_FOR_Ts,sizeof(float));
     
-	//for continuously run HII calc
+    //for continuously run HII calc
 #ifdef MINI_HALO
     log10_Fcoll_spline_SFR = calloc(NSFR_low*LOG10MTURN_NUM,sizeof(double));
     Fcoll_spline_SFR = calloc(NSFR_high*LOG10MTURN_NUM,sizeof(float));
@@ -5742,10 +5781,10 @@ void init_21cmMC_Ts_arrays() {
         
         SFR_timescale_factor = (float *)calloc(NUM_FILTER_STEPS_FOR_Ts,sizeof(float));
 #ifdef MINI_HALO
-		Mturn_interp_table = (double *)calloc(LOG10MTURN_NUM, sizeof(double));
+        Mturn_interp_table = (double *)calloc(LOG10MTURN_NUM, sizeof(double));
         for (i=0; i <LOG10MTURN_NUM; i++){
-		  Mturn_interp_table[i] = pow(10., LOG10MTURN_MIN + (double)i*LOG10MTURN_INT);
-		}
+          Mturn_interp_table[i] = pow(10., LOG10MTURN_MIN + (double)i*LOG10MTURN_INT);
+        }
 #endif
         
         for (i=0; i < NUM_FILTER_STEPS_FOR_Ts; i++){
@@ -5989,10 +6028,10 @@ void destroy_21cmMC_HII_arrays(int skip_deallocate) {
     free(deltax);
     free(Fcoll);
 #ifdef MINI_HALO
-	free(log10_Mmin_unfiltered);
-	free(log10_Mmin_filtered);
-	free(log10_Mmin_MINI_unfiltered);
-	free(log10_Mmin_MINI_filtered);
+    free(log10_Mmin_unfiltered);
+    free(log10_Mmin_filtered);
+    free(log10_Mmin_MINI_unfiltered);
+    free(log10_Mmin_MINI_filtered);
     free(Fcoll_MINI);
 #endif
     free(delta_T);
@@ -6066,7 +6105,7 @@ void destroy_21cmMC_Ts_arrays() {
 
         free(SFR_timescale_factor);
 #ifdef MINI_HALO
-		free(Mturn_interp_table);
+        free(Mturn_interp_table);
 #endif
         
         free(zpp_interp_table);
@@ -6232,7 +6271,7 @@ void destroy_21cmMC_Ts_arrays() {
     free(sum_lyn_MINI);
     free(sum_lyLWn);
     free(sum_lyLWn_MINI);
-	
+    
     for(i=0;i<x_int_NXHII;i++) {
         free(freq_int_heat_tbl_MINI[i]);
         free(freq_int_ion_tbl_MINI[i]);
