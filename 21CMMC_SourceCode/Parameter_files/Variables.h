@@ -1,4 +1,5 @@
 // Globals for drive_21cmMC_streamlined.c
+#include "ANAL_PARAMS.H"
 
 /* Maximum allowed value for the kinetic temperature. Useful to set to avoid some spurious behaviour
  when the code is run with redshift poor resolution and very high X-ray heating efficiency */
@@ -97,7 +98,7 @@ float R_MFP_MIN, R_MFP_BINWIDTH, TVIR_BINWIDTH, PL_BINWIDTH, R_MFP_VAL_1, R_MFP_
 int R_MFP_INT_1, R_MFP_INT_2, TVIR_INT_1, TVIR_INT_2, ZETA_PL_INT_1, ZETA_PL_INT_2;
 
 float R_MFP_UB, TVIR_LB_FCOLL, TVIR_UB_FCOLL, ZETA_PL_LB, ZETA_PL_UB;
-int R_MFP_STEPS, R_INTER_STEPS, TVIR_STEPS, PL_STEPS, SIZE_FIRST, SIZE_INTERMEDIATE, SIZE_FINAL, USE_FCOLL_IONISATION_TABLE, LC_BOX_PADDING, SUBCELL_RSD, GenerateNewICs, N_RSD_STEPS, LOS_direction;
+int R_MFP_STEPS, R_INTER_STEPS, TVIR_STEPS, PL_STEPS, SIZE_FIRST, SIZE_INTERMEDIATE, SIZE_FINAL, USE_FCOLL_IONISATION_TABLE, LC_BOX_PADDING, SUBCELL_RSD, GenerateNewICs, N_RSD_STEPS;
 
 int LOS_direction, slice_ct, total_slice_ct, num_boxes_interp,N_USER_REDSHIFT_LC,total_num_boxes,remainder_LC, Original_LOS_direction, Default_LOS_direction, Stored_LOS_direction_state_1, Stored_LOS_direction_state_2, N_RSTEPS_TOT;
 double z1_LC, z2_LC, z_LC, dR, final_z;
@@ -189,4 +190,10 @@ double *log10_Mmin_ave, *log10_Mmin_MINI_ave;
 gsl_interp_accel *log10_Mmin_ave_spline_acc, *log10_Mmin_MINI_ave_spline_acc;
 gsl_spline *log10_Mmin_ave_spline, *log10_Mmin_MINI_ave_spline;
 int flag_generate_tables;
+#endif
+#ifdef USE_KERAS
+double SIGMA8_norm, F_STAR10_norm, ALPHA_STAR_norm, F_ESC10_norm, ALPHA_ESC_norm;
+#ifdef MINI_HALO
+double F_STAR7_MINI_norm;
+#endif
 #endif

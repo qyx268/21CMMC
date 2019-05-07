@@ -50,6 +50,43 @@ define M_TURNOVER (double) (5e8) // Halo mass threshold for efficient star forma
 */
 #define MINI_HALO (int) (1)
 
+/* New in v1.6
+ * Flag set to 1 if you want to use Keras Emulator
+ * so far it only includes emulators of 
+ * FcollzX_val
+*/
+//#define USE_KERAS (int) (1)
+// below needs to follow configurations of the trainning
+#ifdef USE_KERAS
+#define CENTER_F_STAR10 0
+#define WIDTH_F_STAR10 -3
+#define HEIGHT_F_STAR10 0
+
+#define CENTER_ALPHA_STAR 0
+#define WIDTH_ALPHA_STAR 1.5
+#define HEIGHT_ALPHA_STAR -0.5
+
+#define CENTER_F_ESC10 0
+#define WIDTH_F_ESC10 -3
+#define HEIGHT_F_ESC10 0
+
+#define CENTER_ALPHA_ESC 0
+#define WIDTH_ALPHA_ESC 1.5
+#define HEIGHT_ALPHA_ESC -0.5
+
+#define CENTER_F_STAR7_MINI 0
+#define WIDTH_F_STAR7_MINI -3
+#define HEIGHT_F_STAR7_MINI 0
+
+#define CENTER_SIGMA8 0.5
+#define WIDTH_SIGMA8 0.02
+#define HEIGHT_SIGMA8 0.811
+
+#define CENTER_REDSHIFT 0
+#define WIDTH_REDSHIFT 35.
+#define HEIGHT_REDSHIFT 5.
+#endif
+
 /*
   Maximum horizon for ionizing photons, in comoving Mpc.
   The bubble filtering procedure uses the minimum

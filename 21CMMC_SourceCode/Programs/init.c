@@ -1,6 +1,6 @@
 #include "../Parameter_files/INIT_PARAMS.H"
-#include "../Parameter_files/ANAL_PARAMS.H"
-#include "../Parameter_files/Variables.h"
+//#include "../Parameter_files/ANAL_PARAMS.H"
+//#include "../Parameter_files/Variables.h"
 #include "filter.c"
 
 /*
@@ -25,14 +25,15 @@ void adj_complex_conj(fftwf_complex *box){
   int i, j, k;
 
   // corners
-  box[C_INDEX(0,0,0)] = 0;
-  box[C_INDEX(0,0,MIDDLE)] = crealf(box[C_INDEX(0,0,MIDDLE)]);
-  box[C_INDEX(0,MIDDLE,0)] = crealf(box[C_INDEX(0,MIDDLE,0)]);
-  box[C_INDEX(0,MIDDLE,MIDDLE)] = crealf(box[C_INDEX(0,MIDDLE,MIDDLE)]);
-  box[C_INDEX(MIDDLE,0,0)] = crealf(box[C_INDEX(MIDDLE,0,0)]);
-  box[C_INDEX(MIDDLE,0,MIDDLE)] = crealf(box[C_INDEX(MIDDLE,0,MIDDLE)]);
-  box[C_INDEX(MIDDLE,MIDDLE,0)] = crealf(box[C_INDEX(MIDDLE,MIDDLE,0)]);
-  box[C_INDEX(MIDDLE,MIDDLE,MIDDLE)] = crealf(box[C_INDEX(MIDDLE,MIDDLE,MIDDLE)]);
+  box[C_INDEX(0,0,0)][0] = 0;
+  box[C_INDEX(0,0,0)][1] = 0;
+  box[C_INDEX(0,0,MIDDLE)][1] = 0.;
+  box[C_INDEX(0,MIDDLE,0)][1] = 0.;
+  box[C_INDEX(0,MIDDLE,MIDDLE)][1] = 0.;
+  box[C_INDEX(MIDDLE,0,0)][1] = 0.;
+  box[C_INDEX(MIDDLE,0,MIDDLE)][1] = 0.;
+  box[C_INDEX(MIDDLE,MIDDLE,0)][1] = 0.;
+  box[C_INDEX(MIDDLE,MIDDLE,MIDDLE)][1] = 0.;
 
 
   // do entire i except corners
@@ -40,15 +41,18 @@ void adj_complex_conj(fftwf_complex *box){
     // just j corners
     for (j=0; j<=MIDDLE; j+=MIDDLE){
       for (k=0; k<=MIDDLE; k+=MIDDLE){
-	box[C_INDEX(i,j,k)] = conjf(box[C_INDEX(DIM-i,j,k)]);
+	    box[C_INDEX(i,j,k)][0] = box[C_INDEX(DIM-i,j,k)][0];
+	    box[C_INDEX(i,j,k)][1] = -box[C_INDEX(DIM-i,j,k)][1];
       }
     }
 
     // all of j
     for (j=1; j<MIDDLE; j++){
       for (k=0; k<=MIDDLE; k+=MIDDLE){
-	box[C_INDEX(i,j,k)] = conjf(box[C_INDEX(DIM-i,DIM-j,k)]);
-	box[C_INDEX(i,DIM-j,k)] = conjf(box[C_INDEX(DIM-i,j,k)]);
+		box[C_INDEX(i,j,k)][0] = box[C_INDEX(DIM-i,DIM-j,k)][0];
+		box[C_INDEX(i,j,k)][1] = -box[C_INDEX(DIM-i,DIM-j,k)][1];
+		box[C_INDEX(i,DIM-j,k)][0] = box[C_INDEX(DIM-i,j,k)][0];
+		box[C_INDEX(i,DIM-j,k)][1] = -box[C_INDEX(DIM-i,j,k)][1];
       }
     }
   } // end loop over i
@@ -58,7 +62,8 @@ void adj_complex_conj(fftwf_complex *box){
   for (i=0; i<=MIDDLE; i+=MIDDLE){
     for (j=1; j<MIDDLE; j++){
       for (k=0; k<=MIDDLE; k+=MIDDLE){
-	box[C_INDEX(i,j,k)] = conjf(box[C_INDEX(i,DIM-j,k)]);
+		box[C_INDEX(i,j,k)][0] = box[C_INDEX(i,DIM-j,k)][0];
+		box[C_INDEX(i,j,k)][1] = -box[C_INDEX(i,DIM-j,k)][1];
       }
     }
   } // end loop over remaining j
@@ -92,7 +97,7 @@ int main(int argc, char ** argv){
     INDIVIDUAL_ID = atof(argv[1]);
     INDIVIDUAL_ID_2 = atof(argv[2]);
     
-    double *PARAM_COSMOLOGY_VALS = calloc(TOTAL_COSMOLOGY_FILEPARAMS,sizeof(double));
+    double *PARAM_COSMOLOGY_VALS = (double *) calloc(TOTAL_COSMOLOGY_FILEPARAMS,sizeof(double));
     
     sprintf(filename,"WalkerCosmology_%1.6lf_%1.6lf.txt",INDIVIDUAL_ID,INDIVIDUAL_ID_2);
     F = fopen(filename,"rt");
@@ -217,7 +222,8 @@ int main(int argc, char ** argv){
 	// of our k entry from a Gaussian distribution
 	a = gsl_ran_ugaussian(r[omp_get_thread_num()]);
 	b = gsl_ran_ugaussian(r[omp_get_thread_num()]);
-	box[C_INDEX(n_x, n_y, n_z)] = sqrt(VOLUME*p/2.0) * (a + b*I);
+	box[C_INDEX(n_x, n_y, n_z)][0] = sqrt(VOLUME*p/2.0) * a;
+	box[C_INDEX(n_x, n_y, n_z)][1] = sqrt(VOLUME*p/2.0) * b;
       }
     }
     //    fprintf(stderr, "%i ", n_x);
@@ -292,7 +298,8 @@ int main(int argc, char ** argv){
   }
   // add the 1/VOLUME factor when converting from k space to real space
   for (ct=0; ct<KSPACE_NUM_PIXELS; ct++){
-     box[ct] /= VOLUME;
+     box[ct][0] /= VOLUME;
+     box[ct][1] /= VOLUME;
   }
   plan = fftwf_plan_dft_c2r_3d(DIM, DIM, DIM, (fftwf_complex *)box, (float *)box, FFTW_ESTIMATE);
   fftwf_execute(plan);
@@ -320,7 +327,8 @@ int main(int argc, char ** argv){
     free_ps(); return -1;
   }
   // set velocities/dD/dt
-#pragma omp parallel shared(box, r) private(n_x, k_x, n_y, k_y, n_z, k_z, k_sq)
+  float vx, vy;
+#pragma omp parallel shared(box, r) private(n_x, k_x, n_y, k_y, n_z, k_z, k_sq, vx, vy)
   {
 #pragma omp for
   for (n_x=0; n_x<DIM; n_x++){
@@ -342,10 +350,14 @@ int main(int argc, char ** argv){
 
 	// now set the velocities
 	if ((n_x==0) && (n_y==0) && (n_z==0)){ // DC mode
-	  box[0] = 0;
+	  box[0][0] = 0;
+	  box[0][1] = 0;
 	}
 	else{
-	  box[C_INDEX(n_x,n_y,n_z)] *= k_x*I/k_sq/VOLUME;
+		vx = box[C_INDEX(n_x,n_y,n_z)][0];
+		vy = box[C_INDEX(n_x,n_y,n_z)][1];
+	    box[C_INDEX(n_x,n_y,n_z)][0] = k_x/k_sq/VOLUME * vy * -1.;
+	    box[C_INDEX(n_x,n_y,n_z)][1] = k_x/k_sq/VOLUME * vx;
 	  // note the last factor of 1/VOLUME accounts for the scaling in real-space, following the FFT
 	}
       }
@@ -394,7 +406,7 @@ int main(int argc, char ** argv){
     free_ps(); return -1;
   }
   // set velocities/dD/dt
-#pragma omp parallel shared(box, r) private(n_x, k_x, n_y, k_y, n_z, k_z, k_sq)
+#pragma omp parallel shared(box, r) private(n_x, k_x, n_y, k_y, n_z, k_z, k_sq, vx, vy)
   {
 #pragma omp for
   for (n_x=0; n_x<DIM; n_x++){
@@ -416,10 +428,14 @@ int main(int argc, char ** argv){
 
 	// now set the velocities
 	if ((n_x==0) && (n_y==0) && (n_z==0)){ // DC mode
-	  box[0] = 0;
+	  box[0][0] = 0.;
+	  box[0][1] = 0.;
 	}
 	else{
-	  box[C_INDEX(n_x,n_y,n_z)] *= k_y*I/k_sq/VOLUME;
+		vx = box[C_INDEX(n_x,n_y,n_z)][0];
+		vy = box[C_INDEX(n_x,n_y,n_z)][1];
+	    box[C_INDEX(n_x,n_y,n_z)][0] = k_y/k_sq/VOLUME * vy * -1.;
+	    box[C_INDEX(n_x,n_y,n_z)][1] = k_y/k_sq/VOLUME * vx;
 	  // note the last factor of 1/VOLUME accounts for the scaling in real-space, following the FFT
 	}
       }
@@ -467,7 +483,7 @@ int main(int argc, char ** argv){
     free_ps(); return -1;
   }
   // set velocities/dD/dt
-#pragma omp parallel shared(box, r) private(n_x, k_x, n_y, k_y, n_z, k_z, k_sq)
+#pragma omp parallel shared(box, r) private(n_x, k_x, n_y, k_y, n_z, k_z, k_sq, vx, vy)
   {
 #pragma omp for
   for (n_x=0; n_x<DIM; n_x++){
@@ -489,10 +505,14 @@ int main(int argc, char ** argv){
 
 	// now set the velocities
 	if ((n_x==0) && (n_y==0) && (n_z==0)){ // DC mode
-	  box[0] = 0;
+	  box[0][0] = 0;
+	  box[0][1] = 0;
 	}
 	else{
-	  box[C_INDEX(n_x,n_y,n_z)] *= k_z*I/k_sq/VOLUME;
+	  vx = box[C_INDEX(n_x,n_y,n_z)][0];
+	  vy = box[C_INDEX(n_x,n_y,n_z)][1];
+	  box[C_INDEX(n_x,n_y,n_z)][0] = k_z/k_sq/VOLUME * vy * -1.;
+	  box[C_INDEX(n_x,n_y,n_z)][1] = k_z/k_sq/VOLUME * vx;
 	  // note the last factor of 1/VOLUME accounts for the scaling in real-space, following the FFT
 	}
       }
@@ -612,11 +632,13 @@ int main(int argc, char ** argv){
               //fprintf(stderr, "(k = %.2e %.2e %.2e) ", k[0], k[1], k[2]); 
 	            // now set the velocities
 	            if ((n_x==0) && (n_y==0) && (n_z==0)){ // DC mode
-	              phi_1[PHI_INDEX(i, j)][0] = 0;
+	              phi_1[PHI_INDEX(i, j)][0][0] = 0.;
+	              phi_1[PHI_INDEX(i, j)][0][1] = 0.;
 	            }
 	            else{
                 //fprintf(stderr, "%.2e ", phi_1[PHI_INDEX(i, j)][C_INDEX(n_x, n_y, n_z)] ); 
-	              phi_1[PHI_INDEX(i, j)][C_INDEX(n_x,n_y,n_z)] = -k[i]*k[j]*box[C_INDEX(n_x, n_y, n_z)]/k_sq/VOLUME;
+	              phi_1[PHI_INDEX(i, j)][C_INDEX(n_x,n_y,n_z)][0] = -k[i]*k[j]*box[C_INDEX(n_x, n_y, n_z)][0]/k_sq/VOLUME;
+	              phi_1[PHI_INDEX(i, j)][C_INDEX(n_x,n_y,n_z)][1] = -k[i]*k[j]*box[C_INDEX(n_x, n_y, n_z)][1]/k_sq/VOLUME;
                 //fprintf(stderr, "%.2e ", phi_1[PHI_INDEX(i, j)][C_INDEX(n_x, n_y, n_z)] ); 
 
 	            // note the last factor of 1/VOLUME accounts for the scaling in real-space, following the FFT
@@ -714,7 +736,7 @@ int main(int argc, char ** argv){
       free_ps(); return -1;
     }
     // set velocities/dD/dt
-#pragma omp parallel shared(box, r) private(n_x, k_x, n_y, k_y, n_z, k_z, k_sq)
+#pragma omp parallel shared(box, r) private(n_x, k_x, n_y, k_y, n_z, k_z, k_sq, vx, vy)
     {
 #pragma omp for
     for (n_x=0; n_x<DIM; n_x++){
@@ -736,10 +758,14 @@ int main(int argc, char ** argv){
 
 	        // now set the velocities
 	        if ((n_x==0) && (n_y==0) && (n_z==0)){ // DC mode
-	          box[0] = 0;
+	          box[0][0] = 0.;
+	          box[0][1] = 0.;
 	        }
 	        else{
-	          box[C_INDEX(n_x,n_y,n_z)] *= k_x*I/k_sq;
+			  vx = box[C_INDEX(n_x,n_y,n_z)][0];
+			  vy = box[C_INDEX(n_x,n_y,n_z)][1];
+	          box[C_INDEX(n_x,n_y,n_z)][0] = k_x/k_sq * vy * -1.;
+	          box[C_INDEX(n_x,n_y,n_z)][1] = k_x/k_sq * vx;
 	          // note the last factor of 1/VOLUME accounts for the scaling in real-space, following the FFT
 	        }
         }
@@ -790,7 +816,7 @@ int main(int argc, char ** argv){
       free_ps(); return -1;
     }
     // set velocities/dD/dt
-#pragma omp parallel shared(box, r) private(n_x, k_x, n_y, k_y, n_z, k_z, k_sq)
+#pragma omp parallel shared(box, r) private(n_x, k_x, n_y, k_y, n_z, k_z, k_sq, vx, vy)
     {
 #pragma omp for
     for (n_x=0; n_x<DIM; n_x++){
@@ -812,10 +838,14 @@ int main(int argc, char ** argv){
 
 	        // now set the velocities
 	        if ((n_x==0) && (n_y==0) && (n_z==0)){ // DC mode
-	          box[0] = 0;
+	          box[0][0] = 0.;
+	          box[0][1] = 0.;
 	        }
 	        else{
-	        box[C_INDEX(n_x,n_y,n_z)] *= k_y*I/k_sq;
+				vx = box[C_INDEX(n_x,n_y,n_z)][0];
+				vy = box[C_INDEX(n_x,n_y,n_z)][1];
+	        	box[C_INDEX(n_x,n_y,n_z)][0] = k_y/k_sq * vy * -1.;
+	        	box[C_INDEX(n_x,n_y,n_z)][1] = k_y/k_sq * vx;
           //fprintf(stderr, "%.2e ", box[C_INDEX(n_x, n_y, n_z)]);
 	        // note the last factor of 1/VOLUME accounts for the scaling in real-space, following the FFT
 	        }
@@ -865,7 +895,7 @@ int main(int argc, char ** argv){
       free_ps(); return -1;
     }
     // set velocities/dD/dt
-#pragma omp parallel shared(box, r) private(n_x, k_x, n_y, k_y, n_z, k_z, k_sq)
+#pragma omp parallel shared(box, r) private(n_x, k_x, n_y, k_y, n_z, k_z, k_sq, vx, vy)
     {
 #pragma omp for
     for (n_x=0; n_x<DIM; n_x++){
@@ -887,10 +917,14 @@ int main(int argc, char ** argv){
 
 	        // now set the velocities
 	        if ((n_x==0) && (n_y==0) && (n_z==0)){ // DC mode
-	          box[0] = 0;
+	          box[0][0] = 0.;
+	          box[0][1] = 0.;
 	        }
 	        else{
-	          box[C_INDEX(n_x,n_y,n_z)] *= k_z*I/k_sq;
+			  vx = box[C_INDEX(n_x,n_y,n_z)][0];
+			  vy = box[C_INDEX(n_x,n_y,n_z)][1];
+	          box[C_INDEX(n_x,n_y,n_z)][0] = k_z/k_sq * vy * -1.;
+	          box[C_INDEX(n_x,n_y,n_z)][1] = k_z/k_sq * vx;
 	        // note the last factor of 1/VOLUME accounts for the scaling in real-space, following the FFT
 	        }
         }

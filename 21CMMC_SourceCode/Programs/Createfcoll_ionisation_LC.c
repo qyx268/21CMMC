@@ -1,6 +1,6 @@
 #include "../Parameter_files/INIT_PARAMS.H"
-#include "../Parameter_files/ANAL_PARAMS.H"
-#include "../Parameter_files/Variables.h"
+//#include "../Parameter_files/ANAL_PARAMS.H"
+//#include "../Parameter_files/Variables.h"
 #include "bubble_helper_progs.c"
 #include "heating_helper_progs.c"
 #include "gsl/gsl_sf_erf.h"
@@ -13,7 +13,7 @@
 float REDSHIFT;
 
 void init_21cmMC_HII_arrays();
-void destroy_21cmMC_HII_arrays();
+void destroy_21cmMC_HII_arrays(int skip_deallocate);
 
 int main(int argc, char ** argv){
     
@@ -44,7 +44,7 @@ int main(int argc, char ** argv){
     INDIVIDUAL_ID = atof(argv[1]);
     INDIVIDUAL_ID_2 = atof(argv[2]);
     
-    double *PARAM_COSMOLOGY_VALS = calloc(TOTAL_COSMOLOGY_FILEPARAMS,sizeof(double));
+    double *PARAM_COSMOLOGY_VALS = (double *) calloc(TOTAL_COSMOLOGY_FILEPARAMS,sizeof(double));
     
     /////////////////   Read in the cosmological parameter data     /////////////////
     
@@ -85,8 +85,8 @@ int main(int argc, char ** argv){
     
     ERFC_NUM_POINTS = 10000;
     
-    ERFC_VALS = calloc(ERFC_NUM_POINTS,sizeof(double));
-    ERFC_VALS_DIFF = calloc(ERFC_NUM_POINTS,sizeof(double));
+    ERFC_VALS = (double *) calloc(ERFC_NUM_POINTS,sizeof(double));
+    ERFC_VALS_DIFF = (double *) calloc(ERFC_NUM_POINTS,sizeof(double));
     
     ArgBinWidth = (erfc_arg_max - erfc_arg_min)/((double)ERFC_NUM_POINTS - 1.);
     InvArgBinWidth = 1./ArgBinWidth;
@@ -185,7 +185,8 @@ int main(int argc, char ** argv){
     // Note: we will leave off factor of VOLUME, in anticipation of the inverse FFT below
         
     for (ct=0; ct<HII_KSPACE_NUM_PIXELS; ct++){
-        deltax_unfiltered[ct] /= (HII_TOT_NUM_PIXELS+0.0);
+        deltax_unfiltered[ct][0] /= (HII_TOT_NUM_PIXELS+0.0);
+        deltax_unfiltered[ct][1] /= (HII_TOT_NUM_PIXELS+0.0);
     }
     
     // loop through the filter radii (in Mpc)
@@ -338,12 +339,12 @@ int main(int argc, char ** argv){
 
 void init_21cmMC_HII_arrays() {
     
-    Overdense_spline_GL_low = calloc(Nlow,sizeof(float));
-    Fcoll_spline_GL_low = calloc(Nlow,sizeof(float));
-    second_derivs_low_GL = calloc(Nlow,sizeof(float));
-    Overdense_spline_GL_high = calloc(Nhigh,sizeof(float));
-    Fcoll_spline_GL_high = calloc(Nhigh,sizeof(float));
-    second_derivs_high_GL = calloc(Nhigh,sizeof(float));
+    Overdense_spline_GL_low = (float *) calloc(Nlow,sizeof(float));
+    Fcoll_spline_GL_low = (float *) calloc(Nlow,sizeof(float));
+    second_derivs_low_GL = (float *) calloc(Nlow,sizeof(float));
+    Overdense_spline_GL_high = (float *) calloc(Nhigh,sizeof(float));
+    Fcoll_spline_GL_high = (float *) calloc(Nhigh,sizeof(float));
+    second_derivs_high_GL = (float *) calloc(Nhigh,sizeof(float));
     
     deltax_unfiltered = (fftwf_complex *) fftwf_malloc(sizeof(fftwf_complex)*HII_KSPACE_NUM_PIXELS);
     deltax_unfiltered_original = (fftwf_complex *) fftwf_malloc(sizeof(fftwf_complex)*HII_KSPACE_NUM_PIXELS);
@@ -358,11 +359,11 @@ void init_21cmMC_HII_arrays() {
     delta_T = (float *) calloc(HII_TOT_NUM_PIXELS,sizeof(float));
     v = (float *) calloc(HII_TOT_FFT_NUM_PIXELS,sizeof(float));
     
-    xi_low = calloc((NGLlow+1),sizeof(float));
-    wi_low = calloc((NGLlow+1),sizeof(float));
+    xi_low = (float *) calloc((NGLlow+1),sizeof(float));
+    wi_low = (float *) calloc((NGLlow+1),sizeof(float));
     
-    xi_high = calloc((NGLhigh+1),sizeof(float));
-    wi_high = calloc((NGLhigh+1),sizeof(float));
+    xi_high = (float *) calloc((NGLhigh+1),sizeof(float));
+    wi_high = (float *) calloc((NGLhigh+1),sizeof(float));
     
 //    k_factor = 1.25;
     k_factor = 1.35;
@@ -381,8 +382,8 @@ void init_21cmMC_HII_arrays() {
         k_ceil*=k_factor;
     }
     
-    p_box = calloc(NUM_BINS,sizeof(double));
-    k_ave = calloc(NUM_BINS,sizeof(double));
+    p_box = (double *) calloc(NUM_BINS,sizeof(double));
+    k_ave = (double *) calloc(NUM_BINS,sizeof(double));
     in_bin_ct = (unsigned long long *)calloc(NUM_BINS,sizeof(unsigned long long));
     
 }

@@ -3,7 +3,7 @@
 
 #include <math.h>
 #include "Variables.h"
-#include "ANAL_PARAMS.H"
+//#include "ANAL_PARAMS.H"
 
 /****** New in v1.1. ******/
 /*** WDM parameters ***/

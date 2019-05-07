@@ -1,6 +1,6 @@
 #include "../Parameter_files/INIT_PARAMS.H"
-#include "../Parameter_files/ANAL_PARAMS.H"
-#include "../Parameter_files/Variables.h"
+//#include "../Parameter_files/ANAL_PARAMS.H"
+//#include "../Parameter_files/Variables.h"
 #include "bubble_helper_progs.c"
 
 #define TOTAL_COSMOLOGY_FILEPARAMS (int)7
@@ -55,6 +55,7 @@ int process_velocity(fftwf_complex *updated, float dDdt_over_D, float REDSHIFT, 
   float k_x, k_y, k_z, k_sq;
   int n_x, n_y, n_z;
   fftwf_plan plan;
+  float vx, vy;
 
   for (n_x=0; n_x<HII_DIM; n_x++){
     if (n_x>HII_MIDDLE)
@@ -74,15 +75,25 @@ int process_velocity(fftwf_complex *updated, float dDdt_over_D, float REDSHIFT, 
 	k_sq = k_x*k_x + k_y*k_y + k_z*k_z;
 
 	// now set the velocities
-	if ((n_x==0) && (n_y==0) && (n_z==0)) // DC mode
-	  updated[0] = 0;
+	if ((n_x==0) && (n_y==0) && (n_z==0)){ // DC mode
+	  updated[0][0] = 0.;
+	  updated[0][1] = 0.;
+	}
 	else{
-	  if (component == 0) // x-component
-	    updated[HII_C_INDEX(n_x,n_y,n_z)] *= dDdt_over_D*k_x*I/k_sq/(HII_TOT_NUM_PIXELS+0.0);
-	  else if (component == 1)
-	    updated[HII_C_INDEX(n_x,n_y,n_z)] *= dDdt_over_D*k_y*I/k_sq/(HII_TOT_NUM_PIXELS+0.0);
-	  else
-	    updated[HII_C_INDEX(n_x,n_y,n_z)] *= dDdt_over_D*k_z*I/k_sq/(HII_TOT_NUM_PIXELS+0.0);
+	  vx = updated[HII_C_INDEX(n_x,n_y,n_z)][0];
+	  vy = updated[HII_C_INDEX(n_x,n_y,n_z)][1];
+	  if (component == 0){ // x-component
+	    updated[HII_C_INDEX(n_x,n_y,n_z)][0] = dDdt_over_D*k_x/k_sq/(HII_TOT_NUM_PIXELS+0.0) * vy * -1.;
+	    updated[HII_C_INDEX(n_x,n_y,n_z)][1] = dDdt_over_D*k_x/k_sq/(HII_TOT_NUM_PIXELS+0.0) * vx;
+	  }
+	  else if (component == 1){
+	    updated[HII_C_INDEX(n_x,n_y,n_z)][0] = dDdt_over_D*k_y/k_sq/(HII_TOT_NUM_PIXELS+0.0) * vy * -1.;
+	    updated[HII_C_INDEX(n_x,n_y,n_z)][1] = dDdt_over_D*k_y/k_sq/(HII_TOT_NUM_PIXELS+0.0) * vx;
+	  }
+	  else{
+	    updated[HII_C_INDEX(n_x,n_y,n_z)][0] = dDdt_over_D*k_z/k_sq/(HII_TOT_NUM_PIXELS+0.0) * vy * -1.;
+	    updated[HII_C_INDEX(n_x,n_y,n_z)][1] = dDdt_over_D*k_z/k_sq/(HII_TOT_NUM_PIXELS+0.0) * vx;
+	  }
 	}
       }
     }
@@ -136,7 +147,7 @@ int main (int argc, char ** argv){
     INDIVIDUAL_ID = atof(argv[2]);
     INDIVIDUAL_ID_2 = atof(argv[3]);
     
-    double *PARAM_COSMOLOGY_VALS = calloc(TOTAL_COSMOLOGY_FILEPARAMS,sizeof(double));
+    double *PARAM_COSMOLOGY_VALS = (double *)calloc(TOTAL_COSMOLOGY_FILEPARAMS,sizeof(double));
     
     sprintf(filename,"WalkerCosmology_%1.6lf_%1.6lf.txt",INDIVIDUAL_ID,INDIVIDUAL_ID_2);
     F = fopen(filename,"rt");
@@ -185,7 +196,7 @@ int main (int argc, char ** argv){
     fprintf(stderr, "perturb_field: Error allocating memory for box.\nAborting...\n");
     free_ps(); return -1;
   }
-  for (ct=0; ct<HII_KSPACE_NUM_PIXELS; ct++){ updated[ct]=0;}
+  for (ct=0; ct<HII_KSPACE_NUM_PIXELS; ct++){ updated[ct][0]=0.;updated[ct][1]=0.;}
 
   vx = (float *) fftwf_malloc(sizeof(float)*HII_TOT_FFT_NUM_PIXELS);
   if (!vx){

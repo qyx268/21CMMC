@@ -2,7 +2,7 @@
 #define _BUBBLE_HELPERS_
 
 #include "../Parameter_files/INIT_PARAMS.H"
-#include "../Parameter_files/ANAL_PARAMS.H"
+//#include "../Parameter_files/ANAL_PARAMS.H"
 
 void HII_filter(fftwf_complex *box, int filter_type, float R){
     int n_x, n_z, n_y;
@@ -25,18 +25,21 @@ void HII_filter(fftwf_complex *box, int filter_type, float R){
                 kR = k_mag*R; // real space top-hat
                 if (filter_type == 0){ // real space top-hat
                     if (kR > 1e-4){
-                        box[HII_C_INDEX(n_x, n_y, n_z)] *= 3.0*pow(kR, -3) * (sin(kR) - cos(kR)*kR);
+                        box[HII_C_INDEX(n_x, n_y, n_z)][0] *= 3.0*pow(kR, -3) * (sin(kR) - cos(kR)*kR);
+                        box[HII_C_INDEX(n_x, n_y, n_z)][1] *= 3.0*pow(kR, -3) * (sin(kR) - cos(kR)*kR);
                     }
                 }
                 else if (filter_type == 1){ // k-space top hat
                     kR *= 0.413566994; // equates integrated volume to the real space top-hat (9pi/2)^(-1/3)
                     if (kR > 1){
-                        box[HII_C_INDEX(n_x, n_y, n_z)] = 0;
+                        box[HII_C_INDEX(n_x, n_y, n_z)][0] = 0.;
+                        box[HII_C_INDEX(n_x, n_y, n_z)][1] = 0.;
                     }
                 }
                 else if (filter_type == 2){ // gaussian
                     kR *= 0.643; // equates integrated volume to the real space top-hat
-                    box[HII_C_INDEX(n_x, n_y, n_z)] *= pow(E, -kR*kR/2.0);
+                    box[HII_C_INDEX(n_x, n_y, n_z)][0] *= pow(E, -kR*kR/2.0);
+                    box[HII_C_INDEX(n_x, n_y, n_z)][1] *= pow(E, -kR*kR/2.0);
                 }
                 else{
                     if ( (n_x==0) && (n_y==0) && (n_z==0) )

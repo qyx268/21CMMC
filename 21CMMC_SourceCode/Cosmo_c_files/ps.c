@@ -7,13 +7,13 @@
 #include <ctype.h>
 #include <math.h>
 #include <unistd.h>
-#include "../Parameter_files/COSMOLOGY.H"
+//#include "../Parameter_files/COSMOLOGY.H"
 #include "../Parameter_files/INIT_PARAMS.H"
 #include <gsl/gsl_interp.h>
 #include <gsl/gsl_spline.h>
 #include "cosmo_progs.c"
 #include "misc.c"
-#include "../Parameter_files/Variables.h"
+//#include "../Parameter_files/Variables.h"
 
 /* New in v1.1 */
 #define ERFC_NPTS (int) 75
@@ -171,11 +171,11 @@ struct parameters_gsl_SFR_con_int_MINI_{
 
 /* New in v1.4 - part 2 of 4: end */
 
-unsigned long *lvector(long nl, long nh);
-void free_lvector(unsigned long *v, long nl, long nh);
+unsigned long *lvector_selfdefined(long nl, long nh);
+void free_lvector_selfdefined(unsigned long *v, long nl, long nh);
 
-float *vector(long nl, long nh);
-void free_vector(float *v, long nl, long nh);
+float *vector_selfdefined(long nl, long nh);
+void free_vector_selfdefined(float *v, long nl, long nh);
 
 void spline(float x[], float y[], int n, float yp1, float ypn, float y2[]);
 void splint(float xa[], float ya[], float y2a[], int n, float x, float *y);
@@ -207,7 +207,7 @@ void initialiseFcoll_spline(float z, float Mmin, float Mmax, float Mval, float M
 double sigma_norm, R, theta_cmb, omhh, z_equality, y_d, sound_horizon, alpha_nu, f_nu, f_baryon, beta_c, d2fact, R_CUTOFF, DEL_CURR, SIG_CURR;
 
 /* New in v1.4 - part 3 of 4: start */
-float *Overdense_spline_SFR,*Fcoll_spline_SFR,*second_derivs_SFR;
+float *second_derivs_SFR;
 float *xi_SFR,*wi_SFR;
 float *xi_SFR_Xray,*wi_SFR_Xray;
 float *Mass_Spline_Xray, *Sigma_Spline_Xray, *dSigmadm_Spline_Xray, *second_derivs_sigma_Xray, *second_derivs_dsigma_Xray;
@@ -1151,7 +1151,7 @@ void gauleg(float x1, float x2, float x[], float w[], int n)
     }
 }
 
-void nrerror(char error_text[])
+void nrerror(const char error_text[])
 {
     fprintf(stderr,"Numerical Recipes run-time error...\n");
     fprintf(stderr,"%s\n",error_text);
@@ -1159,17 +1159,17 @@ void nrerror(char error_text[])
     exit(1);
 }
 
-float *vector(long nl, long nh)
-/* allocate a float vector with subscript range v[nl..nh] */
+float *vector_selfdefined(long nl, long nh)
+/* allocate a float vector_selfdefined with subscript range v[nl..nh] */
 {
     float *v;
     v = (float *)malloc((size_t) ((nh-nl+1+NR_END)*sizeof(float)));
-    if(!v) nrerror("allocation failure in vector()");
+    if(!v) nrerror("allocation failure in vector_selfdefined()");
     return v - nl + NR_END;
 }
 
-void free_vector(float *v, long nl, long nh)
-/* free a float vector allocated with vector() */
+void free_vector_selfdefined(float *v, long nl, long nh)
+/* free a float vector_selfdefined allocated with vector_selfdefined() */
 {
     free((FREE_ARG) (v+nl-NR_END));
 }
@@ -1185,7 +1185,7 @@ void spline(float x[], float y[], int n, float yp1, float ypn, float y2[])
     int i,k;
     float p,qn,sig,un,*u;
     int na,nb,check;
-    u=vector(1,n-1);
+    u=vector_selfdefined(1,n-1);
     if (yp1 > 0.99e30)                     // The lower boundary condition is set either to be "natural"
         y2[1]=u[1]=0.0;
     else {                                 // or else to have a specified first derivative.
@@ -1242,7 +1242,7 @@ void spline(float x[], float y[], int n, float yp1, float ypn, float y2[])
     for (k=n-1;k>=1;k--) {                      //This is the backsubstitution loop of the tridiagonal
         y2[k]=y2[k]*y2[k+1]+u[k];               //algorithm.
     }
-    free_vector(u,1,n-1);
+    free_vector_selfdefined(u,1,n-1);
 }
 
 
@@ -1251,7 +1251,7 @@ void splint(float xa[], float ya[], float y2a[], int n, float x, float *y)
  and given the array y2a[1..n], which is the output from spline above, and given a value of
  x, this routine returns a cubic-spline interpolated value y.*/
 {
-    void nrerror(char error_text[]);
+    void nrerror(const char error_text[]);
     int klo,khi,k;
     float h,b,a;
     klo=1;                                                  // We will find the right place in the table by means of
@@ -1268,17 +1268,17 @@ void splint(float xa[], float ya[], float y2a[], int n, float x, float *y)
     *y=a*ya[klo]+b*ya[khi]+((a*a*a-a)*y2a[klo]+(b*b*b-b)*y2a[khi])*(h*h)/6.0;
 }
 
-unsigned long *lvector(long nl, long nh)
-/* allocate an unsigned long vector with subscript range v[nl..nh] */
+unsigned long *lvector_selfdefined(long nl, long nh)
+/* allocate an unsigned long vector_selfdefined with subscript range v[nl..nh] */
 {
     unsigned long *v;
     v = (unsigned long *)malloc((size_t) ((nh-nl+1+NR_END)*sizeof(long)));
-    if(!v) nrerror("allocation failure in lvector()");
+    if(!v) nrerror("allocation failure in lvector_selfdefined()");
     return v - nl + NR_END;
 }
 
-void free_lvector(unsigned long *v, long nl, long nh)
-/* free an unsigned long vector allocated with lvector() */
+void free_lvector_selfdefined(unsigned long *v, long nl, long nh)
+/* free an unsigned long vector_selfdefined allocated with lvector_selfdefined() */
 {
     free((FREE_ARG) (v+nl-NR_END));
 }
@@ -1316,14 +1316,15 @@ double FgtrM_general(float z, float M1, float M_Max, float M2, float MFeedback, 
         
         Fx.function = &FgtrlnM_general;
         
-        struct parameters_gsl_int_  parameters_gsl_int = {
+        /*struct parameters_gsl_int_  parameters_gsl_int = {
             .z_obs = z,
             .Mval = M2,
             .M_Feed = MFeedback,
             .alpha_pl = alpha,
             .del_traj_1 = delta1,
             .del_traj_2 = delta2
-        };
+        };*/
+        struct parameters_gsl_int_  parameters_gsl_int = {z, M2, MFeedback,alpha,delta1,delta2};
         
         Fx.params = &parameters_gsl_int;
         
@@ -1363,14 +1364,15 @@ float GaussLegengreQuad_Fcoll(int n, float z, float M2, float MFeedback, float a
     float integrand,x;
     integrand = 0.0;
     
-    struct parameters_gsl_int_  parameters_gsl_int = {
+    /*struct parameters_gsl_int_  parameters_gsl_int = {
         .z_obs = z,
         .Mval = M2,
         .M_Feed = MFeedback,
         .alpha_pl = alpha,
         .del_traj_1 = delta1,
         .del_traj_2 = delta2
-    };
+    };*/
+    struct parameters_gsl_int_  parameters_gsl_int = {z,M2,MFeedback,alpha,delta1,delta2};
     
     if(delta2>delta1) {
         return 1.;
@@ -1390,11 +1392,11 @@ void initialiseSplinedSigmaM(float M_Min, float M_Max)
     int i;
     float Mass;
     
-    Mass_Spline = calloc(NMass,sizeof(float));
-    Sigma_Spline = calloc(NMass,sizeof(float));
-    dSigmadm_Spline = calloc(NMass,sizeof(float));
-    second_derivs_sigma = calloc(NMass,sizeof(float));
-    second_derivs_dsigma = calloc(NMass,sizeof(float));
+    Mass_Spline = (float*) calloc(NMass,sizeof(float));
+    Sigma_Spline = (float*) calloc(NMass,sizeof(float));
+    dSigmadm_Spline = (float*) calloc(NMass,sizeof(float));
+    second_derivs_sigma = (float*) calloc(NMass,sizeof(float));
+    second_derivs_dsigma = (float*) calloc(NMass,sizeof(float));
     
     for(i=0;i<NMass;i++) {
         Mass_Spline[i] = pow(10., log10(M_Min) + (float)i/(NMass-1)*( log10(M_Max) - log10(M_Min) ) );
@@ -1410,9 +1412,9 @@ void initialiseSplinedSigmaM_quicker(float M_Min, float M_Max)
     int i;
     float Mass;
     
-    Mass_Spline_quicker = calloc(NMass,sizeof(float));
-    Sigma_Spline_quicker = calloc(NMass,sizeof(float));
-    dSigmadm_Spline_quicker = calloc(NMass,sizeof(float));
+    Mass_Spline_quicker = (float*) calloc(NMass,sizeof(float));
+    Sigma_Spline_quicker = (float*) calloc(NMass,sizeof(float));
+    dSigmadm_Spline_quicker = (float*) calloc(NMass,sizeof(float));
     
     for(i=0;i<NMass;i++) {
         Mass_Spline_quicker[i] = log(M_Min) + (float)i/(NMass-1)*( log(M_Max) - log(M_Min) );
@@ -1558,7 +1560,7 @@ double FgtrM_st_SFR(double growthf, double MassTurnover, double Alpha_star, doub
     gsl_integration_workspace * w
     = gsl_integration_workspace_alloc (1000);
     
-    struct parameters_gsl_SFR_int_ parameters_gsl_SFR = {
+    /*struct parameters_gsl_SFR_int_ parameters_gsl_SFR = {
         .gf_obs = growthf,
         .Mdrop = MassTurnover,
         .pl_star = Alpha_star,
@@ -1567,7 +1569,8 @@ double FgtrM_st_SFR(double growthf, double MassTurnover, double Alpha_star, doub
         .frac_esc = Fesc10,
         .LimitMass_Fstar = Mlim_Fstar,
         .LimitMass_Fesc = Mlim_Fesc,
-    };
+    };*/
+    struct parameters_gsl_SFR_int_ parameters_gsl_SFR = {growthf,MassTurnover,Alpha_star,Alpha_esc,Fstar10,Fesc10,Mlim_Fstar,Mlim_Fesc};
     
     F.function = &dFdlnM_st_SFR;
     F.params = &parameters_gsl_SFR;
@@ -1615,14 +1618,15 @@ double FgtrM_st_SFR_MINI(double growthf, double MassTurnover, double MassTurnove
     gsl_integration_workspace * w
     = gsl_integration_workspace_alloc (1000);
 
-    struct parameters_gsl_SFR_int_MINI_ parameters_gsl_SFR = {
+    /*struct parameters_gsl_SFR_int_MINI_ parameters_gsl_SFR = {
         .gf_obs = growthf,
         .Mdrop = MassTurnover,
         .Mdrop_2 = MassTurnover2,
         .pl_star = Alpha_star,
         .frac_star = Fstar10,
         .LimitMass_Fstar = Mlim_Fstar,
-    };
+    };*/
+    struct parameters_gsl_SFR_int_MINI_ parameters_gsl_SFR = {growthf,MassTurnover,MassTurnover2,Alpha_star,Fstar10,Mlim_Fstar};
 
     F.function = &dFdlnM_st_SFR_MINI;
     F.params = &parameters_gsl_SFR;
@@ -1831,7 +1835,7 @@ float GaussLegendreQuad_FcollSFR(int n, float growthf, float M2, float sigma2, f
     float integrand, x;
     integrand = 0.;
     
-    struct parameters_gsl_SFR_con_int_ parameters_gsl_SFR_con = {
+    /*struct parameters_gsl_SFR_con_int_ parameters_gsl_SFR_con = {
         .gf_obs = growthf,
         .Mval = M2,
         .sigma2 = sigma2,
@@ -1844,7 +1848,8 @@ float GaussLegendreQuad_FcollSFR(int n, float growthf, float M2, float sigma2, f
         .frac_esc = Fesc10,
         .LimitMass_Fstar = Mlim_Fstar,
         .LimitMass_Fesc = Mlim_Fesc
-    };
+    };*/
+    struct parameters_gsl_SFR_con_int_ parameters_gsl_SFR_con = {growthf,M2,sigma2,delta1,delta2,MassTurnover,Alpha_star,Alpha_esc,Fstar10,Fesc10,Mlim_Fstar,Mlim_Fesc};
     
     if(delta2 > delta1){
         return 1.;
@@ -1865,7 +1870,7 @@ float GaussLegendreQuad_FcollSFR_MINI(int n, float growthf, float M2, float sigm
     float integrand, x;
     integrand = 0.;
     
-    struct parameters_gsl_SFR_con_int_MINI_ parameters_gsl_SFR_con = {
+    /*struct parameters_gsl_SFR_con_int_MINI_ parameters_gsl_SFR_con = {
         .gf_obs = growthf,
         .Mval = M2,
         .sigma2 = sigma2,
@@ -1876,7 +1881,8 @@ float GaussLegendreQuad_FcollSFR_MINI(int n, float growthf, float M2, float sigm
         .pl_star = Alpha_star,
         .frac_star = Fstar10,
         .LimitMass_Fstar = Mlim_Fstar,
-    };
+    };*/
+    struct parameters_gsl_SFR_con_int_MINI_ parameters_gsl_SFR_con = {growthf,M2,sigma2,delta1,delta2,MassTurnover,MassTurnover2,Alpha_star,Fstar10,Mlim_Fstar};
     
     if(delta2 > delta1){
         return 1.;
@@ -1901,7 +1907,7 @@ float GaussLegendreQuad_FcollSFR_Xray(int n, float growthf, float M2, float sigm
     float integrand, x;
     integrand = 0.;
     
-    struct parameters_gsl_SFR_con_int_ parameters_gsl_SFR_con = {
+    /*struct parameters_gsl_SFR_con_int_ parameters_gsl_SFR_con = {
         .gf_obs = growthf,
         .Mval = M2,
         .sigma2 = sigma2,
@@ -1914,7 +1920,8 @@ float GaussLegendreQuad_FcollSFR_Xray(int n, float growthf, float M2, float sigm
         .frac_esc = Fesc10,
         .LimitMass_Fstar = Mlim_Fstar,
         .LimitMass_Fesc = Mlim_Fesc
-    };
+    };*/
+    struct parameters_gsl_SFR_con_int_ parameters_gsl_SFR_con = {growthf,M2,sigma2,delta1,delta2,MassTurnover,Alpha_star,Alpha_esc,Fstar10,Fesc10,Mlim_Fstar,Mlim_Fesc};
     
     if(delta2 > delta1){
         return 1.;
@@ -1935,7 +1942,7 @@ float GaussLegendreQuad_FcollSFR_Xray_MINI(int n, float growthf, float M2, float
     float integrand, x;
     integrand = 0.;
     
-    struct parameters_gsl_SFR_con_int_MINI_ parameters_gsl_SFR_con = {
+    /*struct parameters_gsl_SFR_con_int_MINI_ parameters_gsl_SFR_con = {
         .gf_obs = growthf,
         .Mval = M2,
         .sigma2 = sigma2,
@@ -1946,7 +1953,8 @@ float GaussLegendreQuad_FcollSFR_Xray_MINI(int n, float growthf, float M2, float
         .pl_star = Alpha_star,
         .frac_star = Fstar10,
         .LimitMass_Fstar = Mlim_Fstar,
-    };
+    };*/
+    struct parameters_gsl_SFR_con_int_MINI_ parameters_gsl_SFR_con = {growthf,M2,sigma2,delta1,delta2,MassTurnover,MassTurnover2,Alpha_star,Fstar10,Mlim_Fstar};
     
     if(delta2 > delta1){
         return 1.;
@@ -2003,7 +2011,7 @@ double FgtrConditionalM_SFR(double growthf, double M1, double M2, double sigma2,
     gsl_integration_workspace * w
     = gsl_integration_workspace_alloc (1000);
     
-    struct parameters_gsl_SFR_con_int_ parameters_gsl_SFR_con = {
+    /*struct parameters_gsl_SFR_con_int_ parameters_gsl_SFR_con = {
         .gf_obs = growthf,
         .Mval = M2,
         .sigma2 = sigma2,
@@ -2016,7 +2024,8 @@ double FgtrConditionalM_SFR(double growthf, double M1, double M2, double sigma2,
         .frac_esc = Fesc10,
         .LimitMass_Fstar = Mlim_Fstar,
         .LimitMass_Fesc = Mlim_Fesc
-    };
+    };*/
+    struct parameters_gsl_SFR_con_int_ parameters_gsl_SFR_con = {growthf,M2,sigma2,delta1,delta2,MassTurnover,Alpha_star,Alpha_esc,Fstar10,Fesc10,Mlim_Fstar,Mlim_Fesc};
     
     F.function = &dFgtrConditionallnM_SFR;
     F.params = &parameters_gsl_SFR_con;
@@ -2070,7 +2079,7 @@ double FgtrConditionalM_SFR_MINI(double growthf, double M1, double M2, double si
     gsl_integration_workspace * w
     = gsl_integration_workspace_alloc (1000);
     
-    struct parameters_gsl_SFR_con_int_MINI_ parameters_gsl_SFR_con = {
+    /*struct parameters_gsl_SFR_con_int_MINI_ parameters_gsl_SFR_con = {
         .gf_obs = growthf,
         .Mval = M2,
         .sigma2 = sigma2,
@@ -2081,7 +2090,8 @@ double FgtrConditionalM_SFR_MINI(double growthf, double M1, double M2, double si
         .pl_star = Alpha_star,
         .frac_star = Fstar10,
         .LimitMass_Fstar = Mlim_Fstar,
-    };
+    };*/
+    struct parameters_gsl_SFR_con_int_MINI_ parameters_gsl_SFR_con = {growthf,M2,sigma2,delta1,delta2,MassTurnover,MassTurnover2,Alpha_star,Fstar10,Mlim_Fstar};
     
     F.function = &dFgtrConditionallnM_SFR_MINI;
     F.params = &parameters_gsl_SFR_con;
@@ -2292,11 +2302,11 @@ void initialiseSplinedSigmaM_Xray(float M_Min, float M_Max)
     int i;
     float Mass;
     
-    Mass_Spline_Xray = calloc(NMass,sizeof(float));
-    Sigma_Spline_Xray = calloc(NMass,sizeof(float));
-    dSigmadm_Spline_Xray = calloc(NMass,sizeof(float));
-    second_derivs_sigma_Xray = calloc(NMass,sizeof(float));
-    second_derivs_dsigma_Xray = calloc(NMass,sizeof(float));
+    Mass_Spline_Xray = (float*) calloc(NMass,sizeof(float));
+    Sigma_Spline_Xray = (float*) calloc(NMass,sizeof(float));
+    dSigmadm_Spline_Xray = (float*) calloc(NMass,sizeof(float));
+    second_derivs_sigma_Xray = (float*) calloc(NMass,sizeof(float));
+    second_derivs_dsigma_Xray = (float*) calloc(NMass,sizeof(float));
     
     for(i=0;i<NMass;i++) {
         Mass_Spline_Xray[i] = pow(10., log10(M_Min) + (float)i/(NMass-1)*( log10(M_Max) - log10(M_Min) ) );
@@ -2411,7 +2421,7 @@ double FgtrConditionalM_SFR_Xray(double growthf, double M1, double M2, double si
     gsl_integration_workspace * w
     = gsl_integration_workspace_alloc (1000);
     
-    struct parameters_gsl_SFR_con_int_ parameters_gsl_SFR_con = {
+    /*struct parameters_gsl_SFR_con_int_ parameters_gsl_SFR_con = {
         .gf_obs = growthf,
         .Mval = M2,
         .sigma2 = sigma2,
@@ -2424,7 +2434,8 @@ double FgtrConditionalM_SFR_Xray(double growthf, double M1, double M2, double si
         .frac_esc = Fesc10,
         .LimitMass_Fstar = Mlim_Fstar,
         .LimitMass_Fesc = Mlim_Fesc
-    };
+    };*/
+    struct parameters_gsl_SFR_con_int_ parameters_gsl_SFR_con = {growthf,M2,sigma2,delta1,delta2,MassTurnover,Alpha_star,Alpha_esc,Fstar10,Fesc10,Mlim_Fstar,Mlim_Fesc};
     
     F.function = &dFgtrConditionallnM_SFR_Xray;
     F.params = &parameters_gsl_SFR_con;
@@ -2452,7 +2463,7 @@ double FgtrConditionalM_SFR_Xray_MINI(double growthf, double M1, double M2, doub
     gsl_integration_workspace * w
     = gsl_integration_workspace_alloc (1000);
     
-    struct parameters_gsl_SFR_con_int_MINI_ parameters_gsl_SFR_con = {
+    /*struct parameters_gsl_SFR_con_int_MINI_ parameters_gsl_SFR_con = {
         .gf_obs = growthf,
         .Mval = M2,
         .sigma2 = sigma2,
@@ -2463,7 +2474,8 @@ double FgtrConditionalM_SFR_Xray_MINI(double growthf, double M1, double M2, doub
         .pl_star = Alpha_star,
         .frac_star = Fstar10,
         .LimitMass_Fstar = Mlim_Fstar,
-    };
+    };*/
+    struct parameters_gsl_SFR_con_int_MINI_ parameters_gsl_SFR_con = {growthf,M2,sigma2,delta1,delta2,MassTurnover,MassTurnover2,Alpha_star,Fstar10,Mlim_Fstar};
     
     F.function = &dFgtrConditionallnM_SFR_Xray_MINI;
     F.params = &parameters_gsl_SFR_con;

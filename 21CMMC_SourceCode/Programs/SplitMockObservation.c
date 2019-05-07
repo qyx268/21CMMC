@@ -1,7 +1,7 @@
 #include "../Parameter_files/INIT_PARAMS.H"
-#include "../Parameter_files/ANAL_PARAMS.H"
+//#include "../Parameter_files/ANAL_PARAMS.H"
 #include "../Parameter_files/HEAT_PARAMS.H"
-#include "../Parameter_files/Variables.h"
+//#include "../Parameter_files/Variables.h"
 
 
 // This file splits the 21cm cubic boxes used for the light-cone into smaller boxes (necessary for MCMC sampling) and computes the 21cm PS for each box
@@ -178,7 +178,7 @@ int main(int argc, char ** argv){
                         // check if we fal in this bin
                         if ((k_mag>=k_floor) && (k_mag < k_ceil)){
                             in_bin_ct[ct]++;
-                            p_box[ct] += pow(k_mag,3)*pow(cabs(deldel_T_asymmetric[HII_LOS_RED_C_INDEX(n_x, n_y, n_z)]), 2)/(2.0*PI*PI*(CUBIC_BOX_LENGTH*CUBIC_BOX_LENGTH*RED_BOX_LENGTH));
+                            p_box[ct] += pow(k_mag,3)*(deldel_T_asymmetric[HII_LOS_RED_C_INDEX(n_x, n_y, n_z)][0] * deldel_T_asymmetric[HII_LOS_RED_C_INDEX(n_x, n_y, n_z)][0] + deldel_T_asymmetric[HII_LOS_RED_C_INDEX(n_x, n_y, n_z)][1] * deldel_T_asymmetric[HII_LOS_RED_C_INDEX(n_x, n_y, n_z)][1])/(2.0*PI*PI*(CUBIC_BOX_LENGTH*CUBIC_BOX_LENGTH*RED_BOX_LENGTH));
                             // note the 1/VOLUME factor, which turns this into a power density in k-space
                         
                             k_ave[ct] += k_mag;
@@ -246,8 +246,8 @@ void init_21cmPS_arrays() {
         k_ceil*=k_factor;
     }
     
-    p_box = calloc(NUM_BINS,sizeof(double));
-    k_ave = calloc(NUM_BINS,sizeof(double));
+    p_box = (double*) calloc(NUM_BINS,sizeof(double));
+    k_ave = (double*) calloc(NUM_BINS,sizeof(double));
     in_bin_ct = (unsigned long long *)calloc(NUM_BINS,sizeof(unsigned long long));
     
 }

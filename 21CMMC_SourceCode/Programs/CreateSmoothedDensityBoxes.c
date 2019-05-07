@@ -1,6 +1,6 @@
 #include "../Parameter_files/INIT_PARAMS.H"
-#include "../Parameter_files/ANAL_PARAMS.H"
-#include "../Parameter_files/Variables.h"
+//#include "../Parameter_files/ANAL_PARAMS.H"
+//#include "../Parameter_files/Variables.h"
 #include "bubble_helper_progs.c"
 #include "heating_helper_progs.c"
 #include "gsl/gsl_sf_erf.h"
@@ -28,7 +28,7 @@ int main(int argc, char ** argv){
     
     int i,temp_int,temp_int2;
     
-    double *PARAM_COSMOLOGY_VALS = calloc(TOTAL_COSMOLOGY_FILEPARAMS,sizeof(double));
+    double *PARAM_COSMOLOGY_VALS = (double *) calloc(TOTAL_COSMOLOGY_FILEPARAMS,sizeof(double));
     
     sprintf(filename,"WalkerCosmology_%1.6lf_%1.6lf.txt",INDIVIDUAL_ID,INDIVIDUAL_ID_2);
     F = fopen(filename,"rt");
@@ -106,7 +106,8 @@ int main(int argc, char ** argv){
         fclose(F);
         
         for (ct=0; ct<HII_KSPACE_NUM_PIXELS; ct++){
-            deltax_unfiltered[ct] /= (HII_TOT_NUM_PIXELS+0.0);
+            deltax_unfiltered[ct][0] /= (HII_TOT_NUM_PIXELS+0.0);
+            deltax_unfiltered[ct][1] /= (HII_TOT_NUM_PIXELS+0.0);
         }
         
 	printf("Do FFT\n");
