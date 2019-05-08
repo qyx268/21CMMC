@@ -47,13 +47,15 @@ define M_TURNOVER (double) (5e8) // Halo mass threshold for efficient star forma
 /*
   New in v1.5 
   Flag set to 1 if halos are considered into two populations, namely mini/molecular-cooling and atomic-cooling halos
+  I put this flag in Makefile now, do make mini_halo
 */
-#define MINI_HALO (int) (1)
+//#define MINI_HALO (int) (1)
 
 /* New in v1.6
  * Flag set to 1 if you want to use Keras Emulator
  * so far it only includes emulators of 
  * FcollzX_val
+ * I put this flag in Makefile now, do make keras
 */
 //#define USE_KERAS (int) (1)
 // below needs to follow configurations of the trainning

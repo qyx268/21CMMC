@@ -77,10 +77,6 @@ void destroy_LF_arrays(); // New in v1.4
 
 int USE_FFTW_WISDOM = 1;
 
-#ifdef USE_KERAS
-double FcollzX_val_emulator(double f_star10_norm, double alpha_star_norm, double sigma_8_norm, double redshift_norm);
-#endif
-
 // This, and the one below are functions for determining the correct cell positions for direction of the light-cone. Tested this for the z-direction, but should be valid for all.
 // Note that there is no option for FLIP_BOXES as we want to mimic the observed light-cone
 unsigned long long coeval_box_pos(int LOS_dir,int xi,int yi,int zi){
