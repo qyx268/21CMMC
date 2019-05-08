@@ -106,8 +106,7 @@ int main(int argc, char ** argv){
         fclose(F);
         
         for (ct=0; ct<HII_KSPACE_NUM_PIXELS; ct++){
-            deltax_unfiltered[ct][0] /= (HII_TOT_NUM_PIXELS+0.0);
-            deltax_unfiltered[ct][1] /= (HII_TOT_NUM_PIXELS+0.0);
+            deltax_unfiltered[ct] /= (HII_TOT_NUM_PIXELS+0.0);
         }
         
 	printf("Do FFT\n");

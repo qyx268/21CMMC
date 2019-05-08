@@ -923,7 +923,7 @@ void ComputeLF()
             Muv_param[i] = 51.63 - 2.5*log10(SFRparam*Luv_over_SFR); // UV magnitude
 
             // except if Muv value is nan or inf, but avoid error put the value as 10.
-            if ( std::isinf(Muv_param[i]) || std::isnan(Muv_param[i]) ) Muv_param[i] = 10.;
+            if ( isinf(Muv_param[i]) || isnan(Muv_param[i]) ) Muv_param[i] = 10.;
 #ifdef MINI_HALO
             SFRparam_MINI = Mhalo_i * OMb/OMm * (double)Fstar_MINI * (double)(hubble(z_LF[i_z])*SperYR/t_STAR); // units of M_solar/year 
 
@@ -931,7 +931,7 @@ void ComputeLF()
             Muv_param_MINI[i] = 51.63 - 2.5*log10(SFRparam_MINI*Luv_over_SFR); // UV magnitude
 
             // except if Muv value is nan or inf, but avoid error put the value as 10.
-            if ( std::isinf(Muv_param_MINI[i]) || std::isnan(Muv_param_MINI[i]) ) Muv_param_MINI[i] = 10.;
+            if ( isinf(Muv_param_MINI[i]) || isnan(Muv_param_MINI[i]) ) Muv_param_MINI[i] = 10.;
 #endif
         }
 
@@ -955,13 +955,13 @@ void ComputeLF()
             dMuvdMhalo = (Muv_2 - Muv_1) / (2.*delta_lnMhalo * exp(lnMhalo_i));
 
             log10phi[i] = log10( dNdM_st(z_LF[i_z],exp(lnMhalo_i)) * exp(-(Mmin_ave/Mhalo_param[i])) / fabs(dMuvdMhalo) );
-            if (std::isinf(log10phi[i]) || std::isnan(log10phi[i]) || log10phi[i] < -30.) log10phi[i] = -30.;
+            if (isinf(log10phi[i]) || isnan(log10phi[i]) || log10phi[i] < -30.) log10phi[i] = -30.;
 #ifdef MINI_HALO
             Muv_1_MINI = gsl_spline_eval(LF_spline_MINI, lnMhalo_i - delta_lnMhalo, LF_spline_acc_MINI);
             Muv_2_MINI = gsl_spline_eval(LF_spline_MINI, lnMhalo_i + delta_lnMhalo, LF_spline_acc_MINI);
             dMuvdMhalo_MINI = (Muv_2_MINI - Muv_1_MINI) / (2.*delta_lnMhalo * exp(lnMhalo_i));
             log10phi_MINI[i] = log10( dNdM_st(z_LF[i_z],exp(lnMhalo_i)) * exp(-(Mmin_ave/Mhalo_param[i])) * exp(-(Mhalo_param[i]/Mcrit_atom)) / fabs(dMuvdMhalo_MINI) );
-            if (std::isinf(log10phi_MINI[i]) || std::isnan(log10phi_MINI[i]) || log10phi_MINI[i] < -40.) log10phi_MINI[i] = -40.;
+            if (isinf(log10phi_MINI[i]) || isnan(log10phi_MINI[i]) || log10phi_MINI[i] < -40.) log10phi_MINI[i] = -40.;
 #endif
         }
 #ifdef MINI_HALO
@@ -1302,8 +1302,7 @@ void ComputeTsBoxes() {
         // remember to add the factor of VOLUME/TOT_NUM_PIXELS when converting from real space to k-space
         // Note: we will leave off factor of VOLUME, in anticipation of the inverse FFT below
         for (ct=0; ct<HII_KSPACE_NUM_PIXELS; ct++){
-            unfiltered_box[ct][0] /= (float)HII_TOT_NUM_PIXELS;
-            unfiltered_box[ct][1] /= (float)HII_TOT_NUM_PIXELS;
+            unfiltered_box[ct] /= (float)HII_TOT_NUM_PIXELS;
         }
         
         // Smooth the density field, at the same time store the minimum and maximum densities for their usage in the interpolation tables
@@ -1633,8 +1632,7 @@ void ComputeTsBoxes() {
                 }
                 fftwf_execute(plan);
                 for (ct=0; ct<HII_KSPACE_NUM_PIXELS; ct++)
-                    log10_Mcrit_LW_unfiltered[ct][0] /= (float)HII_TOT_NUM_PIXELS;
-                    log10_Mcrit_LW_unfiltered[ct][1] /= (float)HII_TOT_NUM_PIXELS;
+                    log10_Mcrit_LW_unfiltered[ct] /= (float)HII_TOT_NUM_PIXELS;
 
                 if ( Splined_Fcollzp_mean + Splined_Fcollzp_mean_MINI < 1e-15 )
 #else
@@ -3020,30 +3018,25 @@ float ComputeIonisationBoxes(int sample_index, float REDSHIFT_SAMPLE, float PREV
         // Note: we will leave off factor of VOLUME, in anticipation of the inverse FFT below
      
         for (ct=0; ct<HII_KSPACE_NUM_PIXELS; ct++){
-            deltax_unfiltered[ct][0] /= (HII_TOT_NUM_PIXELS+0.0);
-            deltax_unfiltered[ct][1] /= (HII_TOT_NUM_PIXELS+0.0);
+            deltax_unfiltered[ct] /= (HII_TOT_NUM_PIXELS+0.0);
         }
     
 #ifdef MINI_HALO
         for (ct=0; ct<HII_KSPACE_NUM_PIXELS; ct++){
-            log10_Mmin_unfiltered[ct][0] /= (double)HII_TOT_NUM_PIXELS;
-            log10_Mmin_unfiltered[ct][1] /= (double)HII_TOT_NUM_PIXELS;
-            log10_Mmin_MINI_unfiltered[ct][0] /= (double)HII_TOT_NUM_PIXELS;
-            log10_Mmin_MINI_unfiltered[ct][1] /= (double)HII_TOT_NUM_PIXELS;
+            log10_Mmin_unfiltered[ct] /= (double)HII_TOT_NUM_PIXELS;
+            log10_Mmin_MINI_unfiltered[ct] /= (double)HII_TOT_NUM_PIXELS;
         }
 #endif
 
         if(USE_TS_FLUCT) {
             for (ct=0; ct<HII_KSPACE_NUM_PIXELS; ct++){
-                xe_unfiltered[ct][0] /= (double)HII_TOT_NUM_PIXELS;
-                xe_unfiltered[ct][1] /= (double)HII_TOT_NUM_PIXELS;
+                xe_unfiltered[ct] /= (double)HII_TOT_NUM_PIXELS;
             }
         }
         
         if (INHOMO_RECO){
             for (ct=0; ct<HII_KSPACE_NUM_PIXELS; ct++){
-                N_rec_unfiltered[ct][0] /= (double)HII_TOT_NUM_PIXELS;
-                N_rec_unfiltered[ct][1] /= (double)HII_TOT_NUM_PIXELS;
+                N_rec_unfiltered[ct] /= (double)HII_TOT_NUM_PIXELS;
             }
         }
         
@@ -3956,7 +3949,6 @@ float ComputeIonisationBoxes(int sample_index, float REDSHIFT_SAMPLE, float PREV
     subcell_width = (BOX_LEN/(float)HII_DIM)/(float)N_RSD_STEPS;
         
     float max_cell_distance;
-	float vx, vy;
         
     max_cell_distance = 0.;
 
@@ -3990,22 +3982,17 @@ float ComputeIonisationBoxes(int sample_index, float REDSHIFT_SAMPLE, float PREV
                 
                 for (n_z=0; n_z<=HII_MIDDLE; n_z++){
                     k_z = n_z * DELTA_K;
-					vx = *((fftwf_complex *) vel_gradient + HII_C_INDEX(n_x,n_y,n_z))[0];
-					vy = *((fftwf_complex *) vel_gradient + HII_C_INDEX(n_x,n_y,n_z))[1];
                     
                     // take partial deriavative along the line of sight
                     switch(VELOCITY_COMPONENT){
                         case 1:
-                            *((fftwf_complex *) vel_gradient + HII_C_INDEX(n_x,n_y,n_z))[1] = k_x/(float)HII_TOT_NUM_PIXELS * vx;
-                            *((fftwf_complex *) vel_gradient + HII_C_INDEX(n_x,n_y,n_z))[0] = k_x/(float)HII_TOT_NUM_PIXELS * vy * -1.;
+                            *((fftwf_complex *) vel_gradient + HII_C_INDEX(n_x,n_y,n_z)) *= k_x*I/(float)HII_TOT_NUM_PIXELS;
                             break;
                         case 3:
-                            *((fftwf_complex *) vel_gradient + HII_C_INDEX(n_x,n_y,n_z))[1] = k_z/(float)HII_TOT_NUM_PIXELS * vx;
-                            *((fftwf_complex *) vel_gradient + HII_C_INDEX(n_x,n_y,n_z))[0] = k_z/(float)HII_TOT_NUM_PIXELS * vy * -1.;
+                            *((fftwf_complex *) vel_gradient + HII_C_INDEX(n_x,n_y,n_z)) *= k_z*I/(float)HII_TOT_NUM_PIXELS;
                             break;
                         default:
-                            *((fftwf_complex *) vel_gradient + HII_C_INDEX(n_x,n_y,n_z))[1] = k_y/(float)HII_TOT_NUM_PIXELS * vx;
-                            *((fftwf_complex *) vel_gradient + HII_C_INDEX(n_x,n_y,n_z))[0] = k_y/(float)HII_TOT_NUM_PIXELS * vy * -1.;
+                            *((fftwf_complex *) vel_gradient + HII_C_INDEX(n_x,n_y,n_z)) *= k_y*I/(float)HII_TOT_NUM_PIXELS;
                     }
                 }
             }
@@ -4552,7 +4539,6 @@ void ComputeInitialConditions() {
     int n_x, n_y, n_z, i, j, k, ii;
     float k_x, k_y, k_z, k_mag, p, a, b, k_sq;
     double pixel_deltax;
-	float vx, vy;
     
     float f_pixel_factor;
     
@@ -4616,8 +4602,7 @@ void ComputeInitialConditions() {
                 // of our k entry from a Gaussian distribution
                 a = gsl_ran_ugaussian(r);
                 b = gsl_ran_ugaussian(r);
-                HIRES_box[C_INDEX(n_x, n_y, n_z)][0] = sqrt(VOLUME*p/2.0) * a;
-                HIRES_box[C_INDEX(n_x, n_y, n_z)][1] = sqrt(VOLUME*p/2.0) * b;
+                HIRES_box[C_INDEX(n_x, n_y, n_z)] = sqrt(VOLUME*p/2.0) * (a + b*I);
             }
         }
     }
@@ -4675,8 +4660,7 @@ void ComputeInitialConditions() {
     memcpy(HIRES_box, HIRES_box_saved, sizeof(fftwf_complex)*KSPACE_NUM_PIXELS);
     
     for (ct=0; ct<KSPACE_NUM_PIXELS; ct++){
-        HIRES_box[ct][0] /= VOLUME;
-        HIRES_box[ct][1] /= VOLUME;
+        HIRES_box[ct] /= VOLUME;
     }
     
     if(USE_FFTW_WISDOM) {
@@ -4720,25 +4704,19 @@ void ComputeInitialConditions() {
                 
                     k_sq = k_x*k_x + k_y*k_y + k_z*k_z;
                         
-					vx = HIRES_box[C_INDEX(n_x,n_y,n_z)][0];
-					vy = HIRES_box[C_INDEX(n_x,n_y,n_z)][1];
                     // now set the velocities
                     if ((n_x==0) && (n_y==0) && (n_z==0)){ // DC mode
-                        HIRES_box[0][0] = 0.;
-                        HIRES_box[0][1] = 0.;
+                        HIRES_box[0] = 0.;
                     }
                     else{
                         if(ii==0) {
-                            HIRES_box[C_INDEX(n_x,n_y,n_z)][0] = k_x/k_sq/VOLUME * vy * -1.;
-                            HIRES_box[C_INDEX(n_x,n_y,n_z)][1] = k_x/k_sq/VOLUME * vx;
+                            HIRES_box[C_INDEX(n_x,n_y,n_z)] *= k_x*I/k_sq/VOLUME;
                         }
                         if(ii==1) {
-                            HIRES_box[C_INDEX(n_x,n_y,n_z)][0] = k_y/k_sq/VOLUME * vy * -1.;
-                            HIRES_box[C_INDEX(n_x,n_y,n_z)][1] = k_y/k_sq/VOLUME * vx;
+                            HIRES_box[C_INDEX(n_x,n_y,n_z)] *= k_y*I/k_sq/VOLUME;
                         }
                         if(ii==2) {
-                            HIRES_box[C_INDEX(n_x,n_y,n_z)][0] = k_z/k_sq/VOLUME * vy * -1.;
-                            HIRES_box[C_INDEX(n_x,n_y,n_z)][1] = k_z/k_sq/VOLUME * vx;
+                            HIRES_box[C_INDEX(n_x,n_y,n_z)] *= k_z*I/k_sq/VOLUME;
                         }
                         // note the last factor of 1/VOLUME accounts for the scaling in real-space, following the FFT
                     }
@@ -4842,12 +4820,10 @@ void ComputeInitialConditions() {
                             float k[] = {k_x, k_y, k_z};
                             // now set the velocities
                             if ((n_x==0) && (n_y==0) && (n_z==0)){ // DC mode
-                                phi_1[PHI_INDEX(i, j)][0][0] = 0;
-                                phi_1[PHI_INDEX(i, j)][0][1] = 0;
+                                phi_1[PHI_INDEX(i, j)][0] = 0;
                             }
                             else{
-                                phi_1[PHI_INDEX(i, j)][C_INDEX(n_x,n_y,n_z)][0] = -k[i]*k[j]*HIRES_box[C_INDEX(n_x, n_y, n_z)][0]/k_sq/VOLUME;
-                                phi_1[PHI_INDEX(i, j)][C_INDEX(n_x,n_y,n_z)][1] = -k[i]*k[j]*HIRES_box[C_INDEX(n_x, n_y, n_z)][1]/k_sq/VOLUME;
+                                phi_1[PHI_INDEX(i, j)][C_INDEX(n_x,n_y,n_z)] = -k[i]*k[j]*HIRES_box[C_INDEX(n_x, n_y, n_z)]/k_sq/VOLUME;
                                 // note the last factor of 1/VOLUME accounts for the scaling in real-space, following the FFT
                             }
                         }
@@ -4969,23 +4945,17 @@ void ComputeInitialConditions() {
                             
                         // now set the velocities
                         if ((n_x==0) && (n_y==0) && (n_z==0)){ // DC mode
-                            HIRES_box[0][0] = 0.;
-                            HIRES_box[0][1] = 0.;
+                            HIRES_box[0] = 0.;
                         }
                         else{
-							vx = HIRES_box[C_INDEX(n_x,n_y,n_z)][0];
-							vy = HIRES_box[C_INDEX(n_x,n_y,n_z)][1];
                             if(ii==0) {
-                                HIRES_box[C_INDEX(n_x,n_y,n_z)][0] = k_x/k_sq*vy*-1.;
-                                HIRES_box[C_INDEX(n_x,n_y,n_z)][1] = k_x/k_sq*vx;
+                                HIRES_box[C_INDEX(n_x,n_y,n_z)] *= k_x*I/k_sq;
                             }
                             if(ii==1) {
-                                HIRES_box[C_INDEX(n_x,n_y,n_z)][0] = k_y/k_sq*vy*-1.;
-                                HIRES_box[C_INDEX(n_x,n_y,n_z)][1] = k_y/k_sq*vx;
+                                HIRES_box[C_INDEX(n_x,n_y,n_z)] *= k_y*I/k_sq;
                             }
                             if(ii==2) {
-                                HIRES_box[C_INDEX(n_x,n_y,n_z)][0] = k_z/k_sq*vy*-1.;
-                                HIRES_box[C_INDEX(n_x,n_y,n_z)][1] = k_z/k_sq*vx;
+                                HIRES_box[C_INDEX(n_x,n_y,n_z)] *= k_z*I/k_sq;
                             }
                             // note the last factor of 1/VOLUME accounts for the scaling in real-space, following the FFT
                         }
@@ -5053,33 +5023,29 @@ void adj_complex_conj(){
     int i, j, k;
     
     // corners
-    HIRES_box[C_INDEX(0,0,0)][0] = 0.;
-    HIRES_box[C_INDEX(0,0,0)][1] = 0.;
-    HIRES_box[C_INDEX(0,0,MIDDLE)][1] = 0.;
-    HIRES_box[C_INDEX(0,MIDDLE,0)][1] = 0.;
-    HIRES_box[C_INDEX(0,MIDDLE,MIDDLE)][1] = 0.;
-    HIRES_box[C_INDEX(MIDDLE,0,0)][1] = 0.;
-    HIRES_box[C_INDEX(MIDDLE,0,MIDDLE)][1] = 0.;
-    HIRES_box[C_INDEX(MIDDLE,MIDDLE,0)][1] = 0.;
-    HIRES_box[C_INDEX(MIDDLE,MIDDLE,MIDDLE)][1] = 0.;
+    HIRES_box[C_INDEX(0,0,0)] = 0;
+    HIRES_box[C_INDEX(0,0,MIDDLE)] = crealf(HIRES_box[C_INDEX(0,0,MIDDLE)]);
+    HIRES_box[C_INDEX(0,MIDDLE,0)] = crealf(HIRES_box[C_INDEX(0,MIDDLE,0)]);
+    HIRES_box[C_INDEX(0,MIDDLE,MIDDLE)] = crealf(HIRES_box[C_INDEX(0,MIDDLE,MIDDLE)]);
+    HIRES_box[C_INDEX(MIDDLE,0,0)] = crealf(HIRES_box[C_INDEX(MIDDLE,0,0)]);
+    HIRES_box[C_INDEX(MIDDLE,0,MIDDLE)] = crealf(HIRES_box[C_INDEX(MIDDLE,0,MIDDLE)]);
+    HIRES_box[C_INDEX(MIDDLE,MIDDLE,0)] = crealf(HIRES_box[C_INDEX(MIDDLE,MIDDLE,0)]);
+    HIRES_box[C_INDEX(MIDDLE,MIDDLE,MIDDLE)] = crealf(HIRES_box[C_INDEX(MIDDLE,MIDDLE,MIDDLE)]);
     
     // do entire i except corners
     for (i=1; i<MIDDLE; i++){
         // just j corners
         for (j=0; j<=MIDDLE; j+=MIDDLE){
             for (k=0; k<=MIDDLE; k+=MIDDLE){
-                HIRES_box[C_INDEX(i,j,k)][0] = HIRES_box[C_INDEX(DIM-i,j,k)][0];
-                HIRES_box[C_INDEX(i,j,k)][1] = -HIRES_box[C_INDEX(DIM-i,j,k)][1];
+                HIRES_box[C_INDEX(i,j,k)] = conjf(HIRES_box[C_INDEX(DIM-i,j,k)]);
             }
         }
         
         // all of j
         for (j=1; j<MIDDLE; j++){
             for (k=0; k<=MIDDLE; k+=MIDDLE){
-                HIRES_box[C_INDEX(i,j,k)][0] = HIRES_box[C_INDEX(DIM-i,DIM-j,k)][0];
-                HIRES_box[C_INDEX(i,j,k)][1] = -HIRES_box[C_INDEX(DIM-i,DIM-j,k)][1];
-                HIRES_box[C_INDEX(i,DIM-j,k)][0] = HIRES_box[C_INDEX(DIM-i,j,k)][0];
-                HIRES_box[C_INDEX(i,DIM-j,k)][1] = -HIRES_box[C_INDEX(DIM-i,j,k)][1];
+                HIRES_box[C_INDEX(i,j,k)] = conjf(HIRES_box[C_INDEX(DIM-i,DIM-j,k)]);
+                HIRES_box[C_INDEX(i,DIM-j,k)] = conjf(HIRES_box[C_INDEX(DIM-i,j,k)]);
             }
         }
     } // end loop over i
@@ -5088,8 +5054,7 @@ void adj_complex_conj(){
     for (i=0; i<=MIDDLE; i+=MIDDLE){
         for (j=1; j<MIDDLE; j++){
             for (k=0; k<=MIDDLE; k+=MIDDLE){
-                HIRES_box[C_INDEX(i,j,k)][0] = HIRES_box[C_INDEX(i,DIM-j,k)][0];
-                HIRES_box[C_INDEX(i,j,k)][1] = -HIRES_box[C_INDEX(i,DIM-j,k)][1];
+                HIRES_box[C_INDEX(i,j,k)] = conjf(HIRES_box[C_INDEX(i,DIM-j,k)]);
             }
         }
     } // end loop over remaining j
@@ -5419,7 +5384,6 @@ void ComputePerturbField(float REDSHIFT_SAMPLE) {
     
     float k_x, k_y, k_z, k_sq, dDdt_over_D;
     int n_x, n_y, n_z;
-	float vx, vy;
     
     dDdt_over_D = dDdt/growth_factor;
     
@@ -5441,26 +5405,16 @@ void ComputePerturbField(float REDSHIFT_SAMPLE) {
                 k_sq = k_x*k_x + k_y*k_y + k_z*k_z;
                 
                 // now set the velocities
-                if ((n_x==0) && (n_y==0) && (n_z==0)){ // DC mode
-                    LOWRES_density_perturb[0][0] = 0.;
-                    LOWRES_density_perturb[0][1] = 0.;
-				}
+                if ((n_x==0) && (n_y==0) && (n_z==0)) // DC mode
+                    LOWRES_density_perturb[0] = 0;
                 else{
-					vx = LOWRES_density_perturb[HII_C_INDEX(n_x,n_y,n_z)][0];
-					vy = LOWRES_density_perturb[HII_C_INDEX(n_x,n_y,n_z)][1];
-                    if(VELOCITY_COMPONENT==1){ // x-component
-                        LOWRES_density_perturb[HII_C_INDEX(n_x,n_y,n_z)][0] = dDdt_over_D*k_x/k_sq/(HII_TOT_NUM_PIXELS+0.0) * vy * -1.;
-                        LOWRES_density_perturb[HII_C_INDEX(n_x,n_y,n_z)][1] = dDdt_over_D*k_x/k_sq/(HII_TOT_NUM_PIXELS+0.0) * vx;
-					}
-                    else if (VELOCITY_COMPONENT == 2){
-                        LOWRES_density_perturb[HII_C_INDEX(n_x,n_y,n_z)][0] = dDdt_over_D*k_y/k_sq/(HII_TOT_NUM_PIXELS+0.0) * vy * -1.;
-                        LOWRES_density_perturb[HII_C_INDEX(n_x,n_y,n_z)][1] = dDdt_over_D*k_y/k_sq/(HII_TOT_NUM_PIXELS+0.0) * vx;
-					}
-                    else{
-                        LOWRES_density_perturb[HII_C_INDEX(n_x,n_y,n_z)][0] = dDdt_over_D*k_z/k_sq/(HII_TOT_NUM_PIXELS+0.0) * vy * -1.;
-                        LOWRES_density_perturb[HII_C_INDEX(n_x,n_y,n_z)][1] = dDdt_over_D*k_z/k_sq/(HII_TOT_NUM_PIXELS+0.0) * vx;
-					}
-                }
+                    if(VELOCITY_COMPONENT==1) // x-component
+                        LOWRES_density_perturb[HII_C_INDEX(n_x,n_y,n_z)] *= dDdt_over_D*k_x*I/k_sq/(HII_TOT_NUM_PIXELS+0.0);
+                    else if (VELOCITY_COMPONENT == 2)
+                        LOWRES_density_perturb[HII_C_INDEX(n_x,n_y,n_z)] *= dDdt_over_D*k_y*I/k_sq/(HII_TOT_NUM_PIXELS+0.0);
+                    else
+                        LOWRES_density_perturb[HII_C_INDEX(n_x,n_y,n_z)] *= dDdt_over_D*k_z*I/k_sq/(HII_TOT_NUM_PIXELS+0.0);
+               }
             }
         }
     }
@@ -5680,7 +5634,7 @@ void GeneratePS(int CO_EVAL, double AverageTb) {
                             // check if we fal in this bin
                             if ((k_mag>=k_floor) && (k_mag < k_ceil)){
                                 in_bin_ct[ct]++;
-                                p_box[ct] += pow(k_mag,3)*(deldel_T_LC[HII_C_INDEX(n_x, n_y, n_z)][0] * deldel_T_LC[HII_C_INDEX(n_x, n_y, n_z)][0] + deldel_T_LC[HII_C_INDEX(n_x, n_y, n_z)][1] * deldel_T_LC[HII_C_INDEX(n_x, n_y, n_z)][1])/(2.0*PI*PI*VOLUME);
+                                p_box[ct] += pow(k_mag,3)*pow(cabs(deldel_T_LC[HII_C_INDEX(n_x, n_y, n_z)]), 2)/(2.0*PI*PI*VOLUME);
                                 // note the 1/VOLUME factor, which turns this into a power density in k-space
      
                                 k_ave[ct] += k_mag;
@@ -5728,7 +5682,7 @@ void GeneratePS(int CO_EVAL, double AverageTb) {
                         // check if we fal in this bin
                         if ((k_mag>=k_floor) && (k_mag < k_ceil)){
                             in_bin_ct[ct]++;
-                            p_box[ct] += pow(k_mag,3)* (deldel_T_LC[HII_C_INDEX(n_x, n_y, n_z)][0] * deldel_T_LC[HII_C_INDEX(n_x, n_y, n_z)][0] + deldel_T_LC[HII_C_INDEX(n_x, n_y, n_z)][1] * deldel_T_LC[HII_C_INDEX(n_x, n_y, n_z)][1])/(2.0*PI*PI*VOLUME);
+                            p_box[ct] += pow(k_mag,3)*pow(cabs(deldel_T_LC[HII_C_INDEX(n_x, n_y, n_z)]), 2)/(2.0*PI*PI*VOLUME);
                             // note the 1/VOLUME factor, which turns this into a power density in k-space
 
                             k_ave[ct] += k_mag;

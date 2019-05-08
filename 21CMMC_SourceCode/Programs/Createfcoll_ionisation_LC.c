@@ -185,8 +185,7 @@ int main(int argc, char ** argv){
     // Note: we will leave off factor of VOLUME, in anticipation of the inverse FFT below
         
     for (ct=0; ct<HII_KSPACE_NUM_PIXELS; ct++){
-        deltax_unfiltered[ct][0] /= (HII_TOT_NUM_PIXELS+0.0);
-        deltax_unfiltered[ct][1] /= (HII_TOT_NUM_PIXELS+0.0);
+        deltax_unfiltered[ct] /= (HII_TOT_NUM_PIXELS+0.0);
     }
     
     // loop through the filter radii (in Mpc)

@@ -86,8 +86,7 @@ int main(int argc, char ** argv){
     // remember to add the factor of VOLUME/TOT_NUM_PIXELS when converting from real space to k-space
     // Note: we will leave off factor of VOLUME, in anticipation of the inverse FFT below
     for (ct=0; ct<HII_KSPACE_NUM_PIXELS; ct++){
-        unfiltered_box[ct][0] /= (float)HII_TOT_NUM_PIXELS;
-        unfiltered_box[ct][1] /= (float)HII_TOT_NUM_PIXELS;
+        unfiltered_box[ct] /= (float)HII_TOT_NUM_PIXELS;
     }
     
     for (R_ct=0; R_ct<NUM_FILTER_STEPS_FOR_Ts; R_ct++){
