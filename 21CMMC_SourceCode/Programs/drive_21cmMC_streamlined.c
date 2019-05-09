@@ -1020,6 +1020,9 @@ void ComputeTsBoxes() {
     double Trad_fast,xc_fast,xc_inverse,TS_fast,TSold_fast,xa_tilde_fast,TS_prefactor,xa_tilde_prefactor,T_inv,T_inv_sq,xi_power,xa_tilde_fast_arg,Trad_fast_inv,TS_fast_inv,dcomp_dzp_prefactor;
 
     float growth_factor_z, inverse_growth_factor_z, R, R_factor, zp, mu_for_Ts, filling_factor_of_HI_zp, dzp, prev_zp, zpp, prev_zpp, prev_R, Tk_BC, xe_BC;
+#ifdef USE_KERAS
+	double zpp_norm, zp_norm;
+#endif
     float xHII_call, curr_xalpha, TK, TS, xe, deltax_highz;
     float zpp_for_evolve,dzpp_for_evolve;
 
@@ -1456,16 +1459,14 @@ void ComputeTsBoxes() {
             }
 
             /* initialise interpolation of the mean collapse fraction for global reionization.*/
+#ifndef USE_KERAS
 #ifdef MINI_HALO
             initialise_FgtrM_st_SFR_spline(zpp_interp_points_SFR, determine_zpp_min, determine_zpp_max, ALPHA_STAR, ALPHA_ESC, F_STAR10, F_ESC10, F_STAR10_MINI, F_ESC_MINI);
             
-#ifndef UES_KERAS
             initialise_Xray_FgtrM_st_SFR_spline(zpp_interp_points_SFR, determine_zpp_min, determine_zpp_max, ALPHA_STAR, F_STAR10, F_STAR10_MINI);
-#endif
 #else
             initialise_FgtrM_st_SFR_spline(zpp_interp_points_SFR, determine_zpp_min, determine_zpp_max, M_TURN, ALPHA_STAR, ALPHA_ESC, F_STAR10, F_ESC10);
             
-#ifndef UES_KERAS
             initialise_Xray_FgtrM_st_SFR_spline(zpp_interp_points_SFR, determine_zpp_min, determine_zpp_max, M_TURN, ALPHA_STAR, F_STAR10);
 #endif
 #endif
@@ -1589,11 +1590,16 @@ void ComputeTsBoxes() {
             // New in v1.4
             if (USE_MASS_DEPENDENT_ZETA) { // New in v1.4
                 
+#ifdef USE_KERAS
+				zp_norm = ( (double) zp - HEIGHT_REDSHIFT ) / WIDTH_REDSHIFT + CENTER_REDSHIFT;
+                Splined_Fcollzp_mean = Fcollz_val_emulator(F_STAR10_norm, ALPHA_STAR_norm, F_ESC10_norm, ALPHA_ESC_norm, SIGMA8_norm, zp_norm);
+#else
                 redshift_int_fcollz = (int)floor( ( zp - determine_zpp_min )/zpp_bin_width );
                 
                 redshift_table_fcollz_diff = ( zp - determine_zpp_min - zpp_bin_width*(float)redshift_int_fcollz ) / zpp_bin_width;
                 
                 Splined_Fcollzp_mean = Fcollz_val[redshift_int_fcollz] + redshift_table_fcollz_diff *( Fcollz_val[redshift_int_fcollz+1] - Fcollz_val[redshift_int_fcollz] );
+#endif
                 if (Splined_Fcollzp_mean < 0.) Splined_Fcollzp_mean = 1e-40;
 #ifdef MINI_HALO
                 log10_Mcrit_mol = log10(lyman_werner_threshold(zp, 0.));
@@ -1607,7 +1613,9 @@ void ComputeTsBoxes() {
                   }
                 }
                 log10_Mcrit_LW_ave /= HII_TOT_NUM_PIXELS;
-
+#ifdef USE_KERAS
+				Splined_Fcollzp_mean_MINI = Fcollz_val_MINI_emulator(F_STAR7_MINI_norm, ALPHA_STAR_norm, SIGMA8_norm, zp_norm, log10_Mcrit_LW_ave);
+#else
                 log10_Mcrit_LW_ave_int_fcollz = (int)floor( ( log10_Mcrit_LW_ave - LOG10MTURN_MIN) / LOG10MTURN_INT);
                 log10_Mcrit_LW_ave_table_fcollz = LOG10MTURN_MIN + LOG10MTURN_INT * (float)log10_Mcrit_LW_ave_int_fcollz;
                 index_left  = redshift_int_fcollz + zpp_interp_points_SFR * log10_Mcrit_LW_ave_int_fcollz;
@@ -1616,6 +1624,7 @@ void ComputeTsBoxes() {
                 Splined_Fcollzp_mean_MINI_left = Fcollz_val_MINI[index_left] + redshift_table_fcollz_diff * ( Fcollz_val_MINI[index_left + 1] - Fcollz_val_MINI[index_left] );
                 Splined_Fcollzp_mean_MINI_right = Fcollz_val_MINI[index_right] + redshift_table_fcollz_diff * ( Fcollz_val_MINI[index_right + 1] - Fcollz_val_MINI[index_right] );
                 Splined_Fcollzp_mean_MINI = Splined_Fcollzp_mean_MINI_left + (log10_Mcrit_LW_ave - log10_Mcrit_LW_ave_table_fcollz) / LOG10MTURN_INT * ( Splined_Fcollzp_mean_MINI_right - Splined_Fcollzp_mean_MINI_left );
+#endif
                 if (Splined_Fcollzp_mean_MINI < 0.) Splined_Fcollzp_mean_MINI = 1e-40;
 
                 // NEED TO FILTER Mcrit_LW!!!
@@ -1719,13 +1728,14 @@ void ComputeTsBoxes() {
                 if (USE_MASS_DEPENDENT_ZETA) { 
                     // Using the interpolated values to update arrays of relevant quanties for the IGM spin temperature calculation
                     
+#ifdef USE_KERAS
+					zpp_norm = ( (double) zpp - HEIGHT_REDSHIFT ) / WIDTH_REDSHIFT + CENTER_REDSHIFT;
+					Splined_Fcollzpp_X_mean = FcollzX_val_emulator(F_STAR10_norm, ALPHA_STAR_norm, SIGMA8_norm, zpp_norm);
+#else
                     redshift_int_fcollz_Xray = (int)floor( ( zpp - determine_zpp_min )/zpp_bin_width );
                     
                     redshift_table_fcollz_diff_Xray = ( zpp - determine_zpp_min - zpp_bin_width*(float)redshift_int_fcollz_Xray ) /zpp_bin_width;
                     
-#ifdef USE_KERAS
-					Splined_Fcollzpp_X_mean = FcollzX_val_emulator(F_STAR10_norm, ALPHA_STAR_norm, SIGMA8_norm, REDSHIFT_norm);
-#else
                     Splined_Fcollzpp_X_mean = FcollzX_val[redshift_int_fcollz_Xray] + redshift_table_fcollz_diff_Xray *( FcollzX_val[redshift_int_fcollz_Xray+1] - FcollzX_val[redshift_int_fcollz_Xray] );
 #endif
                     if (Splined_Fcollzpp_X_mean < 0.) Splined_Fcollzpp_X_mean = 1e-40;
@@ -1733,12 +1743,16 @@ void ComputeTsBoxes() {
                     ST_over_PS[R_ct] = pow(1.+zpp, -X_RAY_SPEC_INDEX)*fabs(dzpp_for_evolve);
                     ST_over_PS[R_ct] *= Splined_Fcollzpp_X_mean;
 #ifdef MINI_HALO
+#ifdef USE_KERAS
+					Splined_Fcollzpp_X_mean_MINI = FcollzX_val_MINI_emulator(F_STAR7_MINI_norm, ALPHA_STAR_norm, SIGMA8_norm, zp_norm, log10_Mcrit_LW_ave);
+#else
                     index_left = redshift_int_fcollz_Xray + zpp_interp_points_SFR * log10_Mcrit_LW_ave_int_fcollz;
                     index_right = redshift_int_fcollz_Xray + zpp_interp_points_SFR * (log10_Mcrit_LW_ave_int_fcollz + 1);
                     // for log10_Mcrit_LW_ave_int_fcollz, we don't know how it evovles, so just use the same...
                     Splined_Fcollzpp_X_mean_MINI_left = FcollzX_val_MINI[index_left] +  redshift_table_fcollz_diff_Xray * ( FcollzX_val_MINI[index_left + 1] - FcollzX_val_MINI[index_left] );
                     Splined_Fcollzpp_X_mean_MINI_right = FcollzX_val_MINI[index_right] + redshift_table_fcollz_diff_Xray * ( FcollzX_val_MINI[index_right + 1] - FcollzX_val_MINI[index_right]);
                     Splined_Fcollzpp_X_mean_MINI = Splined_Fcollzpp_X_mean_MINI_left + (log10_Mcrit_LW_ave - log10_Mcrit_LW_ave_table_fcollz) / LOG10MTURN_INT * ( Splined_Fcollzpp_X_mean_MINI_right - Splined_Fcollzpp_X_mean_MINI_left );
+#endif
                     if (Splined_Fcollzpp_X_mean_MINI < 0.) Splined_Fcollzpp_X_mean_MINI = 1e-40;
 
                     ST_over_PS_MINI[R_ct] = pow(1.+zpp, -X_RAY_SPEC_INDEX_MINI)*fabs(dzpp_for_evolve);
@@ -2620,6 +2634,10 @@ float ComputeIonisationBoxes(int sample_index, float REDSHIFT_SAMPLE, float PREV
     float log10_Mmin_val, log10_Mmin_MINI_val, log10_Mmin_diff, log10_Mmin_MINI_diff, prev_dens_val, prev_dens_diff, dens_diff;
     int   log10_Mmin_int, log10_Mmin_MINI_int, prev_overdense_int;
 #endif
+#ifdef USE_KERAS
+	double REDSHIFT_SAMPLE_norm, PREV_REDSHIFT_norm;
+#endif
+
     
     overdense_large_min = 1.5*0.999;
     overdense_large_bin_width = 1./((double)NSFR_high-1.)*(Deltac-overdense_large_min);
@@ -2865,18 +2883,27 @@ float ComputeIonisationBoxes(int sample_index, float REDSHIFT_SAMPLE, float PREV
     if (USE_MASS_DEPENDENT_ZETA) {
         if (USE_LIGHTCONE || USE_TS_FLUCT) {
             
-            redshift_int_fcollz = (int)floor( ( REDSHIFT_SAMPLE - determine_zpp_min )/zpp_bin_width );
-            redshift_table_fcollz_diff = ( REDSHIFT_SAMPLE - determine_zpp_min - zpp_bin_width*(float)redshift_int_fcollz ) / zpp_bin_width;
-
 #ifdef MINI_HALO
+#ifdef USE_KERAS
+			REDSHIFT_SAMPLE_norm = ( (double) REDSHIFT_SAMPLE - HEIGHT_REDSHIFT ) / WIDTH_REDSHIFT + CENTER_REDSHIFT;
+            mean_f_coll_st = prev_mean_f_coll_st + Fcollz_val_emulator(F_STAR10_norm, ALPHA_STAR_norm, F_ESC10_norm, ALPHA_ESC_norm, SIGMA8_norm, REDSHIFT_SAMPLE_norm);
+            mean_f_coll_st_MINI = prev_mean_f_coll_st_MINI + Fcollz_val_MINI_emulator(F_STAR7_MINI_norm, ALPHA_STAR_norm, SIGMA8_norm, REDSHIFT_SAMPLE_norm, log10_Mmin_MINI_ave[sample_index]);
+#else
             mean_f_coll_st = prev_mean_f_coll_st + FgtrM_st_SFR(dicke(REDSHIFT_SAMPLE), Mmin, ALPHA_STAR, ALPHA_ESC, F_STAR10, F_ESC10, Mlim_Fstar, Mlim_Fesc);
             mean_f_coll_st_MINI = prev_mean_f_coll_st_MINI + FgtrM_st_SFR_MINI(dicke(REDSHIFT_SAMPLE), Mmin_MINI, Mcrit_atom, ALPHA_STAR, F_STAR10_MINI, Mlim_Fstar_MINI);
+#endif
 
             // to do the CONTEMPORANEOUS_DUTYCYCLE, we need to calculate the prev_mean_... with the current Mturns
             if(sample_index > 0) 
             {
+#ifdef USE_KERAS
+				PREV_REDSHIFT_norm = ( (double) PREV_REDSHIFT - HEIGHT_REDSHIFT ) / WIDTH_REDSHIFT + CENTER_REDSHIFT;
+    	        mean_f_coll_st -= Fcollz_val_emulator(F_STAR10_norm, ALPHA_STAR_norm, F_ESC10_norm, ALPHA_ESC_norm, SIGMA8_norm, PREV_REDSHIFT_norm);
+                mean_f_coll_st_MINI -= Fcollz_val_MINI_emulator(F_STAR7_MINI_norm, ALPHA_STAR_norm, SIGMA8_norm, PREV_REDSHIFT_norm, log10_Mmin_MINI_ave[sample_index]);
+#else
                 mean_f_coll_st -= FgtrM_st_SFR(dicke(PREV_REDSHIFT), Mmin, ALPHA_STAR, ALPHA_ESC, F_STAR10, F_ESC10, Mlim_Fstar, Mlim_Fesc);
                 mean_f_coll_st_MINI -= FgtrM_st_SFR_MINI(dicke(PREV_REDSHIFT), Mmin_MINI, Mcrit_atom, ALPHA_STAR, F_STAR10_MINI, Mlim_Fstar_MINI);
+#endif
             }
 
             // record into the prev_mean to do CONTEMPORANEOUS_DUTYCYCLE at next snapshot
@@ -2887,7 +2914,14 @@ float ComputeIonisationBoxes(int sample_index, float REDSHIFT_SAMPLE, float PREV
             //f_coll_min = FgtrM_st_SFR(dicke(Z_HEAT_MAX), Mmin, ALPHA_STAR, ALPHA_ESC, F_STAR10, F_ESC10, Mlim_Fstar, Mlim_Fesc);
             //f_coll_min_MINI = FgtrM_st_SFR_MINI(dicke(Z_HEAT_MAX), Mmin_MINI, Mcrit_atom, ALPHA_STAR, F_STAR10_MINI, Mlim_Fstar_MINI);
 #else
+#ifdef USE_KERAS
+			REDSHIFT_SAMPLE_norm = ( (double) REDSHIFT_SAMPLE - HEIGHT_REDSHIFT ) / WIDTH_REDSHIFT + CENTER_REDSHIFT;
+            mean_f_coll_st = Fcollz_val_emulator(F_STAR10_norm, ALPHA_STAR_norm, F_ESC10_norm, ALPHA_ESC_norm. SIGMA8_norm, REDSHIFT_SAMPLE_norm);
+#else
+            redshift_int_fcollz = (int)floor( ( REDSHIFT_SAMPLE - determine_zpp_min )/zpp_bin_width );
+            redshift_table_fcollz_diff = ( REDSHIFT_SAMPLE - determine_zpp_min - zpp_bin_width*(float)redshift_int_fcollz ) / zpp_bin_width;
             mean_f_coll_st = Fcollz_val[redshift_int_fcollz] + redshift_table_fcollz_diff *( Fcollz_val[redshift_int_fcollz+1] - Fcollz_val[redshift_int_fcollz] );
+#endif
             
             //redshift_int_fcollz = (int)floor( ( Z_HEAT_MAX - determine_zpp_min )/zpp_bin_width );
             

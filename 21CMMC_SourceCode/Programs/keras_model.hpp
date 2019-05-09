@@ -678,4 +678,14 @@ using namespace keras;
 // allocate the sample space and load the emulators
 DataChunk *sample_FcollzX_val = new DataChunkFlat();
 KerasModel FcollzX_emu("../Emulators/Keras/FcollzX_val.txt", false);
+
+DataChunk *sample_Fcollz_val = new DataChunkFlat();
+KerasModel Fcollz_emu("../Emulators/Keras/Fcollz_val.txt", false);
+
+DataChunk *sample_FcollzX_val_MINI = new DataChunkFlat();
+KerasModel FcollzX_MINI_emu("../Emulators/Keras/FcollzX_val_MINI.txt", false);
+
+// At this moment, Fcollz_MINI is the same as FcollzX_MINI
+//DataChunk *sample_Fcollz_val_MINI = new DataChunkFlat();
+///KerasModel Fcollz_MINI_emu("../Emulators/Keras/Fcollz_val_MINI.txt", false);
 #endif
