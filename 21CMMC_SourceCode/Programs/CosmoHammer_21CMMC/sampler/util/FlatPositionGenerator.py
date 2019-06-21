@@ -25,7 +25,7 @@ class FlatPositionGenerator(object):
             generates the positions
         """
         
-        return [self.sampler.paramValues+(np.random.rand(self.sampler.paramCount)*2-1)*self.sampler.paramWidths for i in xrange(self.sampler.nwalkers)]
+        return [self.sampler.paramValues+(np.random.rand(self.sampler.paramCount)*2-1)*self.sampler.paramWidths for i in range(self.sampler.nwalkers)]
     
     def __str__(self, *args, **kwargs):
         return "FlatPositionGenerator"

@@ -45,16 +45,16 @@ static gsl_spline *erfc_spline;
 #define NMass (int) 200
 
 /* New in v1.4 - part 1 of 4 start */
-#define NSFR_high (int) 50
-#define NSFR_low (int) 50
-#define NGL_SFR (int) 100
+#define NSFR_high (int) 10
+#define NSFR_low (int) 10
+#define NGL_SFR (int) 50
 #ifdef MINI_HALO
-#define LOG10MTURN_NUM (int) 50
+#define LOG10MTURN_NUM (int) 10
 #define LOG10MTURN_MIN (double) 5.-9e-8
 #define LOG10MTURN_MAX (double) 10.
 #endif
 
-#define zpp_interp_points_SFR (int) (100)
+#define zpp_interp_points_SFR (int) (30)
 /* New in v1.4 - part 1 of 4 end */
 
 static double log_MFspline_table[SPLINE_NPTS], MFspline_params[SPLINE_NPTS];

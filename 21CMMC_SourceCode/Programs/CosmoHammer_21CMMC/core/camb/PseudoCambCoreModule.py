@@ -40,5 +40,5 @@ class PseudoCambCoreModule(object):
 
     def copyArray(self, src, trg, index):
         lenght= min(len(src),len(trg))
-        for i in xrange(0,lenght):
+        for i in range(0,lenght):
             trg[i]=src[i,index]

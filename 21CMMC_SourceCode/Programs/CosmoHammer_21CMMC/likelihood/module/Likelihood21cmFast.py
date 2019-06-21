@@ -6,7 +6,6 @@ np.seterr(invalid='ignore', divide='ignore')
 from decimal import *
 from scipy import interpolate
 from scipy.interpolate import InterpolatedUnivariateSpline
-import string
 import subprocess
 import time
 import multiprocessing
@@ -119,7 +118,7 @@ class Likelihood21cmFast_multiz(object):
         # Add the second ID
         seq.append("%s"%(Individual_ID_2))
 
-        StringArgument_other = string.join(seq,separator_other)
+        StringArgument_other = separator_other.join(seq)
 
         # Add number of redshifts
         # If using the light-cone version of the code, don't need to set a redshift
@@ -149,7 +148,7 @@ class Likelihood21cmFast_multiz(object):
         else:
             seq.append("0")
 
-        StringArgument = string.join(seq,separator)
+        StringArgument = separator.join(seq)
 
         ##### Now we need to create the individual walker file to be read by drive_21cmMC_streamlined #####
         
@@ -723,8 +722,8 @@ class Likelihood21cmFast_multiz(object):
 
 
             if self.FlagOptions['KEEP_ALL_DATA'] is True:
-                StoredFileLayout = string.join(StoredFileLayout,separator_column)
-                StoredFileLayout_Error = string.join(StoredFileLayout_Error,separator_column)
+                StoredFileLayout = separator_column.join(StoredFileLayout)
+                StoredFileLayout_Error = separator_column.join(StoredFileLayout_Error)
 
                 with open('%s/StatisticalData/TotalPSData_%s.txt'%(self.FlagOptions['KEEP_ALL_DATA_FILENAME'],StringArgument_other),'w') as f:            
                     for x in zip(*StoredStatisticalData):
@@ -792,7 +791,7 @@ class Likelihood21cmFast_multiz(object):
                 seq_Planck.append("%s"%(ZExtrapVals[i])) 
                 seq_Planck.append("%s"%(XHI_ExtrapVals[i]))    
 
-            StringArgument_Planck = string.join(seq_Planck,separator_Planck)
+            StringArgument_Planck = separator_Planck.join(seq_Planck)
 
             # Perform the computation of tau
             command = './ComputingTau_e %s %s %s'%(Individual_ID,Decimal(repr(params[0])).quantize(SIXPLACES),StringArgument_Planck)
