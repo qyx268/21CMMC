@@ -955,13 +955,10 @@ class Likelihood21cmFast_multiz(object):
                 os.system(command)
 
             if self.FlagOptions['KEEP_ALL_DATA'] is True:
-                for j in range(len(self.Redshifts_For_LF)):
-                    command = "mv LF_estimate_%s_%s.txt %s/LFData/"%(StringArgument_other,self.Redshifts_For_LF[j],self.FlagOptions['KEEP_ALL_DATA_FILENAME'])
-                    os.system(command)
+	            command = "mv LF_estimate_%s_*.txt %s/LFData/"%(StringArgument_other,self.FlagOptions['KEEP_ALL_DATA_FILENAME'])
             else:
-                for j in range(len(self.Redshifts_For_LF)):
-                    command = "rm LF_estimate_%s_%s.txt"%(StringArgument_other,self.Redshifts_For_LF[j])
-                    os.system(command)
+		        command = "rm LF_estimate_%s_*.txt"%(StringArgument_other)
+			os.system(command)
         else:
             
             if not self.IncludeLF is 2:
@@ -973,11 +970,11 @@ class Likelihood21cmFast_multiz(object):
 
             if self.FlagOptions['KEEP_ALL_DATA'] is True:
                 for j in range(len(self.Redshifts_For_LF)):
-                    command = "mv LF_estimate_%s_%s.txt %s/LFData/"%(StringArgument_other,self.Redshifts_For_LF[j],self.FlagOptions['KEEP_ALL_DATA_FILENAME'])
+                    command = "mv LF_estimate_%s_*.txt %s/LFData/"%(StringArgument_other,self.FlagOptions['KEEP_ALL_DATA_FILENAME'])
                 os.system(command)
             else:
                 for j in range(len(self.Redshifts_For_LF)):
-                    command = "rm LF_estimate_%s_%s.txt"%(StringArgument_other,self.Redshifts_For_LF[j])
+                    command = "rm LF_estimate_%s_*.txt"%(StringArgument_other)
                 os.system(command)
 
         if OutputGlobalAve == 1:

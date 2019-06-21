@@ -193,7 +193,7 @@ if __name__ == '__main__':
 
     # This list allows the user to add additional redshifts to the list (co-eval boxes only) to improve the sampling for any of the priors (is not used for the likelihood calucation)
     # Note: Adding any additional redshifts adds to the computation time, so this will make the code slower
-    Redshifts_For_Prior = []
+	Redshifts_For_Prior = ['5.900000', '7.041489', '8.056021', '8.998578', '10.949220', '13.000420']    
 
 
     # This list allows the user to use the redshift list for luminosity functions.
@@ -214,7 +214,6 @@ if __name__ == '__main__':
 #        Redshift = ['6.000594']
 
         Redshifts_For_Prior = []
-
     
     ### NOTE ###
     # if Include_Ts_fluc = True the redshifts listed above must match with the redshifts sampled by the spin temperature algorithm. If not, then the code will fail.
