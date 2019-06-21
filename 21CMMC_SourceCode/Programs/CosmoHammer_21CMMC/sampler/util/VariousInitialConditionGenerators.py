@@ -123,13 +123,13 @@ class UniformPosition(object):
             ParamWidths.append( (self.sampler.upperbounds[i] - self.sampler.lowerbounds[i])/3. )
 
         print('Generate Start Positions')
-        start_positions = [InputValues+np.random.normal(size=self.sampler.paramCount)*ParamWidths for i in xrange(self.sampler.nwalkers)]
+        start_positions = [InputValues+np.random.normal(size=self.sampler.paramCount)*ParamWidths for i in range(self.sampler.nwalkers)]
 
         pool = multiprocessing.Pool(self.sampler.threadCount)
 
         M = pool.map
 
-        returned_list = list(M(ICposition_star,itertools.izip(start_positions, itertools.repeat(self.sampler.lowerbounds), itertools.repeat(self.sampler.upperbounds), 
+        returned_list = list(M(ICposition_star,zip(start_positions, itertools.repeat(self.sampler.lowerbounds), itertools.repeat(self.sampler.upperbounds), 
                             itertools.repeat(InputValues), itertools.repeat(ParamWidths))))
 
         print('Start Positions Generated')    

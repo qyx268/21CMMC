@@ -28,10 +28,10 @@ class SampleBallPositionGenerator(object):
             generates the positions
         """
         print('Generate Start Positions')
-        start_positions = [self.sampler.paramValues+3.*np.random.normal(size=self.sampler.paramCount)*self.sampler.paramWidths for i in xrange(self.sampler.nwalkers)]
-#        start_positions = [np.random.uniform(low=self.sampler.lowerbounds,high=self.sampler.upperbounds,size=self.sampler.paramCount) for i in xrange(self.sampler.nwalkers)]
+        start_positions = [self.sampler.paramValues+3.*np.random.normal(size=self.sampler.paramCount)*self.sampler.paramWidths for i in range(self.sampler.nwalkers)]
+#        start_positions = [np.random.uniform(low=self.sampler.lowerbounds,high=self.sampler.upperbounds,size=self.sampler.paramCount) for i in range(self.sampler.nwalkers)]
 
-        for i in xrange(self.sampler.nwalkers):            
+        for i in range(self.sampler.nwalkers):            
             for j in range(len(self.sampler.lowerbounds)):
                 if (start_positions[i][j] < self.sampler.lowerbounds[j] or start_positions[i][j] > self.sampler.upperbounds[j]):
                     new_start_parameter_logic = False

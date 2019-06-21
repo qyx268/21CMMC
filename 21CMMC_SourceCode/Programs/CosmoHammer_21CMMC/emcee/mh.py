@@ -100,7 +100,7 @@ class MHSampler(Sampler):
             self._lnprob = np.append(self._lnprob, np.zeros(N))
 
         i0 = self.iterations
-        # Use range instead of xrange for python 3 compatability
+        # Use range instead of range for python 3 compatability
         for i in range(int(iterations)):
             self.iterations += 1
 
