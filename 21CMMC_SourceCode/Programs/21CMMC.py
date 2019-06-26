@@ -161,7 +161,7 @@ if __name__ == '__main__':
     # use EDGES width too
     USE_EDGES_FWHM = True
 
-
+    USE_NEST = True
     ################### Setting up variables for performing the full spin temperature calculation (i.e. Ts.c) ####################################
 
 
@@ -193,7 +193,7 @@ if __name__ == '__main__':
 
     # This list allows the user to add additional redshifts to the list (co-eval boxes only) to improve the sampling for any of the priors (is not used for the likelihood calucation)
     # Note: Adding any additional redshifts adds to the computation time, so this will make the code slower
-	Redshifts_For_Prior = ['5.900000', '7.041489', '8.056021', '8.998578', '10.949220', '13.000420']    
+    Redshifts_For_Prior = ['5.900000', '7.041489', '8.056021', '8.998578', '10.949220', '13.000420']    
 
 
     # This list allows the user to use the redshift list for luminosity functions.
@@ -1119,31 +1119,57 @@ if __name__ == '__main__':
 
     File_String = 'ReionModel_LF_taue_%s_%s'%(Telescope_Name,multiz_flag)
 
-    sampler = CosmoHammerSampler(
-                    params = params,
-                    likelihoodComputationChain=chain,
-                    filePrefix="%s"%(File_String),
-                    walkersRatio= 60,
-                    FiducialParams=Fiducial_Params,
-                    param_legend=param_legend,
-                    LowerBound_XRAY=X_RAY_TVIR_LB,
-                    UpperBound_XRAY=X_RAY_TVIR_UB,
-                    SpinTz=TsCalc_z,
-                    burninIterations=1,
-                    sampleIterations=3000,
-                    filethin = 1,
-                    threadCount=150,
-                    reuseBurnin=False
-                   )
+    if USE_NEST:
+        import pymultinest
+		def likelihood(p, ndim, nparams):
+			return chain(p)[0]
 
+		def prior(p, ndim, nparams):
+			p = [ params[i][0] + p[i]*(params[i][1]-params[i][0]) for i in range(ndim) )]
 
-    if ErrorMessage is True:
+        pymultinest.run(likelihood,
+                prior,
+                n_dims = len(params),
+                n_params = len(params),
+                n_live_points = 1,
+                resume=False,
+                verbose=True,
+                write_output=True,
+                outputfiles_basename="%s/MultiNest"%FlagOptions['KEEP_ALL_DATA_FILENAME'],
+                max_iter=1,
+                importance_nested_sampling=True,
+                multimodal=True,
+                evidence_tolerance=0.5,
+                sampling_efficiency=0.3
+                )
+        print("\n finished :)")
 
-        for i in range(len(ErrorString)):
-            print(ErrorString[i])
-    
     else:
-        print('Start sampling')
-        sampler.startSampling()            
-            
-
+        sampler = CosmoHammerSampler(
+                        params = params,
+                        likelihoodComputationChain=chain,
+                        filePrefix="%s"%(File_String),
+                        walkersRatio= 60,
+                        FiducialParams=Fiducial_Params,
+                        param_legend=param_legend,
+                        LowerBound_XRAY=X_RAY_TVIR_LB,
+                        UpperBound_XRAY=X_RAY_TVIR_UB,
+                        SpinTz=TsCalc_z,
+                        burninIterations=1,
+                        sampleIterations=3000,
+                        filethin = 1,
+                        threadCount=150,
+                        reuseBurnin=False
+                       )
+    
+    
+        if ErrorMessage is True:
+    
+            for i in range(len(ErrorString)):
+                print(ErrorString[i])
+        
+        else:
+            print('Start sampling')
+            sampler.startSampling()            
+                
+    
