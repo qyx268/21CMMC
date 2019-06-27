@@ -6,6 +6,7 @@ from decimal import *
 import string
 import pickle
 import time
+from mpi4py import MPI
 
 TWOPLACES = Decimal(10) ** -2       # same as Decimal('0.01')
 FOURPLACES = Decimal(10) ** -4       # same as Decimal('0.0001')
@@ -20,6 +21,8 @@ from CosmoHammer_21CMMC.likelihood.module.Likelihood21cmFast import QSO_Redshift
 
 if __name__ == '__main__':
 
+    comm = MPI.COMM_WORLD
+    rank = comm.Get_rank()
 
     # New version of 21CMMC allows for the full computation of the spin temperature fluctuations during the X-ray heating epoch. 21CMMC now includes a modified and 
     # streamlined version of Ts.c from 21cmFAST. 
@@ -980,27 +983,32 @@ if __name__ == '__main__':
 
     FlagOptions['LOG_LINEAR_K_SAMPLING'] = Log_k_sampling
 
-    Create_Output_Directory = 'KEEP_MCMC_DATA_%s'%(time.strftime("%a_%d_%b_%Y_%Hh_%Mm_%Ss"))
+    if rank == 0:
+        Create_Output_Directory = 'KEEP_MCMC_DATA_%s'%(time.strftime("%a_%d_%b_%Y_%Hh_%Mm_%Ss"))
 
-    if KEEP_ALL_DATA is True:
-        command = "mkdir -p %s"%(Create_Output_Directory)
-        os.system(command)
-        command = "mkdir -p %s/AveData"%(Create_Output_Directory)
-        os.system(command)
-        command = "mkdir -p %s/StatisticalData"%(Create_Output_Directory)
-        os.system(command)
-        command = "mkdir -p %s/StatisticalData_Error"%(Create_Output_Directory)
-        os.system(command)
-        command = "mkdir -p %s/TauData"%(Create_Output_Directory)
-        os.system(command)
-        command = "mkdir -p %s/WalkerData"%(Create_Output_Directory)
-        os.system(command)
-        if IncludeLF:
-            command = "mkdir -p %s/LFData"%(Create_Output_Directory)
+        if KEEP_ALL_DATA is True:
+            command = "mkdir -p %s"%(Create_Output_Directory)
             os.system(command)
-        if USE_EDGES:
-            command = "mkdir -p %s/FreqTbminData"%(Create_Output_Directory)
+            command = "mkdir -p %s/AveData"%(Create_Output_Directory)
             os.system(command)
+            command = "mkdir -p %s/StatisticalData"%(Create_Output_Directory)
+            os.system(command)
+            command = "mkdir -p %s/StatisticalData_Error"%(Create_Output_Directory)
+            os.system(command)
+            command = "mkdir -p %s/TauData"%(Create_Output_Directory)
+            os.system(command)
+            command = "mkdir -p %s/WalkerData"%(Create_Output_Directory)
+            os.system(command)
+            if IncludeLF:
+                command = "mkdir -p %s/LFData"%(Create_Output_Directory)
+                os.system(command)
+            if USE_EDGES:
+                command = "mkdir -p %s/FreqTbminData"%(Create_Output_Directory)
+                os.system(command)
+    else:
+        Create_Output_Directory = None
+    
+    Create_Output_Directory = comm.bcast(Create_Output_Directory, root = 0)
 
     FlagOptions['KEEP_ALL_DATA_FILENAME'] = Create_Output_Directory
 
@@ -1149,7 +1157,8 @@ if __name__ == '__main__':
                 log_zero=-10000000,
                 init_MPI = False
                 )
-        #print("\n finished :)")
+        if rank == 0:
+            print("\n finished :)")
 
     else:
         File_String = 'ReionModel_LF_taue_%s_%s'%(Telescope_Name,multiz_flag)
