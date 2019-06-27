@@ -970,6 +970,7 @@ if __name__ == '__main__':
     FlagOptions['KEEP_GLOBAL_DATA'] = USE_GLOBAL_SIGNAL
     FlagOptions['USE_EDGES'] = USE_EDGES
     FlagOptions['USE_EDGES_FWHM'] = USE_EDGES_FWHM
+    FlagOptions['USE_NEST'] = USE_NEST
     FlagOptions['USE_IONISATION_FCOLL_TABLE'] = USE_IONISATION_FCOLL_TABLE
     FlagOptions['USE_MASS_DEPENDENT_ZETA'] = USE_MASS_DEPENDENT_ZETA
     FlagOptions['USE_GS_FIXED_ERROR'] = GLOBAL_SIGNAL_FIXED_ERROR
@@ -982,23 +983,23 @@ if __name__ == '__main__':
     Create_Output_Directory = 'KEEP_MCMC_DATA_%s'%(time.strftime("%a_%d_%b_%Y_%Hh_%Mm_%Ss"))
 
     if KEEP_ALL_DATA is True:
-        command = "mkdir %s"%(Create_Output_Directory)
+        command = "mkdir -p %s"%(Create_Output_Directory)
         os.system(command)
-        command = "mkdir %s/AveData"%(Create_Output_Directory)
+        command = "mkdir -p %s/AveData"%(Create_Output_Directory)
         os.system(command)
-        command = "mkdir %s/StatisticalData"%(Create_Output_Directory)
+        command = "mkdir -p %s/StatisticalData"%(Create_Output_Directory)
         os.system(command)
-        command = "mkdir %s/StatisticalData_Error"%(Create_Output_Directory)
+        command = "mkdir -p %s/StatisticalData_Error"%(Create_Output_Directory)
         os.system(command)
-        command = "mkdir %s/TauData"%(Create_Output_Directory)
+        command = "mkdir -p %s/TauData"%(Create_Output_Directory)
         os.system(command)
-        command = "mkdir %s/WalkerData"%(Create_Output_Directory)
+        command = "mkdir -p %s/WalkerData"%(Create_Output_Directory)
         os.system(command)
         if IncludeLF:
-            command = "mkdir %s/LFData"%(Create_Output_Directory)
+            command = "mkdir -p %s/LFData"%(Create_Output_Directory)
             os.system(command)
         if USE_EDGES:
-            command = "mkdir %s/FreqTbminData"%(Create_Output_Directory)
+            command = "mkdir -p %s/FreqTbminData"%(Create_Output_Directory)
             os.system(command)
 
     FlagOptions['KEEP_ALL_DATA_FILENAME'] = Create_Output_Directory
@@ -1111,40 +1112,48 @@ if __name__ == '__main__':
     
     Likelihoodmodel21cmFast = Likelihood21cmFast_multiz(Redshifts_For_LF,multi_z_obs_Muv,multi_z_obs_phi,multi_z_obs_Error_phi,multi_z_mockobs_k,multi_z_mockobs_PS,multi_z_Error_k,multi_z_Error_PS,
             Redshift,Redshifts_For_Prior,param_legend,Fiducial_Params,FlagOptions,param_string_names,NSplinePoints,TsCalc_z,foreground_cut,shot_noise_cut,IncludeLightCone,IncludeLF,MINI_HALO,
-            ModUncert,PriorLegend,NFVals_QSODamping,PDFVals_QSODamping)    
+            ModUncert,PriorLegend,NFVals_QSODamping,PDFVals_QSODamping, params)    
 
     chain.addLikelihoodModule(Likelihoodmodel21cmFast)
 
     chain.setup()
 
-    File_String = 'ReionModel_LF_taue_%s_%s'%(Telescope_Name,multiz_flag)
-
     if USE_NEST:
+        # max_iter=0, (unlimited iterations)
+        # sampling efficiency = 0.3 (API says this is the best for Model Selection, 0.8 is best for parameter estimation)
+        # Using resume=True will read in from file the last locations of the iso-likelihood contours to "continue" the sampling if the sampler hasn't sufficently converged.
+        # for MPI leave MPI_init=False, and run with $ mpirun -np #cores python 21CMNest.py
+        # typically n_live_points=2000
         import pymultinest
-		def likelihood(p, ndim, nparams):
-			return chain(p)[0]
+        def likelihood(p, ndim, nparams):
+            return chain(p)[0][0]
 
-		def prior(p, ndim, nparams):
-			p = [ params[i][0] + p[i]*(params[i][1]-params[i][0]) for i in range(ndim) )]
+        def prior(p, ndim, nparams):
+            p = [ params[i][0] + p[i]*(params[i][1]-params[i][0]) for i in range(ndim) ]
 
+        os.system("mkdir -p %s/MultiNest/"%FlagOptions['KEEP_ALL_DATA_FILENAME'])
         pymultinest.run(likelihood,
                 prior,
                 n_dims = len(params),
                 n_params = len(params),
-                n_live_points = 1,
+                n_live_points = 1600,
                 resume=False,
                 verbose=True,
                 write_output=True,
-                outputfiles_basename="%s/MultiNest"%FlagOptions['KEEP_ALL_DATA_FILENAME'],
+                outputfiles_basename="%s/MultiNest/"%FlagOptions['KEEP_ALL_DATA_FILENAME'],
                 max_iter=1,
                 importance_nested_sampling=True,
                 multimodal=True,
                 evidence_tolerance=0.5,
-                sampling_efficiency=0.3
+                sampling_efficiency=0.8,
+                log_zero=-10000000,
+                init_MPI = False
                 )
-        print("\n finished :)")
+        #print("\n finished :)")
 
     else:
+        File_String = 'ReionModel_LF_taue_%s_%s'%(Telescope_Name,multiz_flag)
+
         sampler = CosmoHammerSampler(
                         params = params,
                         likelihoodComputationChain=chain,

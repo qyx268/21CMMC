@@ -30,7 +30,7 @@ QSO_Redshift = 7.0842
 class Likelihood21cmFast_multiz(object):
     
     def __init__(self, Redshifts_For_LF,Muv_values, phi_values, phi_Error, k_values, PS_values, Error_k_values, PS_Error, Redshift, Redshifts_For_Prior, param_legend, Fiducial_Params, FlagOptions, param_string_names, NSplinePoints, 
-                        TsCalc_z, Foreground_cut, Shot_Noise_cut, IncludeLightCone, IncludeLF, MINI_HALO, ModUncert, PriorLegend, NFValsQSO, PDFValsQSO):
+                        TsCalc_z, Foreground_cut, Shot_Noise_cut, IncludeLightCone, IncludeLF, MINI_HALO, ModUncert, PriorLegend, NFValsQSO, PDFValsQSO, params_range):
         self.Redshifts_For_LF = Redshifts_For_LF # New in v1.4
         self.Muv_values = Muv_values   # New in v1.4
         self.phi_values = phi_values   # New in v1.4
@@ -56,10 +56,17 @@ class Likelihood21cmFast_multiz(object):
         self.PriorLegend = PriorLegend
         self.NFValsQSO = NFValsQSO
         self.PDFValsQSO = PDFValsQSO
+        self.params_range = params_range
+        self.nim = len(params_range)
 
     def Likelihood(self,ctx):
 
-        params = ctx.getParams()
+        if self.FlagOptions['USE_NEST'] is True:
+            params_unity = ctx.getParams()
+            params = [ self.params_range[i][0] + params_unity[i]*(self.params_range[i][1]-self.params_range[i][0]) for i in range(self.nim) ]
+        else:
+            params = ctx.getParams()
+            
 
         # If the light-cone option is set, we do not return the neutral fraction as it can be a large amount of data (also less useful).
         # Only really helpful (if at all) for co-eval cubes
