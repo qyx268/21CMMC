@@ -30,7 +30,7 @@ class PseudoCmbModule(object):
     
     def isValid(self, p):
         """checks if the given parameters are valid """
-        for i in xrange(len(p)):
+        for i in range(len(p)):
             if (p[i]<self.min[i] or p[i]>self.max[i]):
                 return False
             

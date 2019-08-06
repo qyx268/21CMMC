@@ -2,7 +2,7 @@
 #define _BUBBLE_HELPERS_
 
 #include "../Parameter_files/INIT_PARAMS.H"
-#include "../Parameter_files/ANAL_PARAMS.H"
+//#include "../Parameter_files/ANAL_PARAMS.H"
 
 void HII_filter(fftwf_complex *box, int filter_type, float R){
     int n_x, n_z, n_y;
@@ -31,7 +31,7 @@ void HII_filter(fftwf_complex *box, int filter_type, float R){
                 else if (filter_type == 1){ // k-space top hat
                     kR *= 0.413566994; // equates integrated volume to the real space top-hat (9pi/2)^(-1/3)
                     if (kR > 1){
-                        box[HII_C_INDEX(n_x, n_y, n_z)] = 0;
+                        box[HII_C_INDEX(n_x, n_y, n_z)] = 0.;
                     }
                 }
                 else if (filter_type == 2){ // gaussian

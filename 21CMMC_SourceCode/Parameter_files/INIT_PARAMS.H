@@ -26,7 +26,7 @@
 #include <gsl/gsl_spline.h>
 #include <gsl/gsl_errno.h>
 #include "COSMOLOGY.H"
-#include "Variables.h"
+//#include "Variables.h"
 
 
 /******** BEGIN USER CHANGABLE DEFINITIONS   **********/

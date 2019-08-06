@@ -1,6 +1,6 @@
 #include "../Parameter_files/INIT_PARAMS.H"
-#include "../Parameter_files/ANAL_PARAMS.H"
-#include "../Parameter_files/Variables.h"
+//#include "../Parameter_files/ANAL_PARAMS.H"
+//#include "../Parameter_files/Variables.h"
 
 int main(int argc, char ** argv){
 
@@ -15,7 +15,7 @@ int main(int argc, char ** argv){
     INDIVIDUAL_ID = atof(argv[1]);
     INDIVIDUAL_ID_2 = atof(argv[2]);
     
-    double *PARAM_COSMOLOGY_VALS = calloc(TOTAL_COSMOLOGY_FILEPARAMS,sizeof(double));
+    double *PARAM_COSMOLOGY_VALS = (double *) calloc(TOTAL_COSMOLOGY_FILEPARAMS,sizeof(double));
     
     /////////////////   Read in the cosmological parameter data     /////////////////
     
@@ -44,8 +44,8 @@ int main(int argc, char ** argv){
     // Use Zeta just incase the Random ID ends up the same (shouldn't happen)
     N_REDSHIFTS = (argc-3)/2;
     
-    float *Redshifts = calloc(N_REDSHIFTS,sizeof(float));
-    float *xH = calloc(N_REDSHIFTS,sizeof(float));
+    float *Redshifts = (float *) calloc(N_REDSHIFTS,sizeof(float));
+    float *xH = (float *) calloc(N_REDSHIFTS,sizeof(float));
     
     for(i=0;i<N_REDSHIFTS;i++) {
         Redshifts[i] = (float)(atof(argv[2*i+3]));

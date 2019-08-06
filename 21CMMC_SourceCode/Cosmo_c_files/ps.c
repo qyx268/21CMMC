@@ -7,13 +7,13 @@
 #include <ctype.h>
 #include <math.h>
 #include <unistd.h>
-#include "../Parameter_files/COSMOLOGY.H"
+//#include "../Parameter_files/COSMOLOGY.H"
 #include "../Parameter_files/INIT_PARAMS.H"
 #include <gsl/gsl_interp.h>
 #include <gsl/gsl_spline.h>
 #include "cosmo_progs.c"
 #include "misc.c"
-#include "../Parameter_files/Variables.h"
+//#include "../Parameter_files/Variables.h"
 
 /* New in v1.1 */
 #define ERFC_NPTS (int) 75
@@ -45,16 +45,16 @@ static gsl_spline *erfc_spline;
 #define NMass (int) 200
 
 /* New in v1.4 - part 1 of 4 start */
-#define NSFR_high (int) 50
-#define NSFR_low (int) 50
-#define NGL_SFR (int) 100
+#define NSFR_high (int) 10
+#define NSFR_low (int) 10
+#define NGL_SFR (int) 50
 #ifdef MINI_HALO
-#define LOG10MTURN_NUM (int) 50
+#define LOG10MTURN_NUM (int) 10
 #define LOG10MTURN_MIN (double) 5.-9e-8
 #define LOG10MTURN_MAX (double) 10.
 #endif
 
-#define zpp_interp_points_SFR (int) (100)
+#define zpp_interp_points_SFR (int) (30)
 /* New in v1.4 - part 1 of 4 end */
 
 static double log_MFspline_table[SPLINE_NPTS], MFspline_params[SPLINE_NPTS];
@@ -171,11 +171,11 @@ struct parameters_gsl_SFR_con_int_MINI_{
 
 /* New in v1.4 - part 2 of 4: end */
 
-unsigned long *lvector(long nl, long nh);
-void free_lvector(unsigned long *v, long nl, long nh);
+unsigned long *lvector_selfdefined(long nl, long nh);
+void free_lvector_selfdefined(unsigned long *v, long nl, long nh);
 
-float *vector(long nl, long nh);
-void free_vector(float *v, long nl, long nh);
+float *vector_selfdefined(long nl, long nh);
+void free_vector_selfdefined(float *v, long nl, long nh);
 
 void spline(float x[], float y[], int n, float yp1, float ypn, float y2[]);
 void splint(float xa[], float ya[], float y2a[], int n, float x, float *y);
@@ -207,7 +207,7 @@ void initialiseFcoll_spline(float z, float Mmin, float Mmax, float Mval, float M
 double sigma_norm, R, theta_cmb, omhh, z_equality, y_d, sound_horizon, alpha_nu, f_nu, f_baryon, beta_c, d2fact, R_CUTOFF, DEL_CURR, SIG_CURR;
 
 /* New in v1.4 - part 3 of 4: start */
-float *Overdense_spline_SFR,*Fcoll_spline_SFR,*second_derivs_SFR;
+float *second_derivs_SFR;
 float *xi_SFR,*wi_SFR;
 float *xi_SFR_Xray,*wi_SFR_Xray;
 float *Mass_Spline_Xray, *Sigma_Spline_Xray, *dSigmadm_Spline_Xray, *second_derivs_sigma_Xray, *second_derivs_dsigma_Xray;
@@ -1151,7 +1151,7 @@ void gauleg(float x1, float x2, float x[], float w[], int n)
     }
 }
 
-void nrerror(char error_text[])
+void nrerror(const char error_text[])
 {
     fprintf(stderr,"Numerical Recipes run-time error...\n");
     fprintf(stderr,"%s\n",error_text);
@@ -1159,17 +1159,17 @@ void nrerror(char error_text[])
     exit(1);
 }
 
-float *vector(long nl, long nh)
-/* allocate a float vector with subscript range v[nl..nh] */
+float *vector_selfdefined(long nl, long nh)
+/* allocate a float vector_selfdefined with subscript range v[nl..nh] */
 {
     float *v;
     v = (float *)malloc((size_t) ((nh-nl+1+NR_END)*sizeof(float)));
-    if(!v) nrerror("allocation failure in vector()");
+    if(!v) nrerror("allocation failure in vector_selfdefined()");
     return v - nl + NR_END;
 }
 
-void free_vector(float *v, long nl, long nh)
-/* free a float vector allocated with vector() */
+void free_vector_selfdefined(float *v, long nl, long nh)
+/* free a float vector_selfdefined allocated with vector_selfdefined() */
 {
     free((FREE_ARG) (v+nl-NR_END));
 }
@@ -1185,7 +1185,7 @@ void spline(float x[], float y[], int n, float yp1, float ypn, float y2[])
     int i,k;
     float p,qn,sig,un,*u;
     int na,nb,check;
-    u=vector(1,n-1);
+    u=vector_selfdefined(1,n-1);
     if (yp1 > 0.99e30)                     // The lower boundary condition is set either to be "natural"
         y2[1]=u[1]=0.0;
     else {                                 // or else to have a specified first derivative.
@@ -1242,7 +1242,7 @@ void spline(float x[], float y[], int n, float yp1, float ypn, float y2[])
     for (k=n-1;k>=1;k--) {                      //This is the backsubstitution loop of the tridiagonal
         y2[k]=y2[k]*y2[k+1]+u[k];               //algorithm.
     }
-    free_vector(u,1,n-1);
+    free_vector_selfdefined(u,1,n-1);
 }
 
 
@@ -1251,7 +1251,7 @@ void splint(float xa[], float ya[], float y2a[], int n, float x, float *y)
  and given the array y2a[1..n], which is the output from spline above, and given a value of
  x, this routine returns a cubic-spline interpolated value y.*/
 {
-    void nrerror(char error_text[]);
+    void nrerror(const char error_text[]);
     int klo,khi,k;
     float h,b,a;
     klo=1;                                                  // We will find the right place in the table by means of
@@ -1268,17 +1268,17 @@ void splint(float xa[], float ya[], float y2a[], int n, float x, float *y)
     *y=a*ya[klo]+b*ya[khi]+((a*a*a-a)*y2a[klo]+(b*b*b-b)*y2a[khi])*(h*h)/6.0;
 }
 
-unsigned long *lvector(long nl, long nh)
-/* allocate an unsigned long vector with subscript range v[nl..nh] */
+unsigned long *lvector_selfdefined(long nl, long nh)
+/* allocate an unsigned long vector_selfdefined with subscript range v[nl..nh] */
 {
     unsigned long *v;
     v = (unsigned long *)malloc((size_t) ((nh-nl+1+NR_END)*sizeof(long)));
-    if(!v) nrerror("allocation failure in lvector()");
+    if(!v) nrerror("allocation failure in lvector_selfdefined()");
     return v - nl + NR_END;
 }
 
-void free_lvector(unsigned long *v, long nl, long nh)
-/* free an unsigned long vector allocated with lvector() */
+void free_lvector_selfdefined(unsigned long *v, long nl, long nh)
+/* free an unsigned long vector_selfdefined allocated with lvector_selfdefined() */
 {
     free((FREE_ARG) (v+nl-NR_END));
 }
@@ -1390,11 +1390,11 @@ void initialiseSplinedSigmaM(float M_Min, float M_Max)
     int i;
     float Mass;
     
-    Mass_Spline = calloc(NMass,sizeof(float));
-    Sigma_Spline = calloc(NMass,sizeof(float));
-    dSigmadm_Spline = calloc(NMass,sizeof(float));
-    second_derivs_sigma = calloc(NMass,sizeof(float));
-    second_derivs_dsigma = calloc(NMass,sizeof(float));
+    Mass_Spline = (float*) calloc(NMass,sizeof(float));
+    Sigma_Spline = (float*) calloc(NMass,sizeof(float));
+    dSigmadm_Spline = (float*) calloc(NMass,sizeof(float));
+    second_derivs_sigma = (float*) calloc(NMass,sizeof(float));
+    second_derivs_dsigma = (float*) calloc(NMass,sizeof(float));
     
     for(i=0;i<NMass;i++) {
         Mass_Spline[i] = pow(10., log10(M_Min) + (float)i/(NMass-1)*( log10(M_Max) - log10(M_Min) ) );
@@ -1410,9 +1410,9 @@ void initialiseSplinedSigmaM_quicker(float M_Min, float M_Max)
     int i;
     float Mass;
     
-    Mass_Spline_quicker = calloc(NMass,sizeof(float));
-    Sigma_Spline_quicker = calloc(NMass,sizeof(float));
-    dSigmadm_Spline_quicker = calloc(NMass,sizeof(float));
+    Mass_Spline_quicker = (float*) calloc(NMass,sizeof(float));
+    Sigma_Spline_quicker = (float*) calloc(NMass,sizeof(float));
+    dSigmadm_Spline_quicker = (float*) calloc(NMass,sizeof(float));
     
     for(i=0;i<NMass;i++) {
         Mass_Spline_quicker[i] = log(M_Min) + (float)i/(NMass-1)*( log(M_Max) - log(M_Min) );
@@ -2292,11 +2292,11 @@ void initialiseSplinedSigmaM_Xray(float M_Min, float M_Max)
     int i;
     float Mass;
     
-    Mass_Spline_Xray = calloc(NMass,sizeof(float));
-    Sigma_Spline_Xray = calloc(NMass,sizeof(float));
-    dSigmadm_Spline_Xray = calloc(NMass,sizeof(float));
-    second_derivs_sigma_Xray = calloc(NMass,sizeof(float));
-    second_derivs_dsigma_Xray = calloc(NMass,sizeof(float));
+    Mass_Spline_Xray = (float*) calloc(NMass,sizeof(float));
+    Sigma_Spline_Xray = (float*) calloc(NMass,sizeof(float));
+    dSigmadm_Spline_Xray = (float*) calloc(NMass,sizeof(float));
+    second_derivs_sigma_Xray = (float*) calloc(NMass,sizeof(float));
+    second_derivs_dsigma_Xray = (float*) calloc(NMass,sizeof(float));
     
     for(i=0;i<NMass;i++) {
         Mass_Spline_Xray[i] = pow(10., log10(M_Min) + (float)i/(NMass-1)*( log10(M_Max) - log10(M_Min) ) );

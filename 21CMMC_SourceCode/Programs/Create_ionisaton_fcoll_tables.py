@@ -134,10 +134,10 @@ def CreateTable(num_processes,command_list,filenames,command_file_remove,R_OPTIO
 
 	counter = 0
 
-	for i in xrange(num_divisions):
+	for i in range(num_divisions):
 		processes = []
 
-		for ii in xrange(num_processes):
+		for ii in range(num_processes):
 			p = multiprocessing.Process(target=worker, args=(ii + num_processes*i,command_list))
 			p.start()
 			processes.append(p)
@@ -145,7 +145,7 @@ def CreateTable(num_processes,command_list,filenames,command_file_remove,R_OPTIO
 		for p in processes:
 			p.join()
 
-		for ii in xrange(num_processes):
+		for ii in range(num_processes):
 			f_coll_val = numpy.loadtxt('%s'%(filenames[counter]), usecols=(0,))			
 
 			f_coll_vals[counter] = f_coll_val
@@ -157,7 +157,7 @@ def CreateTable(num_processes,command_list,filenames,command_file_remove,R_OPTIO
 
 	processes = []
 
-	for ii in xrange(remainder):
+	for ii in range(remainder):
 		p = multiprocessing.Process(target=worker, args=(ii + num_divisions*num_processes,command_list))
 		p.start()
 		processes.append(p)
@@ -165,7 +165,7 @@ def CreateTable(num_processes,command_list,filenames,command_file_remove,R_OPTIO
 	for p in processes:
 		p.join()
 
-	for ii in xrange(remainder):
+	for ii in range(remainder):
 		f_coll_val = numpy.loadtxt('%s'%(filenames[counter]), usecols=(0,))			
 
 		f_coll_vals[counter] = f_coll_val

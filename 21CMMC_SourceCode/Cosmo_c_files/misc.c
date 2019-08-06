@@ -13,7 +13,6 @@ static double mnarg1,mnarg2;
 #define FMAX(a,b) (mnarg1=(a),mnarg2=(b),(mnarg1) > (mnarg2) ?\
 (mnarg1) : (mnarg2))
 
-static double mnarg1,mnarg2;
 #define FMIN(a,b) (mnarg1=(a),mnarg2=(b),(mnarg1) < (mnarg2) ?\
 (mnarg1) : (mnarg2))
 

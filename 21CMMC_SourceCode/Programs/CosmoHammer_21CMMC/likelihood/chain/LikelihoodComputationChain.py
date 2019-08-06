@@ -57,13 +57,13 @@ class LikelihoodComputationChain(object):
         checks if the given parameters are valid 
         """
         if(self.min is not None):
-            for i in xrange(len(p)):
+            for i in range(len(p)):
                 if (p[i]<self.min[i]):
                     logging.debug("Params out of bounds i="+str(i)+" params "+str(p))
                     return False
         
         if(self.max is not None):
-            for i in xrange(len(p)):
+            for i in range(len(p)):
                 if (p[i]>self.max[i]):
                     logging.debug("Params out of bounds i="+str(i)+" params "+str(p))
                     return False

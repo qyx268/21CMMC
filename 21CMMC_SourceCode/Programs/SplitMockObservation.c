@@ -1,7 +1,7 @@
 #include "../Parameter_files/INIT_PARAMS.H"
-#include "../Parameter_files/ANAL_PARAMS.H"
+//#include "../Parameter_files/ANAL_PARAMS.H"
 #include "../Parameter_files/HEAT_PARAMS.H"
-#include "../Parameter_files/Variables.h"
+//#include "../Parameter_files/Variables.h"
 
 
 // This file splits the 21cm cubic boxes used for the light-cone into smaller boxes (necessary for MCMC sampling) and computes the 21cm PS for each box
@@ -246,8 +246,8 @@ void init_21cmPS_arrays() {
         k_ceil*=k_factor;
     }
     
-    p_box = calloc(NUM_BINS,sizeof(double));
-    k_ave = calloc(NUM_BINS,sizeof(double));
+    p_box = (double*) calloc(NUM_BINS,sizeof(double));
+    k_ave = (double*) calloc(NUM_BINS,sizeof(double));
     in_bin_ct = (unsigned long long *)calloc(NUM_BINS,sizeof(unsigned long long));
     
 }

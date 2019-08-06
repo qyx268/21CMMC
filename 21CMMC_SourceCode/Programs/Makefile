@@ -2,6 +2,10 @@
 CPPFLAGS = -I$(HOME)/3rd_party/include -I/usr/local/include
 LDFLAGS = -L/$(HOME)/3rd_party/lib -lgsl -lgslcblas -lfftw3f_omp -lfftw3f -lm
 CC      = gcc -fopenmp -O3
+CPP     = g++ -std=c++11 -fopenmp -O3
+# if you want to use Keras, do compile only with -c and then
+# gG
+# CC      = gcc -fopenmp -O3 -c
 
 # Directory hosting the non-project specific code
 COSMO_DIR = ../Cosmo_c_files
@@ -83,4 +87,12 @@ Createfcoll_ionisation_LC: Createfcoll_ionisation_LC.c \
 	${CC} ${CPPFLAGS} -o Createfcoll_ionisation_LC Createfcoll_ionisation_LC.c ${LDFLAGS}
 
 clean:
-	rm ${OBJ_FILES} init *~
+	rm ${OBJ_FILES} keras_model init *~
+
+mini_halo:
+	${CC} ${CPPFLAGS} -DMINI_HALO -o drive_21cmMC_streamlined drive_21cmMC_streamlined.c ${LDFLAGS}
+
+keras:
+	${CPP} -c keras_model.cpp -o keras_model
+	${CC} -c ${CPPFLAGS} -DMINI_HALO -DUSE_KERAS -o drive_21cmMC_streamlined drive_21cmMC_streamlined.c ${LDFLAGS}
+	${CPP} ${CPPFLAGS} keras_model drive_21cmMC_streamlined -o drive_21cmMC_streamlined_keras ${LDFLAGS}

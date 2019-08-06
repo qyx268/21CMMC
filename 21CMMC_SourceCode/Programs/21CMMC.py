@@ -36,6 +36,7 @@ if __name__ == '__main__':
 
     ################### Setting up the flag options for the main computation and requisite interpolation tables ####################################
 
+    threadCount=10
 
 
     # Whether or not one wants the inital conditions to be varied within the MCMC (needs to be True if one wants to jointly sample the cosmological parameters)
@@ -51,6 +52,12 @@ if __name__ == '__main__':
     # New in v1.5
     # everything in v1.4 is required in v1.5
     MINI_HALO = True
+
+    # New in v1.6
+    PRISM_ON = True
+    if PRISM_ON:
+        from prism import Pipeline
+        from PRISM_21CMMC.tocf_link import tocfLink, Likelihood21cmFast_prism
 
     # New in v1.4
     # Decide whether to use halo mass dependent ionizing efficiency. 
@@ -76,7 +83,7 @@ if __name__ == '__main__':
     Include_Ts_fluc = True
 
     # If the full spin temperature computation is to be performed, a redshift must be provided to which to perform the evolution down to.
-    TsCalc_z = 5.8
+    TsCalc_z = 5.5
 
     # Decide whether to use light-cone boxes or co-eval boxes
     # Note that the light-cone can only be generated along the z-direction (21cmFAST could do any arbitrary direction, this only does the z-direction). Should be 
@@ -217,6 +224,9 @@ if __name__ == '__main__':
 #        Redshift = ['6.000594']
 
         Redshifts_For_Prior = []
+
+    if USE_GLOBAL_SIGNAL is True:
+        Redshifts_For_Prior = ['5.900000', '7.041489', '8.056021', '8.998578', '10.949220', '13.000420']
     
     ### NOTE ###
     # if Include_Ts_fluc = True the redshifts listed above must match with the redshifts sampled by the spin temperature algorithm. If not, then the code will fail.
@@ -1115,12 +1125,23 @@ if __name__ == '__main__':
 
     # Typically for 3 parameters, I would perform the following:
     # walkersRatio = 16, burninIterations = 250, sampleIterations = 3000, threadCount = 24 (for a 24 core machine. Note 3*16/2 = 24)
-
     chain = LikelihoodComputationChain()
-    
-    Likelihoodmodel21cmFast = Likelihood21cmFast_multiz(Redshifts_For_LF,multi_z_obs_Muv,multi_z_obs_phi,multi_z_obs_Error_phi,multi_z_mockobs_k,multi_z_mockobs_PS,multi_z_Error_k,multi_z_Error_PS,
+
+    if PRISM_ON:
+        modellink_obj = tocfLink(Redshifts_For_LF,multi_z_obs_Muv,multi_z_obs_phi,multi_z_obs_Error_phi,multi_z_mockobs_k,multi_z_mockobs_PS,multi_z_Error_k,multi_z_Error_PS,
             Redshift,Redshifts_For_Prior,param_legend,Fiducial_Params,FlagOptions,param_string_names,NSplinePoints,TsCalc_z,foreground_cut,shot_noise_cut,IncludeLightCone,IncludeLF,MINI_HALO,
-            ModUncert,PriorLegend,NFVals_QSODamping,PDFVals_QSODamping, params)    
+            ModUncert,PriorLegend,NFVals_QSODamping,PDFVals_QSODamping,param_lower_limits,param_upper_limits, threadCount=threadCount)
+        pipe = Pipeline(modellink_obj, working_dir=Create_Output_Directory+'/prism/',prism_par = {'n_sam_init': 50})
+        pipe.construct()
+        Likelihoodmodel21cmFast = Likelihood21cmFast_prism(Redshifts_For_LF,multi_z_obs_Muv,multi_z_obs_phi,multi_z_obs_Error_phi,multi_z_mockobs_k,multi_z_mockobs_PS,multi_z_Error_k,multi_z_Error_PS,
+                Redshift,Redshifts_For_Prior,param_legend,Fiducial_Params,FlagOptions,param_string_names,NSplinePoints,TsCalc_z,foreground_cut,shot_noise_cut,IncludeLightCone,IncludeLF,MINI_HALO,
+                ModUncert,PriorLegend,NFVals_QSODamping,PDFVals_QSODamping)    
+
+    else:
+    
+        Likelihoodmodel21cmFast = Likelihood21cmFast_multiz(Redshifts_For_LF,multi_z_obs_Muv,multi_z_obs_phi,multi_z_obs_Error_phi,multi_z_mockobs_k,multi_z_mockobs_PS,multi_z_Error_k,multi_z_Error_PS,
+                Redshift,Redshifts_For_Prior,param_legend,Fiducial_Params,FlagOptions,param_string_names,NSplinePoints,TsCalc_z,foreground_cut,shot_noise_cut,IncludeLightCone,IncludeLF,MINI_HALO,
+                ModUncert,PriorLegend,NFVals_QSODamping,PDFVals_QSODamping)    
 
     chain.addLikelihoodModule(Likelihoodmodel21cmFast)
 

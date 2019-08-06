@@ -1,6 +1,6 @@
 #include "../Parameter_files/INIT_PARAMS.H"
-#include "../Parameter_files/ANAL_PARAMS.H"
-#include "../Parameter_files/Variables.h"
+//#include "../Parameter_files/ANAL_PARAMS.H"
+//#include "../Parameter_files/Variables.h"
 #include "filter.c"
 
 /*
@@ -40,15 +40,15 @@ void adj_complex_conj(fftwf_complex *box){
     // just j corners
     for (j=0; j<=MIDDLE; j+=MIDDLE){
       for (k=0; k<=MIDDLE; k+=MIDDLE){
-	box[C_INDEX(i,j,k)] = conjf(box[C_INDEX(DIM-i,j,k)]);
+		  box[C_INDEX(i,j,k)] = conjf(box[C_INDEX(DIM-i,j,k)]);
       }
     }
 
     // all of j
     for (j=1; j<MIDDLE; j++){
       for (k=0; k<=MIDDLE; k+=MIDDLE){
-	box[C_INDEX(i,j,k)] = conjf(box[C_INDEX(DIM-i,DIM-j,k)]);
-	box[C_INDEX(i,DIM-j,k)] = conjf(box[C_INDEX(DIM-i,j,k)]);
+		  box[C_INDEX(i,j,k)] = conjf(box[C_INDEX(DIM-i,DIM-j,k)]);
+		  box[C_INDEX(i,DIM-j,k)] = conjf(box[C_INDEX(DIM-i,j,k)]);
       }
     }
   } // end loop over i
@@ -58,7 +58,7 @@ void adj_complex_conj(fftwf_complex *box){
   for (i=0; i<=MIDDLE; i+=MIDDLE){
     for (j=1; j<MIDDLE; j++){
       for (k=0; k<=MIDDLE; k+=MIDDLE){
-	box[C_INDEX(i,j,k)] = conjf(box[C_INDEX(i,DIM-j,k)]);
+		  box[C_INDEX(i,j,k)] = conjf(box[C_INDEX(i,DIM-j,k)]);
       }
     }
   } // end loop over remaining j
@@ -92,7 +92,7 @@ int main(int argc, char ** argv){
     INDIVIDUAL_ID = atof(argv[1]);
     INDIVIDUAL_ID_2 = atof(argv[2]);
     
-    double *PARAM_COSMOLOGY_VALS = calloc(TOTAL_COSMOLOGY_FILEPARAMS,sizeof(double));
+    double *PARAM_COSMOLOGY_VALS = (double *) calloc(TOTAL_COSMOLOGY_FILEPARAMS,sizeof(double));
     
     sprintf(filename,"WalkerCosmology_%1.6lf_%1.6lf.txt",INDIVIDUAL_ID,INDIVIDUAL_ID_2);
     F = fopen(filename,"rt");
@@ -416,7 +416,7 @@ int main(int argc, char ** argv){
 
 	// now set the velocities
 	if ((n_x==0) && (n_y==0) && (n_z==0)){ // DC mode
-	  box[0] = 0;
+	  box[0] = 0.;
 	}
 	else{
 	  box[C_INDEX(n_x,n_y,n_z)] *= k_y*I/k_sq/VOLUME;
@@ -612,7 +612,7 @@ int main(int argc, char ** argv){
               //fprintf(stderr, "(k = %.2e %.2e %.2e) ", k[0], k[1], k[2]); 
 	            // now set the velocities
 	            if ((n_x==0) && (n_y==0) && (n_z==0)){ // DC mode
-	              phi_1[PHI_INDEX(i, j)][0] = 0;
+	              phi_1[PHI_INDEX(i, j)][0] = 0.;
 	            }
 	            else{
                 //fprintf(stderr, "%.2e ", phi_1[PHI_INDEX(i, j)][C_INDEX(n_x, n_y, n_z)] ); 
@@ -736,10 +736,10 @@ int main(int argc, char ** argv){
 
 	        // now set the velocities
 	        if ((n_x==0) && (n_y==0) && (n_z==0)){ // DC mode
-	          box[0] = 0;
+	          box[0] = 0.;
 	        }
 	        else{
-	          box[C_INDEX(n_x,n_y,n_z)] *= k_x*I/k_sq;
+			  box[C_INDEX(n_x,n_y,n_z)] *= k_x*I/k_sq;
 	          // note the last factor of 1/VOLUME accounts for the scaling in real-space, following the FFT
 	        }
         }
@@ -812,10 +812,10 @@ int main(int argc, char ** argv){
 
 	        // now set the velocities
 	        if ((n_x==0) && (n_y==0) && (n_z==0)){ // DC mode
-	          box[0] = 0;
+	          box[0] = 0.;
 	        }
 	        else{
-	        box[C_INDEX(n_x,n_y,n_z)] *= k_y*I/k_sq;
+			  box[C_INDEX(n_x,n_y,n_z)] *= k_y*I/k_sq;
           //fprintf(stderr, "%.2e ", box[C_INDEX(n_x, n_y, n_z)]);
 	        // note the last factor of 1/VOLUME accounts for the scaling in real-space, following the FFT
 	        }
@@ -887,10 +887,10 @@ int main(int argc, char ** argv){
 
 	        // now set the velocities
 	        if ((n_x==0) && (n_y==0) && (n_z==0)){ // DC mode
-	          box[0] = 0;
+	          box[0] = 0.;
 	        }
 	        else{
-	          box[C_INDEX(n_x,n_y,n_z)] *= k_z*I/k_sq;
+			  box[C_INDEX(n_x,n_y,n_z)] *= k_z*I/k_sq;
 	        // note the last factor of 1/VOLUME accounts for the scaling in real-space, following the FFT
 	        }
         }

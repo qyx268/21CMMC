@@ -1,9 +1,9 @@
 #include "../Parameter_files/INIT_PARAMS.H"
-#include "../Parameter_files/ANAL_PARAMS.H"
+//#include "../Parameter_files/ANAL_PARAMS.H"
 #include "../Parameter_files/HEAT_PARAMS.H"
 #include "bubble_helper_progs.c"
 #include "elec_interp.c"
-#include "../Parameter_files/Variables.h"
+//#include "../Parameter_files/Variables.h"
 
 #define NSPEC_MAX (int) 23
 #define RECFAST_NPTS (int) 501
@@ -37,7 +37,7 @@ float M_MIN_at_z, M_MIN_at_zp;
 FILE *LOG;
 
 int n_redshifts_1DTable;
-double zbin_width_1DTable,zmin_1DTable,zmax_1DTable,zbin_width_1DTable;
+double zbin_width_1DTable,zmin_1DTable,zmax_1DTable;
 
 double *FgtrM_1DTable_linear;
 

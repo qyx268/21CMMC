@@ -1,6 +1,6 @@
 #include "../Parameter_files/INIT_PARAMS.H"
-#include "../Parameter_files/ANAL_PARAMS.H"
-#include "../Parameter_files/Variables.h"
+//#include "../Parameter_files/ANAL_PARAMS.H"
+//#include "../Parameter_files/Variables.h"
 #include "bubble_helper_progs.c"
 #include "heating_helper_progs.c"
 #include "gsl/gsl_sf_erf.h"
@@ -159,7 +159,7 @@ int main(int argc, char ** argv){
         delNL0_bw[ii] = ( log10(delNL0_UL[ii] + delNL0_Offset[ii]) - log10(delNL0_LL[ii] + delNL0_Offset[ii]) )/((float)dens_Ninterp - 1.);
     }
     
-    log10delNL0_diff_UL = calloc(NUM_FILTER_STEPS_FOR_Ts,sizeof(float));
+    log10delNL0_diff_UL = (float *) calloc(NUM_FILTER_STEPS_FOR_Ts,sizeof(float));
     
     for (R_ct=NUM_FILTER_STEPS_FOR_Ts; R_ct--;){
         log10delNL0_diff_UL[R_ct] = log10( delNL0_UL[R_ct] + delNL0_Offset[R_ct] );
@@ -438,18 +438,18 @@ void init_21cmMC_FcollTable_arrays() {
         fcoll_interp2[i] = (double *)calloc(dens_Ninterp,sizeof(double));
     }
 
-    zpp_edge = calloc(NUM_FILTER_STEPS_FOR_Ts,sizeof(double));
-    sigma_atR = calloc(NUM_FILTER_STEPS_FOR_Ts,sizeof(double));
-    sigma_Tmin = calloc(NUM_FILTER_STEPS_FOR_Ts,sizeof(double));
+    zpp_edge = (double*) calloc(NUM_FILTER_STEPS_FOR_Ts,sizeof(double));
+    sigma_atR = (double*) calloc(NUM_FILTER_STEPS_FOR_Ts,sizeof(double));
+    sigma_Tmin = (double*) calloc(NUM_FILTER_STEPS_FOR_Ts,sizeof(double));
     
-    delNL0_bw = calloc(NUM_FILTER_STEPS_FOR_Ts,sizeof(float));
-    R_values = calloc(NUM_FILTER_STEPS_FOR_Ts,sizeof(float));
-    delNL0_Offset = calloc(NUM_FILTER_STEPS_FOR_Ts,sizeof(float));
-    delNL0_LL = calloc(NUM_FILTER_STEPS_FOR_Ts,sizeof(float));
-    delNL0_UL = calloc(NUM_FILTER_STEPS_FOR_Ts,sizeof(float));
-    SingleVal_float = calloc(NUM_FILTER_STEPS_FOR_Ts,sizeof(float));
-    delNL0_ibw = calloc(NUM_FILTER_STEPS_FOR_Ts,sizeof(float));
-    log10delNL0_diff = calloc(NUM_FILTER_STEPS_FOR_Ts,sizeof(float));
+    delNL0_bw = (float*) calloc(NUM_FILTER_STEPS_FOR_Ts,sizeof(float));
+    R_values = (float*) calloc(NUM_FILTER_STEPS_FOR_Ts,sizeof(float));
+    delNL0_Offset = (float*) calloc(NUM_FILTER_STEPS_FOR_Ts,sizeof(float));
+    delNL0_LL = (float*) calloc(NUM_FILTER_STEPS_FOR_Ts,sizeof(float));
+    delNL0_UL = (float*) calloc(NUM_FILTER_STEPS_FOR_Ts,sizeof(float));
+    SingleVal_float = (float*) calloc(NUM_FILTER_STEPS_FOR_Ts,sizeof(float));
+    delNL0_ibw = (float*) calloc(NUM_FILTER_STEPS_FOR_Ts,sizeof(float));
+    log10delNL0_diff = (float*) calloc(NUM_FILTER_STEPS_FOR_Ts,sizeof(float));
 }
 
 void destroy_21cmMC_FcollTable_arrays() {

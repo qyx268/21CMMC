@@ -7,7 +7,7 @@
 #include <ctype.h>
 #include <math.h>
 #include <unistd.h>
-#include "../Parameter_files/COSMOLOGY.H"
+//#include "../Parameter_files/COSMOLOGY.H"
 #include "../Parameter_files/INIT_PARAMS.H"
 #include <gsl/gsl_interp.h>
 #include <gsl/gsl_spline.h>

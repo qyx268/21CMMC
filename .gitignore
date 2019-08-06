@@ -1,6 +1,7 @@
 Boxes
 21CMMC_SourceCode/Programs/*
-!21CMMC_SourceCode/Programs/*.c
+!21CMMC_SourceCode/Programs/*.c*
+!21CMMC_SourceCode/Programs/*.h*
 !21CMMC_SourceCode/Programs/*.py
 !21CMMC_SourceCode/Programs/Makefile
 

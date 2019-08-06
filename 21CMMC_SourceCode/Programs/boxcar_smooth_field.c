@@ -1,5 +1,5 @@
 #include "../Parameter_files/INIT_PARAMS.H"
-#include "../Parameter_files/ANAL_PARAMS.H"
+//#include "../Parameter_files/ANAL_PARAMS.H"
 
 /*
   USAGE: boxcar_smooth_field <0=no fft padding; 1=fft padding> <input highres filename> <output lowres filename>
