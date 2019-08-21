@@ -354,22 +354,22 @@ double Fcollz_val_MINI_emulator(double f_star7_mini_norm, double alpha_star_norm
 // this is actualy log_e and is returning log_e
 double log10_Fcoll_spline_SFR_low_emulator(double f_star10_norm, double alpha_star_norm, double f_esc10_norm, double alpha_esc_norm, double sigma_8_norm, double redshift_norm, double log10_Mmin_norm, double R_norm, double dens_norm){
 	sample_log10_Fcoll_spline_SFR_low->set_data1d({f_star10_norm, alpha_star_norm, f_esc10_norm, alpha_esc_norm, sigma_8_norm, redshift_norm, log10_Mmin_norm, R_norm, dens_norm});
-	return log10_Fcoll_spline_SFR_low_emu.compute_output(sample_log10_Fcoll_spline_SFR_low)[0];
+	return log10_Fcoll_spline_SFR_low_emu.compute_output(sample_log10_Fcoll_spline_SFR_low)[0] + 23.0258509299;
 }
 // this is actualy log_e and is returning log_e
 double log10_Fcoll_spline_SFR_MINI_low_emulator(double f_star7_mini_norm, double alpha_star_norm, double sigma_8_norm, double redshift_norm, double log10_Mmin_norm, double R_norm, double dens_norm){
 	sample_log10_Fcoll_spline_SFR_MINI_low->set_data1d({f_star7_mini_norm, alpha_star_norm, sigma_8_norm, redshift_norm, log10_Mmin_norm, R_norm, dens_norm});
-	return log10_Fcoll_spline_SFR_MINI_low_emu.compute_output(sample_log10_Fcoll_spline_SFR_MINI_low)[0];
+	return log10_Fcoll_spline_SFR_MINI_low_emu.compute_output(sample_log10_Fcoll_spline_SFR_MINI_low)[0] + 23.0258509299;
 }
 // this is actualy log_10 and is returning linear
 double Fcoll_spline_SFR_high_emulator(double f_star10_norm, double alpha_star_norm, double f_esc10_norm, double alpha_esc_norm, double sigma_8_norm, double redshift_norm, double log10_Mmin_norm, double R_norm, double dens_norm){
 	sample_Fcoll_spline_SFR_high->set_data1d({f_star10_norm, alpha_star_norm, f_esc10_norm, alpha_esc_norm, sigma_8_norm, redshift_norm, log10_Mmin_norm, R_norm, dens_norm});
-	return pow(10., Fcoll_spline_SFR_high_emu.compute_output(sample_Fcoll_spline_SFR_high)[0]);
+	return pow(10., Fcoll_spline_SFR_high_emu.compute_output(sample_Fcoll_spline_SFR_high)[0] + 10.);
 }
 // this is actualy log_10 and is returning linear
 double Fcoll_spline_SFR_MINI_high_emulator(double f_star7_mini_norm, double alpha_star_norm, double sigma_8_norm, double redshift_norm, double log10_Mmin_norm, double R_norm, double dens_norm){
 	sample_Fcoll_spline_SFR_MINI_high->set_data1d({f_star7_mini_norm, alpha_star_norm, sigma_8_norm, redshift_norm, log10_Mmin_norm, R_norm, dens_norm});
-	return pow(10., Fcoll_spline_SFR_MINI_high_emu.compute_output(sample_Fcoll_spline_SFR_MINI_high)[0]);
+	return pow(10., Fcoll_spline_SFR_MINI_high_emu.compute_output(sample_Fcoll_spline_SFR_MINI_high)[0] + 10.);
 }
 
 //extern "C" double Fcollz_val_emulator(double *input); 

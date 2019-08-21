@@ -1764,7 +1764,7 @@ inline double log10_Fcoll_spline_SFR_low_emulator(double input[]){
     for (ix = 0; ix < log10_Fcoll_spline_SFR_low_emu_Nx[idense]; ix++){
         result += log10_Fcoll_spline_SFR_low_emu_results[idense-1][ix] * log10_Fcoll_spline_SFR_low_emu_weights[idense][ix];
     }
-    result += log10_Fcoll_spline_SFR_low_emu_biases[idense][0];
+    result += log10_Fcoll_spline_SFR_low_emu_biases[idense][0] + 23.0258509299;//I have log(10) already but missed the +10 in the emulator calculation (LargeTable)...
     return result;
 }
 
@@ -1842,7 +1842,7 @@ inline double Fcoll_spline_SFR_high_emulator(double input[]){
     for (ix = 0; ix < Fcoll_spline_SFR_high_emu_Nx[idense]; ix++){
         result += Fcoll_spline_SFR_high_emu_results[idense-1][ix] * Fcoll_spline_SFR_high_emu_weights[idense][ix];
     }
-    result += Fcoll_spline_SFR_high_emu_biases[idense][0];
+    result += Fcoll_spline_SFR_high_emu_biases[idense][0] + 10.;
     return pow(10, result);
 }
 
@@ -1920,7 +1920,7 @@ inline double log10_Fcoll_spline_SFR_MINI_low_emulator(double input[]){
     for (ix = 0; ix < log10_Fcoll_spline_SFR_MINI_low_emu_Nx[idense]; ix++){
         result += log10_Fcoll_spline_SFR_MINI_low_emu_results[idense-1][ix] * log10_Fcoll_spline_SFR_MINI_low_emu_weights[idense][ix];
     }
-    result += log10_Fcoll_spline_SFR_MINI_low_emu_biases[idense][0];
+    result += log10_Fcoll_spline_SFR_MINI_low_emu_biases[idense][0] + 23.0258509299;//I have log(10) already but missed the +10 in the emulator calculation (LargeTable)...
     return result;
 }
 
@@ -1998,7 +1998,7 @@ inline double Fcoll_spline_SFR_MINI_high_emulator(double input[]){
     for (ix = 0; ix < Fcoll_spline_SFR_MINI_high_emu_Nx[idense]; ix++){
         result += Fcoll_spline_SFR_MINI_high_emu_results[idense-1][ix] * Fcoll_spline_SFR_MINI_high_emu_weights[idense][ix];
     }
-    result += Fcoll_spline_SFR_MINI_high_emu_biases[idense][0];
+    result += Fcoll_spline_SFR_MINI_high_emu_biases[idense][0] + 10.;
     return pow(10, result);
 }
 #endif
@@ -3307,10 +3307,10 @@ void initialise_Xray_Fcollz_SFR_Conditional_table(int Nfilter, float min_density
             }
             
             for(i=0;i<NSFR_high;i++) {
-				Fcollz_SFR_Xray_high_table[k][j][i] = Fcoll_spline_SFR_high_emulator(Fstar10_norm, Alpha_star_norm, Fesc10_norm, Alpha_esc_norm, SIGMA8_norm, redshift_norm[j+Nfilter*k], log10_Mturn_norm[j+Nfilter*k], R_norm, Overdense_Xray_high_table[i]) * 1e10;
+				Fcollz_SFR_Xray_high_table[k][j][i] = Fcoll_spline_SFR_high_emulator(Fstar10_norm, Alpha_star_norm, Fesc10_norm, Alpha_esc_norm, SIGMA8_norm, redshift_norm[j+Nfilter*k], log10_Mturn_norm[j+Nfilter*k], R_norm, Overdense_Xray_high_table[i]);
                 
 				for (q=0; q<LOG10MTURN_NUM; q++){
-                  Fcollz_SFR_Xray_high_table_MINI[k][j][i+q*NSFR_high] = Fcoll_spline_SFR_MINI_high_emulator(Fstar7_MINI_norm, Alpha_star_norm, SIGMA8_norm, redshift_norm[j+Nfilter*k], Mturn_interp_table[q], R_norm, Overdense_Xray_high_table[i]) * 1e10;
+                  Fcollz_SFR_Xray_high_table_MINI[k][j][i+q*NSFR_high] = Fcoll_spline_SFR_MINI_high_emulator(Fstar7_MINI_norm, Alpha_star_norm, SIGMA8_norm, redshift_norm[j+Nfilter*k], Mturn_interp_table[q], R_norm, Overdense_Xray_high_table[i]);
 				}
             }
 //			te = clock();
@@ -3391,11 +3391,11 @@ void initialise_Xray_Fcollz_SFR_Conditional_table(int Nfilter, float min_density
             for(i=0;i<NSFR_high;i++) {
 				input[8] = Overdense_Xray_high_table[i];
 				input_MINI[6] = Overdense_Xray_high_table[i];
-				Fcollz_SFR_Xray_high_table[k][j][i] = Fcoll_spline_SFR_high_emulator(input) * 1e10;
+				Fcollz_SFR_Xray_high_table[k][j][i] = Fcoll_spline_SFR_high_emulator(input);
                 
 				for (q=0; q<LOG10MTURN_NUM; q++){
 			      input_MINI[4] = Mturn_interp_table[q];
-                  Fcollz_SFR_Xray_high_table_MINI[k][j][i+q*NSFR_high] = Fcoll_spline_SFR_MINI_high_emulator(input_MINI) * 1e10;
+                  Fcollz_SFR_Xray_high_table_MINI[k][j][i+q*NSFR_high] = Fcoll_spline_SFR_MINI_high_emulator(input_MINI);
 				}
             }
 			//te = clock();

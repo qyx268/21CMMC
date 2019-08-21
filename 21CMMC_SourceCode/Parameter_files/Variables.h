@@ -192,7 +192,7 @@ gsl_spline *log10_Mmin_ave_spline, *log10_Mmin_MINI_ave_spline;
 int flag_generate_tables;
 #endif
 #ifdef USE_KERAS
-double SIGMA8_norm, F_STAR10_norm, ALPHA_STAR_norm, F_ESC10_norm, ALPHA_ESC_norm;
+double SIGMA8_norm, F_STAR10_norm, ALPHA_STAR_norm, F_ESC10_norm, ALPHA_ESC_norm, ALPHA_ESC_ZERO_norm, F_ESC10_ONE_norm;
 #ifdef MINI_HALO
 double F_STAR7_MINI_norm;
 #endif

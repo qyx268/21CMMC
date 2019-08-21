@@ -99,3 +99,11 @@ keras_cpp:
 	${CPP} -c -std=c++11 keras_model.cpp -o keras_model
 	${CC} -c ${CPPFLAGS} -DMINI_HALO -DUSE_KERAS -DUSE_CPP -o drive_21cmMC_streamlined_keras_cpp_tmp drive_21cmMC_streamlined.c ${LDFLAGS}
 	${CPP} ${CPPFLAGS} keras_model drive_21cmMC_streamlined_keras_cpp_tmp -o drive_21cmMC_streamlined_keras_cpp ${LDFLAGS}
+
+keras_incell:
+	${CC} ${CPPFLAGS} -DMINI_HALO -DUSE_KERAS -DUSE_KERAS_INCELL -o drive_21cmMC_streamlined_keras_incell drive_21cmMC_streamlined.c ${LDFLAGS}
+
+keras_incell_cpp:
+	${CPP} -c -std=c++11 keras_model.cpp -o keras_model
+	${CC} -c ${CPPFLAGS} -DMINI_HALO -DUSE_KERAS -DUSE_KERAS_INCELL -DUSE_CPP -o drive_21cmMC_streamlined_keras_incell_cpp_tmp drive_21cmMC_streamlined.c ${LDFLAGS}
+	${CPP} ${CPPFLAGS} keras_model drive_21cmMC_streamlined_keras_incell_cpp_tmp -o drive_21cmMC_streamlined_keras_incell_cpp ${LDFLAGS}

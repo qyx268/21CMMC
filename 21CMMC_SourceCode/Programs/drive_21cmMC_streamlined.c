@@ -384,6 +384,8 @@ int main(int argc, char ** argv){
 	ALPHA_STAR_norm = ( (double) PARAM_VALS[1] - HEIGHT_ALPHA_STAR ) / WIDTH_ALPHA_STAR + CENTER_ALPHA_STAR;
 	F_ESC10_norm = ( (double) PARAM_VALS[2] - HEIGHT_LOG10_F_ESC10 ) / WIDTH_LOG10_F_ESC10 + CENTER_LOG10_F_ESC10;
 	ALPHA_ESC_norm = ( (double) PARAM_VALS[3] - HEIGHT_ALPHA_ESC ) / WIDTH_ALPHA_ESC + CENTER_ALPHA_ESC;
+	F_ESC10_ONE_norm = ( 0.- HEIGHT_LOG10_F_ESC10 ) / WIDTH_LOG10_F_ESC10 + CENTER_LOG10_F_ESC10;
+	ALPHA_ESC_ZERO_norm = ( 1. - HEIGHT_ALPHA_ESC ) / WIDTH_ALPHA_ESC + CENTER_ALPHA_ESC;
 #endif
     M_TURN = pow(10.,PARAM_VALS[4]);
     t_STAR = PARAM_VALS[5];
@@ -1023,6 +1025,18 @@ void ComputeTsBoxes() {
     double Trad_fast,xc_fast,xc_inverse,TS_fast,TSold_fast,xa_tilde_fast,TS_prefactor,xa_tilde_prefactor,T_inv,T_inv_sq,xi_power,xa_tilde_fast_arg,Trad_fast_inv,TS_fast_inv,dcomp_dzp_prefactor;
 
     float growth_factor_z, inverse_growth_factor_z, R, R_factor, zp, mu_for_Ts, filling_factor_of_HI_zp, dzp, prev_zp, zpp, prev_zpp, prev_R, Tk_BC, xe_BC;
+#ifdef USE_KERAS_INCELL
+	double zp_norm, zpp_norm, log10_Mcrit_LW_ave_norm, curr_dens_norm, log10_Mturn_norm, log10_Mcrit_LW_norm, R_norm;
+#ifndef USE_CPP
+	double input[6], input_MINI[5], input_X[6], input_X_MINI[5], input_large[9], input_large_MINI[7];
+	input[0] = F_STAR10_norm; input[1] = ALPHA_STAR_norm; input[2] = F_ESC10_norm; input[3] = ALPHA_ESC_norm; input[4] = SIGMA8_norm;
+	input_MINI[0] = F_STAR7_MINI_norm; input_MINI[1] = ALPHA_STAR_norm; input_MINI[2] = SIGMA8_norm;
+	input_X[0] = F_STAR10_norm; input_X[1] = ALPHA_STAR_norm; input_X[2] = F_ESC10_ONE_norm; input_X[3] = ALPHA_ESC_ZERO_norm; input_X[4] = SIGMA8_norm;
+	input_X_MINI[0] = F_STAR7_MINI_norm; input_X_MINI[1] = ALPHA_STAR_norm; input_X_MINI[2] = SIGMA8_norm;
+	input_large[0] = F_STAR10_norm; input_large[1] = ALPHA_STAR_norm; input_large[2] = F_ESC10_ONE_norm; input_large[3] = ALPHA_ESC_ZERO_norm; input_large[4] = SIGMA8_norm;
+	input_large_MINI[0] = F_STAR7_MINI_norm; input_large_MINI[1] = ALPHA_STAR_norm; input_large_MINI[2] = SIGMA8_norm;
+#endif
+#endif
     float xHII_call, curr_xalpha, TK, TS, xe, deltax_highz;
     float zpp_for_evolve,dzpp_for_evolve;
 
@@ -1462,8 +1476,10 @@ void ComputeTsBoxes() {
 	t0 = clock();
 #ifdef MINI_HALO
 #ifdef USE_KERAS
+#ifndef USE_KERAS_INCELL
             initialise_FgtrM_st_SFR_spline(zpp_interp_points_SFR, determine_zpp_min, determine_zpp_max, ALPHA_STAR_norm, ALPHA_ESC_norm, F_STAR10_norm, F_ESC10_norm, F_STAR7_MINI_norm);
             initialise_Xray_FgtrM_st_SFR_spline(zpp_interp_points_SFR, determine_zpp_min, determine_zpp_max, ALPHA_STAR_norm, F_STAR10_norm, F_STAR7_MINI_norm);
+#endif
 #else
             initialise_FgtrM_st_SFR_spline(zpp_interp_points_SFR, determine_zpp_min, determine_zpp_max, ALPHA_STAR, ALPHA_ESC, F_STAR10, F_ESC10, F_STAR10_MINI, F_ESC_MINI);
             initialise_Xray_FgtrM_st_SFR_spline(zpp_interp_points_SFR, determine_zpp_min, determine_zpp_max, ALPHA_STAR, F_STAR10, F_STAR10_MINI);
@@ -1474,7 +1490,9 @@ void ComputeTsBoxes() {
             initialise_Xray_FgtrM_st_SFR_spline(zpp_interp_points_SFR, determine_zpp_min, determine_zpp_max, M_TURN, ALPHA_STAR, F_STAR10);
 #endif
 	te = clock();
+#ifndef USE_KERAS_INCELL
 	printf("initialise_FgtrM_st_SFR_spline & initialise_Xray_FgtrM_st_SFR_spline: %.6fs\n", ((double) (te-t0)) / CLOCKS_PER_SEC);
+#endif
             
             zp_table = zp;
             counter = 0;
@@ -1515,7 +1533,9 @@ void ComputeTsBoxes() {
 	t0 = clock();
 #ifdef MINI_HALO
 #ifdef USE_KERAS
+#ifndef USE_KERAS_INCELL
             initialise_Xray_Fcollz_SFR_Conditional_table(NUM_FILTER_STEPS_FOR_Ts,min_densities,max_densities,growth_interp_table,redshift_interp_table,R_values, Mcrit_atom_interp_table, ALPHA_STAR_norm, F_STAR10_norm, F_STAR7_MINI_norm);
+#endif
 #else
             initialise_Xray_Fcollz_SFR_Conditional_table(NUM_FILTER_STEPS_FOR_Ts,min_densities,max_densities,growth_interp_table,R_values, Mcrit_atom_interp_table, ALPHA_STAR, F_STAR10, F_STAR10_MINI);
 #endif
@@ -1523,7 +1543,9 @@ void ComputeTsBoxes() {
             initialise_Xray_Fcollz_SFR_Conditional_table(NUM_FILTER_STEPS_FOR_Ts,min_densities,max_densities,growth_interp_table,R_values, M_TURN, ALPHA_STAR, F_STAR10);
 #endif
 	te = clock();
+#ifdef USE_KERAS
 	printf("initialise_Xray_Fcollz_SFR_Conditional_table: %.6fs\n", ((double) (te-t0)) / CLOCKS_PER_SEC);
+#endif
         }
         else {
             init_FcollTable(determine_zpp_min,determine_zpp_max);
@@ -1608,11 +1630,21 @@ void ComputeTsBoxes() {
             // New in v1.4
             if (USE_MASS_DEPENDENT_ZETA) { // New in v1.4
                 
+#ifdef USE_KERAS_INCELL
+				zp_norm = ( zp - HEIGHT_REDSHIFT ) / WIDTH_REDSHIFT + CENTER_REDSHIFT;
+#ifdef USE_CPP
+                Splined_Fcollzp_mean = Fcollz_val_emulator(F_STAR10_norm, ALPHA_STAR_norm, F_ESC10_norm, ALPHA_ESC_norm, SIGMA8_norm, zp_norm);
+#else
+				input[5] = zp_norm;
+                Splined_Fcollzp_mean = Fcollz_val_emulator(input);
+#endif
+#else
                 redshift_int_fcollz = (int)floor( ( zp - determine_zpp_min )/zpp_bin_width );
                 
                 redshift_table_fcollz_diff = ( zp - determine_zpp_min - zpp_bin_width*(float)redshift_int_fcollz ) / zpp_bin_width;
                 
                 Splined_Fcollzp_mean = Fcollz_val[redshift_int_fcollz] + redshift_table_fcollz_diff *( Fcollz_val[redshift_int_fcollz+1] - Fcollz_val[redshift_int_fcollz] );
+#endif
                 if (Splined_Fcollzp_mean < 0.) Splined_Fcollzp_mean = 1e-40;
 #ifdef MINI_HALO
                 log10_Mcrit_mol = log10(lyman_werner_threshold(zp, 0.));
@@ -1626,6 +1658,15 @@ void ComputeTsBoxes() {
                   }
                 }
                 log10_Mcrit_LW_ave /= HII_TOT_NUM_PIXELS;
+#ifdef USE_KERAS_INCELL
+				log10_Mcrit_LW_ave_norm = ( log10_Mcrit_LW_ave - HEIGHT_LOG10_MTURN ) / WIDTH_LOG10_MTURN + CENTER_LOG10_MTURN;
+#ifdef USE_CPP
+				Splined_Fcollzp_mean_MINI = Fcollz_val_MINI_emulator(F_STAR7_MINI_norm, ALPHA_STAR_norm, SIGMA8_norm, zp_norm, log10_Mcrit_LW_ave_norm);
+#else
+				input_MINI[3] = zp_norm; input_MINI[4] = log10_Mcrit_LW_ave_norm;
+				Splined_Fcollzp_mean_MINI = Fcollz_val_MINI_emulator(input_MINI);
+#endif
+#else
                 log10_Mcrit_LW_ave_int_fcollz = (int)floor( ( log10_Mcrit_LW_ave - LOG10MTURN_MIN) / LOG10MTURN_INT);
                 log10_Mcrit_LW_ave_table_fcollz = LOG10MTURN_MIN + LOG10MTURN_INT * (float)log10_Mcrit_LW_ave_int_fcollz;
                 index_left  = redshift_int_fcollz + zpp_interp_points_SFR * log10_Mcrit_LW_ave_int_fcollz;
@@ -1634,6 +1675,7 @@ void ComputeTsBoxes() {
                 Splined_Fcollzp_mean_MINI_left = Fcollz_val_MINI[index_left] + redshift_table_fcollz_diff * ( Fcollz_val_MINI[index_left + 1] - Fcollz_val_MINI[index_left] );
                 Splined_Fcollzp_mean_MINI_right = Fcollz_val_MINI[index_right] + redshift_table_fcollz_diff * ( Fcollz_val_MINI[index_right + 1] - Fcollz_val_MINI[index_right] );
                 Splined_Fcollzp_mean_MINI = Splined_Fcollzp_mean_MINI_left + (log10_Mcrit_LW_ave - log10_Mcrit_LW_ave_table_fcollz) / LOG10MTURN_INT * ( Splined_Fcollzp_mean_MINI_right - Splined_Fcollzp_mean_MINI_left );
+#endif
                 if (Splined_Fcollzp_mean_MINI < 0.) Splined_Fcollzp_mean_MINI = 1e-40;
 
                 // NEED TO FILTER Mcrit_LW!!!
@@ -1737,22 +1779,45 @@ void ComputeTsBoxes() {
                 if (USE_MASS_DEPENDENT_ZETA) { 
                     // Using the interpolated values to update arrays of relevant quanties for the IGM spin temperature calculation
                     
+#ifdef USE_KERAS_INCELL
+					zpp_norm = ( zpp - HEIGHT_REDSHIFT ) / WIDTH_REDSHIFT + CENTER_REDSHIFT;
+					log10_Mturn_norm = (log10(atomic_cooling_threshold(zpp)) - HEIGHT_LOG10_MTURN ) / WIDTH_LOG10_MTURN + CENTER_LOG10_MTURN;
+#ifdef USE_CPP
+					Splined_Fcollzpp_X_mean = Fcollz_val_emulator(F_STAR10_norm, ALPHA_STAR_norm, F_ESC10_ONE_norm, ALPHA_ESC_ZERO_norm, SIGMA8_norm, zp_norm);
+#else
+					input_X[5] = zpp_norm;
+					input_large[5] = zpp_norm; input_large[6] =  log10_Mturn_norm;
+    	            Splined_Fcollzp_mean = Fcollz_val_emulator(input_X);
+#endif
+#else
                     redshift_int_fcollz_Xray = (int)floor( ( zpp - determine_zpp_min )/zpp_bin_width );
                     
                     redshift_table_fcollz_diff_Xray = ( zpp - determine_zpp_min - zpp_bin_width*(float)redshift_int_fcollz_Xray ) /zpp_bin_width;
-                    
+
                     Splined_Fcollzpp_X_mean = FcollzX_val[redshift_int_fcollz_Xray] + redshift_table_fcollz_diff_Xray *( FcollzX_val[redshift_int_fcollz_Xray+1] - FcollzX_val[redshift_int_fcollz_Xray] );
+#endif
                     if (Splined_Fcollzpp_X_mean < 0.) Splined_Fcollzpp_X_mean = 1e-40;
 
                     ST_over_PS[R_ct] = pow(1.+zpp, -X_RAY_SPEC_INDEX)*fabs(dzpp_for_evolve);
                     ST_over_PS[R_ct] *= Splined_Fcollzpp_X_mean;
 #ifdef MINI_HALO
+#ifdef USE_KERAS_INCELL
+					log10_Mcrit_LW_ave_norm = ( log10_Mcrit_LW_ave - HEIGHT_LOG10_MTURN ) / WIDTH_LOG10_MTURN + CENTER_LOG10_MTURN;
+#ifdef USE_CPP
+                    Splined_Fcollzpp_X_mean_MINI = Fcollz_val_MINI_emulator(F_STAR7_MINI_norm, ALPHA_STAR_norm, SIGMA8_norm, zpp_norm, log10_Mcrit_LW_ave_norm);
+#else
+					input_X_MINI[3] = zpp_norm; input_X_MINI[4] = log10_Mcrit_LW_ave_norm;
+					input_large_MINI[3] = zpp_norm;
+					Splined_Fcollzp_mean_MINI = Fcollz_val_MINI_emulator(input_X_MINI);
+#endif
+#else
                     index_left = redshift_int_fcollz_Xray + zpp_interp_points_SFR * log10_Mcrit_LW_ave_int_fcollz;
                     index_right = redshift_int_fcollz_Xray + zpp_interp_points_SFR * (log10_Mcrit_LW_ave_int_fcollz + 1);
                     // for log10_Mcrit_LW_ave_int_fcollz, we don't know how it evovles, so just use the same...
                     Splined_Fcollzpp_X_mean_MINI_left = FcollzX_val_MINI[index_left] +  redshift_table_fcollz_diff_Xray * ( FcollzX_val_MINI[index_left + 1] - FcollzX_val_MINI[index_left] );
                     Splined_Fcollzpp_X_mean_MINI_right = FcollzX_val_MINI[index_right] + redshift_table_fcollz_diff_Xray * ( FcollzX_val_MINI[index_right + 1] - FcollzX_val_MINI[index_right]);
                     Splined_Fcollzpp_X_mean_MINI = Splined_Fcollzpp_X_mean_MINI_left + (log10_Mcrit_LW_ave - log10_Mcrit_LW_ave_table_fcollz) / LOG10MTURN_INT * ( Splined_Fcollzpp_X_mean_MINI_right - Splined_Fcollzpp_X_mean_MINI_left );
+#endif
                     if (Splined_Fcollzpp_X_mean_MINI < 0.) Splined_Fcollzpp_X_mean_MINI = 1e-40;
 
                     ST_over_PS_MINI[R_ct] = pow(1.+zpp, -X_RAY_SPEC_INDEX_MINI)*fabs(dzpp_for_evolve);
@@ -2021,6 +2086,13 @@ void ComputeTsBoxes() {
                 
                 for (R_ct=NUM_FILTER_STEPS_FOR_Ts; R_ct--;){
                     
+#ifdef USE_KERAS_INCELL
+					R_norm = ( log10(R_values[R_ct]/5.) - HEIGHT_LOG10_R_ON5 ) / WIDTH_LOG10_R_ON5 + CENTER_LOG10_R_ON5;
+#ifndef USE_CPP
+					input_large[7] = R_norm; 
+					input_large_MINI[5] = R_norm; 
+#endif
+#else
                     fcoll_interp_min = log10(1. + min_densities[R_ct]*zpp_growth[R_ct]);
                     if( max_densities[R_ct]*zpp_growth[R_ct] > 1.5 ) {
                         fcoll_interp_bin_width = 1./((float)NSFR_low-1.)*(log10(1.+1.5)-fcoll_interp_min);
@@ -2029,6 +2101,7 @@ void ComputeTsBoxes() {
                         fcoll_interp_bin_width = 1./((float)NSFR_low-1.)*(log10(1.+max_densities[R_ct]*zpp_growth[R_ct])-fcoll_interp_min);
                     }
                     fcoll_interp_bin_width_inv = 1./fcoll_interp_bin_width;
+#endif
                     
                     ave_fcoll = ave_fcoll_inv = 0.0;
 #ifdef MINI_HALO
@@ -2041,9 +2114,16 @@ void ComputeTsBoxes() {
                     
                         curr_dens = delNL0[R_ct][box_ct]*zpp_growth[R_ct];
 #ifdef MINI_HALO
+#ifdef USE_KERAS_INCELL
+						log10_Mcrit_LW_norm = (log10_Mcrit_LW[R_ct][box_ct] - HEIGHT_LOG10_MTURN ) / WIDTH_LOG10_MTURN + CENTER_LOG10_MTURN;
+#ifndef USE_CPP
+						input_large_MINI[4] =  log10_Mcrit_LW_norm;
+#endif
+#else
                         log10_Mcrit_LW_val = ( log10_Mcrit_LW[R_ct][box_ct] - LOG10MTURN_MIN) / LOG10MTURN_INT;
                         log10_Mcrit_LW_int = (int)floorf( log10_Mcrit_LW_val );
                         log10_Mcrit_LW_diff = log10_Mcrit_LW_val - (float)log10_Mcrit_LW_int;
+#endif
 #endif
                         
                         // Note: Be careful how I have defined this. I have done this for optimisation rather than readability
@@ -2059,42 +2139,79 @@ void ComputeTsBoxes() {
 #endif
                                 }
                                 else {
+#ifdef USE_KERAS_INCELL
+									curr_dens_norm = (log10f(curr_dens+1.) - HEIGHT_LOG10_OVERDENSE_LOW_PLUS1 ) / WIDTH_LOG10_OVERDENSE_LOW_PLUS1 + CENTER_LOG10_OVERDENSE_LOW_PLUS1;
+#ifdef USE_CPP
+									fcoll = log10_Fcoll_spline_SFR_low_emulator(F_STAR10_norm, ALPHA_STAR_norm, F_ESC10_ONE_norm, ALPHA_ESC_ZERO_norm, SIGMA8_norm, zpp_norm, log10_Mturn_norm, R_norm, curr_dens_norm);
+#else
+									input_large[8] = curr_dens_norm;
+									fcoll = log10_Fcoll_spline_SFR_low_emulator(input_large);
+#endif
+#else
                                     dens_val = (log10f(curr_dens+1.) - fcoll_interp_min)*fcoll_interp_bin_width_inv;
                                         
                                     dens_int = (int)floorf( dens_val );
                                     dens_diff = dens_val - (float)dens_int;
 
                                     fcoll = log10_Fcollz_SFR_Xray_low_table[counter][R_ct][dens_int]*(1.-dens_diff) + log10_Fcollz_SFR_Xray_low_table[counter][R_ct][dens_int+1]*dens_diff;
+#endif
                                     
                                     // Note here, this returns the collapse fraction
                                     // The interpolation table is log(10)*exponent, thus exp(log(10)*exponent) = 10^exponent. Which is the value of the collapse fraction.
                                     // The log(10) is implicitly in the interpolation table already
                                     fcoll = expf(fcoll);
 #ifdef MINI_HALO
+#ifdef USE_KERAS_INCELL
+#ifdef USE_CPP
+									fcoll_MINI = log10_Fcoll_spline_SFR_MINI_low_emulator(F_STAR7_MINI_norm, ALPHA_STAR_norm, SIGMA8_norm, zpp_norm, log10_Mcrit_LW_norm, R_norm, curr_dens_norm);
+#else
+									input_large_MINI[6] = curr_dens_norm;
+									fcoll_MINI = log10_Fcoll_spline_SFR_MINI_low_emulator(input_large_MINI);
+#endif
+#else
                                     index_left = dens_int+log10_Mcrit_LW_int*NSFR_low;
                                     index_right = dens_int+(log10_Mcrit_LW_int+1)*NSFR_low;
                                     fcoll_MINI_left = log10_Fcollz_SFR_Xray_low_table_MINI[counter][R_ct][index_left]*(1.-dens_diff) + log10_Fcollz_SFR_Xray_low_table_MINI[counter][R_ct][index_left+1]*dens_diff;
                                     fcoll_MINI_right = log10_Fcollz_SFR_Xray_low_table_MINI[counter][R_ct][index_right]*(1.-dens_diff) + log10_Fcollz_SFR_Xray_low_table_MINI[counter][R_ct][index_right+1]*dens_diff;
                                     fcoll_MINI = fcoll_MINI_left * (1.-log10_Mcrit_LW_diff) + fcoll_MINI_right * log10_Mcrit_LW_diff;
+#endif
                                     fcoll_MINI = expf(fcoll_MINI);
 #endif
                                 }
                             }
                             else {
                                 if (curr_dens < 0.9*Deltac) {
-                                        
+#ifdef USE_KERAS_INCELL
+									curr_dens_norm = (curr_dens - HEIGHT_OVERDENSE_HIGH ) / WIDTH_OVERDENSE_HIGH + CENTER_OVERDENSE_HIGH;
+#ifdef USE_CPP
+									fcoll = Fcoll_spline_SFR_high_emulator(F_STAR10_norm, ALPHA_STAR_norm, F_ESC10_norm, ALPHA_ESC_norm, SIGMA8_norm, zpp_norm, log10_Mturn_norm, R_norm, curr_dens_norm);
+#else
+									input_large[8] = curr_dens_norm;
+									fcoll = Fcoll_spline_SFR_high_emulator(input_large);
+#endif
+#else
                                     dens_val = (curr_dens - fcoll_interp_high_min)*fcoll_interp_high_bin_width_inv;
                                     
                                     dens_int = (int)floorf( dens_val );
                                     dens_diff = dens_val - (float)dens_int;
 
                                     fcoll = Fcollz_SFR_Xray_high_table[counter][R_ct][dens_int]*(1.-dens_diff) + Fcollz_SFR_Xray_high_table[counter][R_ct][dens_int+1]*dens_diff;
+#endif
 #ifdef MINI_HALO
+#ifdef USE_KERAS_INCELL
+#ifdef USE_CPP
+									fcoll_MINI = Fcoll_spline_SFR_MINI_high_emulator(F_STAR7_MINI_norm, ALPHA_STAR_norm, SIGMA8_norm, zpp_norm, log10_Mcrit_LW_norm, R_norm, curr_dens_norm);
+#else
+									input_large_MINI[6] = curr_dens_norm;
+									fcoll_MINI = Fcoll_spline_SFR_MINI_high_emulator(input_large_MINI);
+#endif
+#else
                                     index_left = dens_int+log10_Mcrit_LW_int*NSFR_high;
                                     index_right = dens_int+(log10_Mcrit_LW_int+1)*NSFR_high;
                                     fcoll_MINI_left = Fcollz_SFR_Xray_high_table_MINI[counter][R_ct][index_left]*(1.-dens_diff) + Fcollz_SFR_Xray_high_table_MINI[counter][R_ct][index_left+1]*dens_diff;
                                     fcoll_MINI_right = Fcollz_SFR_Xray_high_table_MINI[counter][R_ct][index_right]*(1.-dens_diff) + Fcollz_SFR_Xray_high_table_MINI[counter][R_ct][index_right+1]*dens_diff;
                                     fcoll_MINI = fcoll_MINI_left * (1 + (float)log10_Mcrit_LW_int - log10_Mcrit_LW_val) + fcoll_MINI_right * (log10_Mcrit_LW_val - (float)log10_Mcrit_LW_int);
+#endif
 #endif
 
                                 }
@@ -2590,6 +2707,17 @@ float ComputeIonisationBoxes(int sample_index, float REDSHIFT_SAMPLE, float PREV
     fftwf_plan plan;
 #ifdef USE_KERAS
 	double REDSHIFT_SAMPLE_norm = ( REDSHIFT_SAMPLE - HEIGHT_REDSHIFT ) / WIDTH_REDSHIFT + CENTER_REDSHIFT;
+	double PREV_REDSHIFT_SAMPLE_norm = ( PREV_REDSHIFT - HEIGHT_REDSHIFT ) / WIDTH_REDSHIFT + CENTER_REDSHIFT;
+#ifdef USE_KERAS_INCELL
+	double log10_Mmin_norm, log10_Mmin_MINI_norm, R_norm, prev_dens_norm, curr_dens_norm;
+#ifndef USE_CPP
+	double input_large[9], input_large_MINI[7], prev_input_large[9], prev_input_large_MINI[7];
+	prev_input_large[0] = F_STAR10_norm; prev_input_large[1] = ALPHA_STAR_norm; prev_input_large[2] = F_ESC10_norm; prev_input_large[3] = ALPHA_ESC_norm; prev_input_large[4] = SIGMA8_norm; prev_input_large[5] = PREV_REDSHIFT_SAMPLE_norm;
+	prev_input_large_MINI[0] = F_STAR7_MINI_norm; prev_input_large_MINI[1] = ALPHA_STAR_norm; prev_input_large_MINI[2] = SIGMA8_norm; prev_input_large_MINI[3] = PREV_REDSHIFT_SAMPLE_norm;
+	input_large[0] = F_STAR10_norm; input_large[1] = ALPHA_STAR_norm; input_large[2] = F_ESC10_norm; input_large[3] = ALPHA_ESC_norm; input_large[4] = SIGMA8_norm; input_large[5] = PREV_REDSHIFT_SAMPLE_norm;
+	input_large_MINI[0] = F_STAR7_MINI_norm; input_large_MINI[1] = ALPHA_STAR_norm; input_large_MINI[2] = SIGMA8_norm; input_large_MINI[3] = REDSHIFT_SAMPLE_norm;
+#endif
+#endif
 #endif
     
     // Other parameters used in the code
@@ -3216,6 +3344,15 @@ float ComputeIonisationBoxes(int sample_index, float REDSHIFT_SAMPLE, float PREV
             f_coll_MINI = 0;
 #endif
             massofscaleR = RtoM(R);
+#ifdef USE_KERAS_INCELL
+			R_norm = ( log10(R/5.) - HEIGHT_LOG10_R_ON5 ) / WIDTH_LOG10_R_ON5 + CENTER_LOG10_R_ON5;
+#ifndef USE_CPP
+			input_large[7] = R_norm;
+			input_large_MINI[5] = R_norm;
+			prev_input_large[7] = R_norm;
+			prev_input_large_MINI[5] = R_norm;
+#endif
+#endif
             
             min_density = max_density = 0.0;
             
@@ -3271,7 +3408,9 @@ float ComputeIonisationBoxes(int sample_index, float REDSHIFT_SAMPLE, float PREV
 				t0 = clock();
 #ifdef MINI_HALO
 #ifdef USE_KERAS
+#ifndef USE_KERAS_INCELL
                 initialiseFcollSFR_spline(REDSHIFT_SAMPLE_norm,min_density,max_density,R,Mturn_interp_table,ALPHA_STAR_norm,ALPHA_ESC_norm,F_STAR10_norm,F_ESC10_norm,F_STAR7_MINI_norm);
+#endif
 #else
                 initialiseGL_FcollSFR(NGL_SFR, M_MIN,massofscaleR);
                 initialiseFcollSFR_spline(REDSHIFT_SAMPLE,min_density,max_density,M_MIN,massofscaleR,Mturn_interp_table,ALPHA_STAR,ALPHA_ESC,F_STAR10,F_ESC10,Mlim_Fstar,Mlim_Fesc,F_STAR10_MINI,Mlim_Fstar_MINI);
@@ -3281,7 +3420,9 @@ float ComputeIonisationBoxes(int sample_index, float REDSHIFT_SAMPLE, float PREV
                 initialiseFcollSFR_spline(REDSHIFT_SAMPLE,min_density,max_density,massofscaleR,M_TURN,ALPHA_STAR,ALPHA_ESC,F_STAR10,F_ESC10,Mlim_Fstar,Mlim_Fesc);
 #endif
 				te = clock();
+#ifdef USE_KERAS
 				printf("initialiseFcollSFR_spline: %.6fs\n", ((double) (te-t0)) / CLOCKS_PER_SEC);
+#endif
             }
             else {
                 erfc_denom = 2.*(pow(sigma_z0(M_MIN), 2) - pow(sigma_z0(massofscaleR), 2) );
@@ -3320,12 +3461,23 @@ float ComputeIonisationBoxes(int sample_index, float REDSHIFT_SAMPLE, float PREV
                             curr_dens = *((float *)deltax_filtered + HII_R_FFT_INDEX(x,y,z));
 #ifdef MINI_HALO
                             prev_dens = *((float *)deltax_prev_filtered[counter_R] + HII_R_FFT_INDEX(x,y,z));
+#ifdef USE_KERAS_INCELL
+							log10_Mmin_norm = ( *((float *)log10_Mmin_filtered + HII_R_FFT_INDEX(x,y,z)) - HEIGHT_LOG10_MTURN ) / WIDTH_LOG10_MTURN + CENTER_LOG10_MTURN;
+							log10_Mmin_MINI_norm = ( *((float *)log10_Mmin_MINI_filtered + HII_R_FFT_INDEX(x,y,z)) - HEIGHT_LOG10_MTURN ) / WIDTH_LOG10_MTURN + CENTER_LOG10_MTURN;
+#ifndef USE_CPP
+							input_large[6] = log10_Mmin_norm;
+							input_large_MINI[4] = log10_Mmin_MINI_norm;
+							prev_input_large[6] = log10_Mmin_norm;
+							prev_input_large_MINI[4] = log10_Mmin_MINI_norm;
+#endif
+#else
                             log10_Mmin_val = ( *((float *)log10_Mmin_filtered + HII_R_FFT_INDEX(x,y,z)) - LOG10MTURN_MIN) / LOG10MTURN_INT;
                             log10_Mmin_int = (int)floorf( log10_Mmin_val );
                             log10_Mmin_diff = log10_Mmin_val - (float)log10_Mmin_int;
                             log10_Mmin_MINI_val = ( *((float *)log10_Mmin_MINI_filtered + HII_R_FFT_INDEX(x,y,z)) - LOG10MTURN_MIN) / LOG10MTURN_INT;
                             log10_Mmin_MINI_int = (int)floorf( log10_Mmin_MINI_val );
                             log10_Mmin_MINI_diff = log10_Mmin_MINI_val - (float)log10_Mmin_MINI_int;
+#endif
 #endif
                         
                            // New in v1.4
@@ -3346,6 +3498,18 @@ float ComputeIonisationBoxes(int sample_index, float REDSHIFT_SAMPLE, float PREV
                                         prev_Splined_Fcoll_MINI = 0;
                                     }
                                     else {
+#ifdef USE_KERAS_INCELL
+										prev_dens_norm = (log10f(prev_dens+1.) - HEIGHT_LOG10_OVERDENSE_LOW_PLUS1 ) / WIDTH_LOG10_OVERDENSE_LOW_PLUS1 + CENTER_LOG10_OVERDENSE_LOW_PLUS1;
+#ifdef USE_CPP
+										prev_Splined_Fcoll = log10_Fcoll_spline_SFR_low_emulator(F_STAR10_norm, ALPHA_STAR_norm, F_ESC10_norm, ALPHA_ESC_norm, SIGMA8_norm, PREV_REDSHIFT_SAMPLE_norm, log10_Mmin_norm, R_norm, prev_dens_norm);
+										prev_Splined_Fcoll_MINI = log10_Fcoll_spline_SFR_MINI_low_emulator(F_STAR7_MINI_norm, ALPHA_STAR_norm, SIGMA8_norm, PREV_REDSHIFT_SAMPLE_norm, log10_Mmin_MINI_norm, R_norm, prev_dens_norm);
+#else
+										prev_input_large[8] = prev_dens_norm;
+										prev_input_large_MINI[6] = prev_dens_norm;
+										prev_Splined_Fcoll = log10_Fcoll_spline_SFR_low_emulator(prev_input_large);
+										prev_Splined_Fcoll_MINI = log10_Fcoll_spline_SFR_MINI_low_emulator(prev_input_large_MINI);
+#endif
+#else
                                         prev_dens_val = (log10f(prev_dens+1.) - prev_overdense_small_min[counter_R])*prev_overdense_small_bin_width_inv[counter_R];
                                         prev_overdense_int = (int)floorf( prev_dens_val );
                                         prev_dens_diff = prev_dens_val - (float)prev_overdense_int;
@@ -3361,6 +3525,7 @@ float ComputeIonisationBoxes(int sample_index, float REDSHIFT_SAMPLE, float PREV
                                         prev_Splined_Fcoll_MINI_left = prev_log10_Fcoll_spline_SFR_MINI[counter_R][index_left]*(1.-prev_dens_diff) + prev_log10_Fcoll_spline_SFR_MINI[counter_R][index_left+1]*prev_dens_diff;
                                         prev_Splined_Fcoll_MINI_right = prev_log10_Fcoll_spline_SFR_MINI[counter_R][index_right]*(1.-prev_dens_diff) + prev_log10_Fcoll_spline_SFR_MINI[counter_R][index_right+1]*prev_dens_diff;
                                         prev_Splined_Fcoll_MINI = prev_Splined_Fcoll_MINI_left * (1. - log10_Mmin_MINI_diff) + prev_Splined_Fcoll_MINI_right * log10_Mmin_MINI_diff;
+#endif
                                         prev_Splined_Fcoll = expf(prev_Splined_Fcoll);
                                         prev_Splined_Fcoll_MINI = expf(prev_Splined_Fcoll_MINI);
 
@@ -3369,6 +3534,18 @@ float ComputeIonisationBoxes(int sample_index, float REDSHIFT_SAMPLE, float PREV
                                 else {
                                     if (prev_dens < 0.9*Deltac) {
                                         
+#ifdef USE_KERAS_INCELL
+										prev_dens_norm = (prev_dens - HEIGHT_OVERDENSE_HIGH ) / WIDTH_OVERDENSE_HIGH + CENTER_OVERDENSE_HIGH;
+#ifdef USE_CPP
+										prev_Splined_Fcoll = Fcoll_spline_SFR_high_emulator(F_STAR10_norm, ALPHA_STAR_norm, F_ESC10_norm, ALPHA_ESC_norm, SIGMA8_norm, PREV_REDSHIFT_SAMPLE_norm, log10_Mmin_norm, R_norm, prev_dens_norm);
+										prev_Splined_Fcoll_MINI = Fcoll_spline_SFR_MINI_high_emulator(F_STAR7_MINI_norm, ALPHA_STAR_norm, SIGMA8_norm, PREV_REDSHIFT_SAMPLE_norm, log10_Mmin_MINI_norm, R_norm, prev_dens_norm);
+#else
+										prev_input_large[8] = prev_dens_norm;
+										prev_input_large_MINI[6] = prev_dens_norm;
+										prev_Splined_Fcoll = Fcoll_spline_SFR_high_emulator(prev_input_large);
+										prev_Splined_Fcoll_MINI = Fcoll_spline_SFR_MINI_high_emulator(prev_input_large_MINI);
+#endif
+#else
                                         prev_dens_val = (prev_dens - prev_overdense_large_min[counter_R])*prev_overdense_large_bin_width_inv[counter_R];
                                         prev_overdense_int = (int)floorf( prev_dens_val );
                                         prev_dens_diff = prev_dens_val - (float)prev_overdense_int;
@@ -3384,6 +3561,7 @@ float ComputeIonisationBoxes(int sample_index, float REDSHIFT_SAMPLE, float PREV
                                         prev_Splined_Fcoll_MINI_left = prev_Fcoll_spline_SFR_MINI[counter_R][index_left]*(1.-prev_dens_diff) + prev_Fcoll_spline_SFR_MINI[counter_R][index_left+1]*prev_dens_diff;
                                         prev_Splined_Fcoll_MINI_right = prev_Fcoll_spline_SFR_MINI[counter_R][index_right]*(1.-prev_dens_diff) + prev_Fcoll_spline_SFR_MINI[counter_R][index_right+1]*prev_dens_diff;
                                         prev_Splined_Fcoll_MINI = prev_Splined_Fcoll_MINI_left * (1. - log10_Mmin_MINI_diff) + prev_Splined_Fcoll_MINI_right * log10_Mmin_MINI_diff;
+#endif
                                     }
                                     else {
                                         prev_Splined_Fcoll = 1.;
@@ -3398,6 +3576,18 @@ float ComputeIonisationBoxes(int sample_index, float REDSHIFT_SAMPLE, float PREV
                                         Splined_Fcoll_MINI = 0;
                                     }
                                     else {
+#ifdef USE_KERAS_INCELL
+										curr_dens_norm = (log10f(curr_dens+1.) - HEIGHT_LOG10_OVERDENSE_LOW_PLUS1 ) / WIDTH_LOG10_OVERDENSE_LOW_PLUS1 + CENTER_LOG10_OVERDENSE_LOW_PLUS1;
+#ifdef USE_CPP
+										Splined_Fcoll = log10_Fcoll_spline_SFR_low_emulator(F_STAR10_norm, ALPHA_STAR_norm, F_ESC10_norm, ALPHA_ESC_norm, SIGMA8_norm, REDSHIFT_SAMPLE_norm, log10_Mmin_norm, R_norm, curr_dens_norm);
+										Splined_Fcoll_MINI = log10_Fcoll_spline_SFR_MINI_low_emulator(F_STAR7_MINI_norm, ALPHA_STAR_norm, SIGMA8_norm, REDSHIFT_SAMPLE_norm, log10_Mmin_MINI_norm, R_norm, curr_dens_norm);
+#else
+										input_large[8] = curr_dens_norm;
+										input_large_MINI[6] = curr_dens_norm;
+										Splined_Fcoll = log10_Fcoll_spline_SFR_low_emulator(input_large);
+										Splined_Fcoll_MINI = log10_Fcoll_spline_SFR_MINI_low_emulator(input_large_MINI);
+#endif
+#else
                                         dens_val = (log10f(curr_dens+1.) - overdense_small_min)*overdense_small_bin_width_inv;
                                         overdense_int = (int)floorf( dens_val );
                                         dens_diff = dens_val - (float)overdense_int;
@@ -3413,13 +3603,25 @@ float ComputeIonisationBoxes(int sample_index, float REDSHIFT_SAMPLE, float PREV
                                         Splined_Fcoll_MINI_left = log10_Fcoll_spline_SFR_MINI[index_left]*(1.-dens_diff) + log10_Fcoll_spline_SFR_MINI[index_left+1]*dens_diff;
                                         Splined_Fcoll_MINI_right = log10_Fcoll_spline_SFR_MINI[index_right]*(1.-dens_diff) + log10_Fcoll_spline_SFR_MINI[index_right+1]*dens_diff;
                                         Splined_Fcoll_MINI = Splined_Fcoll_MINI_left * (1. - log10_Mmin_MINI_diff) + Splined_Fcoll_MINI_right * log10_Mmin_MINI_diff;
+#endif
                                         Splined_Fcoll = expf(Splined_Fcoll);
                                         Splined_Fcoll_MINI = expf(Splined_Fcoll_MINI);
                                     }
                                 }
                                 else {
                                     if (curr_dens < 0.9*Deltac) {
-                                        
+#ifdef USE_KERAS_INCELL
+										curr_dens_norm = (curr_dens - HEIGHT_OVERDENSE_HIGH ) / WIDTH_OVERDENSE_HIGH + CENTER_OVERDENSE_HIGH;
+#ifdef USE_CPP
+										Splined_Fcoll = Fcoll_spline_SFR_high_emulator(F_STAR10_norm, ALPHA_STAR_norm, F_ESC10_norm, ALPHA_ESC_norm, SIGMA8_norm, REDSHIFT_SAMPLE_norm, log10_Mmin_norm, R_norm, curr_dens_norm);
+										Splined_Fcoll_MINI = Fcoll_spline_SFR_MINI_high_emulator(F_STAR7_MINI_norm, ALPHA_STAR_norm, SIGMA8_norm, REDSHIFT_SAMPLE_norm, log10_Mmin_MINI_norm, R_norm, curr_dens_norm);
+#else
+										input_large[8] = curr_dens_norm;
+										input_large_MINI[6] = curr_dens_norm;
+										Splined_Fcoll = Fcoll_spline_SFR_high_emulator(input_large);
+										Splined_Fcoll_MINI = Fcoll_spline_SFR_MINI_high_emulator(input_large_MINI);
+#endif
+#else
                                         dens_val = (curr_dens - overdense_large_min)*overdense_large_bin_width_inv;
                                         overdense_int = (int)floorf( dens_val );
                                         dens_diff = dens_val - (float)overdense_int;
@@ -3435,6 +3637,7 @@ float ComputeIonisationBoxes(int sample_index, float REDSHIFT_SAMPLE, float PREV
                                         Splined_Fcoll_MINI_left = Fcoll_spline_SFR_MINI[index_left]*(1.-dens_diff) + Fcoll_spline_SFR_MINI[index_left+1]*dens_diff;
                                         Splined_Fcoll_MINI_right = Fcoll_spline_SFR_MINI[index_right]*(1.-dens_diff) + Fcoll_spline_SFR_MINI[index_right+1]*dens_diff;
                                         Splined_Fcoll_MINI = Splined_Fcoll_MINI_left * (1. - log10_Mmin_MINI_diff) + Splined_Fcoll_MINI_right * log10_Mmin_MINI_diff;
+#endif
                                     }
                                     else {
                                         Splined_Fcoll = 1.;
