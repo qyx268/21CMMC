@@ -2,7 +2,7 @@
 CPPFLAGS = -I$(HOME)/3rd_party/include -I/usr/local/include
 LDFLAGS = -L/$(HOME)/3rd_party/lib -lgsl -lgslcblas -lfftw3f_omp -lfftw3f -lm
 CC      = gcc -fopenmp -O3
-CPP     = g++ -std=c++11 -fopenmp -O3
+CPP     = g++ -fopenmp -O3
 # if you want to use Keras, do compile only with -c and then
 # gG
 # CC      = gcc -fopenmp -O3 -c
@@ -93,6 +93,9 @@ mini_halo:
 	${CC} ${CPPFLAGS} -DMINI_HALO -o drive_21cmMC_streamlined drive_21cmMC_streamlined.c ${LDFLAGS}
 
 keras:
-	${CPP} -c keras_model.cpp -o keras_model
-	${CC} -c ${CPPFLAGS} -DMINI_HALO -DUSE_KERAS -o drive_21cmMC_streamlined drive_21cmMC_streamlined.c ${LDFLAGS}
-	${CPP} ${CPPFLAGS} keras_model drive_21cmMC_streamlined -o drive_21cmMC_streamlined_keras ${LDFLAGS}
+	${CC} ${CPPFLAGS} -DMINI_HALO -DUSE_KERAS -o drive_21cmMC_streamlined_keras drive_21cmMC_streamlined.c ${LDFLAGS}
+
+keras_cpp:
+	${CPP} -c -std=c++11 keras_model.cpp -o keras_model
+	${CC} -c ${CPPFLAGS} -DMINI_HALO -DUSE_KERAS -DUSE_CPP -o drive_21cmMC_streamlined_keras_cpp_tmp drive_21cmMC_streamlined.c ${LDFLAGS}
+	${CPP} ${CPPFLAGS} keras_model drive_21cmMC_streamlined_keras_cpp_tmp -o drive_21cmMC_streamlined_keras_cpp ${LDFLAGS}

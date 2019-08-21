@@ -8,9 +8,6 @@
 // below two lines are TEST
 #include <stdlib.h>
 #include <time.h>
-#ifdef USE_KERAS
-#include "keras_model.h"
-#endif
 /* 
  
  This is the main file for 21CMMC. This combines Ts.c, find_HII_bubbles.c, delta_T.c and redshift_interpolate_boxes.c (additionally, it includes init.c and perturb_field.c for varying the cosmology) 
@@ -46,9 +43,6 @@
 char lightcone_box_names[1000][500];
 
 float REDSHIFT;
-#ifdef USE_KERAS
-double REDSHIFT_norm;
-#endif
 
 void init_21cmMC_Ts_arrays();
 void init_21cmMC_Ts_save_fcoll(); // New in v1.4
@@ -59,6 +53,7 @@ void init_LF_arrays(); // New in v1.4
 void ComputeBoxesForFile();
 void ComputeTsBoxes();
 float ComputeIonisationBoxes(int sample_index, float REDSHIFT_SAMPLE, float PREV_REDSHIFT);
+clock_t t0, te;
 
 void adj_complex_conj();
 void ComputeInitialConditions();
@@ -162,9 +157,6 @@ int main(int argc, char ** argv){
     
     // Redshift for which Ts.c is evolved down to, i.e. z'
     REDSHIFT = atof(argv[6]);
-#ifdef USE_KERAS
-	REDSHIFT_norm = ( (double) REDSHIFT - HEIGHT_REDSHIFT ) / WIDTH_REDSHIFT + CENTER_REDSHIFT;
-#endif
 
     // New in v1.4
     // Flag set to 1 if Luminosity functions are to be used together with outputs from 21cm signals.
@@ -197,6 +189,14 @@ int main(int argc, char ** argv){
     SIGMA8 = (float)PARAM_COSMOLOGY_VALS[1];
 #ifdef USE_KERAS
 	SIGMA8_norm = ( (double) PARAM_COSMOLOGY_VALS[1] - HEIGHT_SIGMA8 ) / WIDTH_SIGMA8 + CENTER_SIGMA8;
+#ifndef USE_CPP
+	construct_Fcollz_val_emu();
+	construct_Fcollz_val_MINI_emu();
+	construct_log10_Fcoll_spline_SFR_low_emu();
+	construct_Fcoll_spline_SFR_high_emu();
+	construct_log10_Fcoll_spline_SFR_MINI_low_emu();
+	construct_Fcoll_spline_SFR_MINI_high_emu();
+#endif
 #endif
     hlittle = (float)PARAM_COSMOLOGY_VALS[2];
     OMm = (float)PARAM_COSMOLOGY_VALS[3];
@@ -380,9 +380,9 @@ int main(int argc, char ** argv){
     F_ESC10 = pow(10.,PARAM_VALS[2]);
     ALPHA_ESC = PARAM_VALS[3];
 #ifdef USE_KERAS
-	F_STAR10_norm = ( (double) PARAM_VALS[0] - HEIGHT_F_STAR10 ) / WIDTH_F_STAR10 + CENTER_F_STAR10;
+	F_STAR10_norm = ( (double) PARAM_VALS[0] - HEIGHT_LOG10_F_STAR10 ) / WIDTH_LOG10_F_STAR10 + CENTER_LOG10_F_STAR10;
 	ALPHA_STAR_norm = ( (double) PARAM_VALS[1] - HEIGHT_ALPHA_STAR ) / WIDTH_ALPHA_STAR + CENTER_ALPHA_STAR;
-	F_ESC10_norm = ( (double) PARAM_VALS[2] - HEIGHT_F_ESC10 ) / WIDTH_F_ESC10 + CENTER_F_ESC10;
+	F_ESC10_norm = ( (double) PARAM_VALS[2] - HEIGHT_LOG10_F_ESC10 ) / WIDTH_LOG10_F_ESC10 + CENTER_LOG10_F_ESC10;
 	ALPHA_ESC_norm = ( (double) PARAM_VALS[3] - HEIGHT_ALPHA_ESC ) / WIDTH_ALPHA_ESC + CENTER_ALPHA_ESC;
 #endif
     M_TURN = pow(10.,PARAM_VALS[4]);
@@ -392,11 +392,14 @@ int main(int argc, char ** argv){
     if(USE_MASS_DEPENDENT_ZETA) ION_EFF_FACTOR = N_GAMMA_UV * F_STAR10 * F_ESC10;
     else ION_EFF_FACTOR = HII_EFF_FACTOR;
     
+	t0 = clock();
 #ifdef MINI_HALO
     initialiseSplinedSigmaM_quicker(1e5/50.,1e20);
 #else
     initialiseSplinedSigmaM_quicker(M_TURN/50.,1e20);
 #endif
+	te = clock();
+	printf("initialiseSplinedSigmaM_quicker: %.6fs\n", ((double) (te-t0)) / CLOCKS_PER_SEC);
     
     // If inhomogeneous recombinations are set, need to switch to an upper limit on the maximum bubble horizon (this is set above).
     // The default choice is chosen to be 50 Mpc, as is default in 21cmFAST.
@@ -429,7 +432,7 @@ int main(int argc, char ** argv){
 #ifdef MINI_HALO
     F_STAR10_MINI = pow(10.,PARAM_VALS[20]) * pow(1e3, ALPHA_STAR);
 #ifdef USE_KERAS
-	F_STAR7_MINI_norm = ( (double) PARAM_VALS[20] - HEIGHT_F_STAR7_MINI ) / WIDTH_F_STAR7_MINI + CENTER_F_STAR7_MINI;
+	F_STAR7_MINI_norm = ( (double) PARAM_VALS[20] - HEIGHT_LOG10_F_STAR7_MINI ) / WIDTH_LOG10_F_STAR7_MINI + CENTER_LOG10_F_STAR7_MINI;
 #endif
     F_ESC_MINI = pow(10.,PARAM_VALS[21]);
     L_X_MINI = L_X;//pow(10.,PARAM_VALS[22]);
@@ -1020,9 +1023,6 @@ void ComputeTsBoxes() {
     double Trad_fast,xc_fast,xc_inverse,TS_fast,TSold_fast,xa_tilde_fast,TS_prefactor,xa_tilde_prefactor,T_inv,T_inv_sq,xi_power,xa_tilde_fast_arg,Trad_fast_inv,TS_fast_inv,dcomp_dzp_prefactor;
 
     float growth_factor_z, inverse_growth_factor_z, R, R_factor, zp, mu_for_Ts, filling_factor_of_HI_zp, dzp, prev_zp, zpp, prev_zpp, prev_R, Tk_BC, xe_BC;
-#ifdef USE_KERAS
-	double zpp_norm, zp_norm;
-#endif
     float xHII_call, curr_xalpha, TK, TS, xe, deltax_highz;
     float zpp_for_evolve,dzpp_for_evolve;
 
@@ -1459,17 +1459,22 @@ void ComputeTsBoxes() {
             }
 
             /* initialise interpolation of the mean collapse fraction for global reionization.*/
-#ifndef USE_KERAS
+	t0 = clock();
 #ifdef MINI_HALO
+#ifdef USE_KERAS
+            initialise_FgtrM_st_SFR_spline(zpp_interp_points_SFR, determine_zpp_min, determine_zpp_max, ALPHA_STAR_norm, ALPHA_ESC_norm, F_STAR10_norm, F_ESC10_norm, F_STAR7_MINI_norm);
+            initialise_Xray_FgtrM_st_SFR_spline(zpp_interp_points_SFR, determine_zpp_min, determine_zpp_max, ALPHA_STAR_norm, F_STAR10_norm, F_STAR7_MINI_norm);
+#else
             initialise_FgtrM_st_SFR_spline(zpp_interp_points_SFR, determine_zpp_min, determine_zpp_max, ALPHA_STAR, ALPHA_ESC, F_STAR10, F_ESC10, F_STAR10_MINI, F_ESC_MINI);
-            
             initialise_Xray_FgtrM_st_SFR_spline(zpp_interp_points_SFR, determine_zpp_min, determine_zpp_max, ALPHA_STAR, F_STAR10, F_STAR10_MINI);
+#endif
 #else
             initialise_FgtrM_st_SFR_spline(zpp_interp_points_SFR, determine_zpp_min, determine_zpp_max, M_TURN, ALPHA_STAR, ALPHA_ESC, F_STAR10, F_ESC10);
             
             initialise_Xray_FgtrM_st_SFR_spline(zpp_interp_points_SFR, determine_zpp_min, determine_zpp_max, M_TURN, ALPHA_STAR, F_STAR10);
 #endif
-#endif
+	te = clock();
+	printf("initialise_FgtrM_st_SFR_spline & initialise_Xray_FgtrM_st_SFR_spline: %.6fs\n", ((double) (te-t0)) / CLOCKS_PER_SEC);
             
             zp_table = zp;
             counter = 0;
@@ -1485,10 +1490,17 @@ void ComputeTsBoxes() {
                       }
                     zpp_edge[R_ct] = prev_zpp - (R_values[R_ct] - prev_R)*CMperMPC / drdz(prev_zpp); // cell size
                     zpp = (zpp_edge[R_ct]+prev_zpp)*0.5; // average redshift value of shell: z'' + 0.5 * dz''
-                    redshift_interp_table[counter] = zpp;
                     growth_interp_table[counter] = dicke(zpp);
+#ifdef USE_KERAS
+                    redshift_interp_table[counter] = ( zpp - HEIGHT_REDSHIFT ) / WIDTH_REDSHIFT + CENTER_REDSHIFT; // yes, I'm too lazy for this...
+#ifdef MINI_HALO
+                    Mcrit_atom_interp_table[counter] = (log10(atomic_cooling_threshold(zpp)) - HEIGHT_LOG10_MTURN ) / WIDTH_LOG10_MTURN + CENTER_LOG10_MTURN;
+#endif
+#else
+                    redshift_interp_table[counter] = zpp;
 #ifdef MINI_HALO
                     Mcrit_atom_interp_table[counter] = atomic_cooling_threshold(zpp);
+#endif
 #endif
                     counter += 1;
                   }
@@ -1500,12 +1512,18 @@ void ComputeTsBoxes() {
             filtering scale, redshift and overdensity.
                Note that at a given zp, zpp values depends on the filtering scale R, i.e. f_coll(z(R),delta).
                Compute the conditional mass function, but assume f_{esc10} = 1 and \alpha_{esc} = 0. */
+	t0 = clock();
 #ifdef MINI_HALO
+#ifdef USE_KERAS
+            initialise_Xray_Fcollz_SFR_Conditional_table(NUM_FILTER_STEPS_FOR_Ts,min_densities,max_densities,growth_interp_table,redshift_interp_table,R_values, Mcrit_atom_interp_table, ALPHA_STAR_norm, F_STAR10_norm, F_STAR7_MINI_norm);
+#else
             initialise_Xray_Fcollz_SFR_Conditional_table(NUM_FILTER_STEPS_FOR_Ts,min_densities,max_densities,growth_interp_table,R_values, Mcrit_atom_interp_table, ALPHA_STAR, F_STAR10, F_STAR10_MINI);
+#endif
 #else
             initialise_Xray_Fcollz_SFR_Conditional_table(NUM_FILTER_STEPS_FOR_Ts,min_densities,max_densities,growth_interp_table,R_values, M_TURN, ALPHA_STAR, F_STAR10);
 #endif
-
+	te = clock();
+	printf("initialise_Xray_Fcollz_SFR_Conditional_table: %.6fs\n", ((double) (te-t0)) / CLOCKS_PER_SEC);
         }
         else {
             init_FcollTable(determine_zpp_min,determine_zpp_max);
@@ -1590,16 +1608,11 @@ void ComputeTsBoxes() {
             // New in v1.4
             if (USE_MASS_DEPENDENT_ZETA) { // New in v1.4
                 
-#ifdef USE_KERAS
-				zp_norm = ( (double) zp - HEIGHT_REDSHIFT ) / WIDTH_REDSHIFT + CENTER_REDSHIFT;
-                Splined_Fcollzp_mean = Fcollz_val_emulator(F_STAR10_norm, ALPHA_STAR_norm, F_ESC10_norm, ALPHA_ESC_norm, SIGMA8_norm, zp_norm);
-#else
                 redshift_int_fcollz = (int)floor( ( zp - determine_zpp_min )/zpp_bin_width );
                 
                 redshift_table_fcollz_diff = ( zp - determine_zpp_min - zpp_bin_width*(float)redshift_int_fcollz ) / zpp_bin_width;
                 
                 Splined_Fcollzp_mean = Fcollz_val[redshift_int_fcollz] + redshift_table_fcollz_diff *( Fcollz_val[redshift_int_fcollz+1] - Fcollz_val[redshift_int_fcollz] );
-#endif
                 if (Splined_Fcollzp_mean < 0.) Splined_Fcollzp_mean = 1e-40;
 #ifdef MINI_HALO
                 log10_Mcrit_mol = log10(lyman_werner_threshold(zp, 0.));
@@ -1613,9 +1626,6 @@ void ComputeTsBoxes() {
                   }
                 }
                 log10_Mcrit_LW_ave /= HII_TOT_NUM_PIXELS;
-#ifdef USE_KERAS
-				Splined_Fcollzp_mean_MINI = Fcollz_val_MINI_emulator(F_STAR7_MINI_norm, ALPHA_STAR_norm, SIGMA8_norm, zp_norm, log10_Mcrit_LW_ave);
-#else
                 log10_Mcrit_LW_ave_int_fcollz = (int)floor( ( log10_Mcrit_LW_ave - LOG10MTURN_MIN) / LOG10MTURN_INT);
                 log10_Mcrit_LW_ave_table_fcollz = LOG10MTURN_MIN + LOG10MTURN_INT * (float)log10_Mcrit_LW_ave_int_fcollz;
                 index_left  = redshift_int_fcollz + zpp_interp_points_SFR * log10_Mcrit_LW_ave_int_fcollz;
@@ -1624,7 +1634,6 @@ void ComputeTsBoxes() {
                 Splined_Fcollzp_mean_MINI_left = Fcollz_val_MINI[index_left] + redshift_table_fcollz_diff * ( Fcollz_val_MINI[index_left + 1] - Fcollz_val_MINI[index_left] );
                 Splined_Fcollzp_mean_MINI_right = Fcollz_val_MINI[index_right] + redshift_table_fcollz_diff * ( Fcollz_val_MINI[index_right + 1] - Fcollz_val_MINI[index_right] );
                 Splined_Fcollzp_mean_MINI = Splined_Fcollzp_mean_MINI_left + (log10_Mcrit_LW_ave - log10_Mcrit_LW_ave_table_fcollz) / LOG10MTURN_INT * ( Splined_Fcollzp_mean_MINI_right - Splined_Fcollzp_mean_MINI_left );
-#endif
                 if (Splined_Fcollzp_mean_MINI < 0.) Splined_Fcollzp_mean_MINI = 1e-40;
 
                 // NEED TO FILTER Mcrit_LW!!!
@@ -1728,31 +1737,22 @@ void ComputeTsBoxes() {
                 if (USE_MASS_DEPENDENT_ZETA) { 
                     // Using the interpolated values to update arrays of relevant quanties for the IGM spin temperature calculation
                     
-#ifdef USE_KERAS
-					zpp_norm = ( (double) zpp - HEIGHT_REDSHIFT ) / WIDTH_REDSHIFT + CENTER_REDSHIFT;
-					Splined_Fcollzpp_X_mean = FcollzX_val_emulator(F_STAR10_norm, ALPHA_STAR_norm, SIGMA8_norm, zpp_norm);
-#else
                     redshift_int_fcollz_Xray = (int)floor( ( zpp - determine_zpp_min )/zpp_bin_width );
                     
                     redshift_table_fcollz_diff_Xray = ( zpp - determine_zpp_min - zpp_bin_width*(float)redshift_int_fcollz_Xray ) /zpp_bin_width;
                     
                     Splined_Fcollzpp_X_mean = FcollzX_val[redshift_int_fcollz_Xray] + redshift_table_fcollz_diff_Xray *( FcollzX_val[redshift_int_fcollz_Xray+1] - FcollzX_val[redshift_int_fcollz_Xray] );
-#endif
                     if (Splined_Fcollzpp_X_mean < 0.) Splined_Fcollzpp_X_mean = 1e-40;
 
                     ST_over_PS[R_ct] = pow(1.+zpp, -X_RAY_SPEC_INDEX)*fabs(dzpp_for_evolve);
                     ST_over_PS[R_ct] *= Splined_Fcollzpp_X_mean;
 #ifdef MINI_HALO
-#ifdef USE_KERAS
-					Splined_Fcollzpp_X_mean_MINI = FcollzX_val_MINI_emulator(F_STAR7_MINI_norm, ALPHA_STAR_norm, SIGMA8_norm, zp_norm, log10_Mcrit_LW_ave);
-#else
                     index_left = redshift_int_fcollz_Xray + zpp_interp_points_SFR * log10_Mcrit_LW_ave_int_fcollz;
                     index_right = redshift_int_fcollz_Xray + zpp_interp_points_SFR * (log10_Mcrit_LW_ave_int_fcollz + 1);
                     // for log10_Mcrit_LW_ave_int_fcollz, we don't know how it evovles, so just use the same...
                     Splined_Fcollzpp_X_mean_MINI_left = FcollzX_val_MINI[index_left] +  redshift_table_fcollz_diff_Xray * ( FcollzX_val_MINI[index_left + 1] - FcollzX_val_MINI[index_left] );
                     Splined_Fcollzpp_X_mean_MINI_right = FcollzX_val_MINI[index_right] + redshift_table_fcollz_diff_Xray * ( FcollzX_val_MINI[index_right + 1] - FcollzX_val_MINI[index_right]);
                     Splined_Fcollzpp_X_mean_MINI = Splined_Fcollzpp_X_mean_MINI_left + (log10_Mcrit_LW_ave - log10_Mcrit_LW_ave_table_fcollz) / LOG10MTURN_INT * ( Splined_Fcollzpp_X_mean_MINI_right - Splined_Fcollzpp_X_mean_MINI_left );
-#endif
                     if (Splined_Fcollzpp_X_mean_MINI < 0.) Splined_Fcollzpp_X_mean_MINI = 1e-40;
 
                     ST_over_PS_MINI[R_ct] = pow(1.+zpp, -X_RAY_SPEC_INDEX_MINI)*fabs(dzpp_for_evolve);
@@ -2063,7 +2063,7 @@ void ComputeTsBoxes() {
                                         
                                     dens_int = (int)floorf( dens_val );
                                     dens_diff = dens_val - (float)dens_int;
-                                    
+
                                     fcoll = log10_Fcollz_SFR_Xray_low_table[counter][R_ct][dens_int]*(1.-dens_diff) + log10_Fcollz_SFR_Xray_low_table[counter][R_ct][dens_int+1]*dens_diff;
                                     
                                     // Note here, this returns the collapse fraction
@@ -2588,6 +2588,9 @@ float ComputeIonisationBoxes(int sample_index, float REDSHIFT_SAMPLE, float PREV
     char wisdom_filename[500];
     FILE *F;
     fftwf_plan plan;
+#ifdef USE_KERAS
+	double REDSHIFT_SAMPLE_norm = ( REDSHIFT_SAMPLE - HEIGHT_REDSHIFT ) / WIDTH_REDSHIFT + CENTER_REDSHIFT;
+#endif
     
     // Other parameters used in the code
     int i,j,k,ii, x,y,z, N_min_cell, LAST_FILTER_STEP, short_completely_ionised,skip_deallocate,first_step_R;
@@ -2634,10 +2637,6 @@ float ComputeIonisationBoxes(int sample_index, float REDSHIFT_SAMPLE, float PREV
     float log10_Mmin_val, log10_Mmin_MINI_val, log10_Mmin_diff, log10_Mmin_MINI_diff, prev_dens_val, prev_dens_diff, dens_diff;
     int   log10_Mmin_int, log10_Mmin_MINI_int, prev_overdense_int;
 #endif
-#ifdef USE_KERAS
-	double REDSHIFT_SAMPLE_norm, PREV_REDSHIFT_norm;
-#endif
-
     
     overdense_large_min = 1.5*0.999;
     overdense_large_bin_width = 1./((double)NSFR_high-1.)*(Deltac-overdense_large_min);
@@ -2884,26 +2883,14 @@ float ComputeIonisationBoxes(int sample_index, float REDSHIFT_SAMPLE, float PREV
         if (USE_LIGHTCONE || USE_TS_FLUCT) {
             
 #ifdef MINI_HALO
-#ifdef USE_KERAS
-			REDSHIFT_SAMPLE_norm = ( (double) REDSHIFT_SAMPLE - HEIGHT_REDSHIFT ) / WIDTH_REDSHIFT + CENTER_REDSHIFT;
-            mean_f_coll_st = prev_mean_f_coll_st + Fcollz_val_emulator(F_STAR10_norm, ALPHA_STAR_norm, F_ESC10_norm, ALPHA_ESC_norm, SIGMA8_norm, REDSHIFT_SAMPLE_norm);
-            mean_f_coll_st_MINI = prev_mean_f_coll_st_MINI + Fcollz_val_MINI_emulator(F_STAR7_MINI_norm, ALPHA_STAR_norm, SIGMA8_norm, REDSHIFT_SAMPLE_norm, log10_Mmin_MINI_ave[sample_index]);
-#else
             mean_f_coll_st = prev_mean_f_coll_st + FgtrM_st_SFR(dicke(REDSHIFT_SAMPLE), Mmin, ALPHA_STAR, ALPHA_ESC, F_STAR10, F_ESC10, Mlim_Fstar, Mlim_Fesc);
             mean_f_coll_st_MINI = prev_mean_f_coll_st_MINI + FgtrM_st_SFR_MINI(dicke(REDSHIFT_SAMPLE), Mmin_MINI, Mcrit_atom, ALPHA_STAR, F_STAR10_MINI, Mlim_Fstar_MINI);
-#endif
 
             // to do the CONTEMPORANEOUS_DUTYCYCLE, we need to calculate the prev_mean_... with the current Mturns
             if(sample_index > 0) 
             {
-#ifdef USE_KERAS
-				PREV_REDSHIFT_norm = ( (double) PREV_REDSHIFT - HEIGHT_REDSHIFT ) / WIDTH_REDSHIFT + CENTER_REDSHIFT;
-    	        mean_f_coll_st -= Fcollz_val_emulator(F_STAR10_norm, ALPHA_STAR_norm, F_ESC10_norm, ALPHA_ESC_norm, SIGMA8_norm, PREV_REDSHIFT_norm);
-                mean_f_coll_st_MINI -= Fcollz_val_MINI_emulator(F_STAR7_MINI_norm, ALPHA_STAR_norm, SIGMA8_norm, PREV_REDSHIFT_norm, log10_Mmin_MINI_ave[sample_index]);
-#else
                 mean_f_coll_st -= FgtrM_st_SFR(dicke(PREV_REDSHIFT), Mmin, ALPHA_STAR, ALPHA_ESC, F_STAR10, F_ESC10, Mlim_Fstar, Mlim_Fesc);
                 mean_f_coll_st_MINI -= FgtrM_st_SFR_MINI(dicke(PREV_REDSHIFT), Mmin_MINI, Mcrit_atom, ALPHA_STAR, F_STAR10_MINI, Mlim_Fstar_MINI);
-#endif
             }
 
             // record into the prev_mean to do CONTEMPORANEOUS_DUTYCYCLE at next snapshot
@@ -2914,14 +2901,9 @@ float ComputeIonisationBoxes(int sample_index, float REDSHIFT_SAMPLE, float PREV
             //f_coll_min = FgtrM_st_SFR(dicke(Z_HEAT_MAX), Mmin, ALPHA_STAR, ALPHA_ESC, F_STAR10, F_ESC10, Mlim_Fstar, Mlim_Fesc);
             //f_coll_min_MINI = FgtrM_st_SFR_MINI(dicke(Z_HEAT_MAX), Mmin_MINI, Mcrit_atom, ALPHA_STAR, F_STAR10_MINI, Mlim_Fstar_MINI);
 #else
-#ifdef USE_KERAS
-			REDSHIFT_SAMPLE_norm = ( (double) REDSHIFT_SAMPLE - HEIGHT_REDSHIFT ) / WIDTH_REDSHIFT + CENTER_REDSHIFT;
-            mean_f_coll_st = Fcollz_val_emulator(F_STAR10_norm, ALPHA_STAR_norm, F_ESC10_norm, ALPHA_ESC_norm. SIGMA8_norm, REDSHIFT_SAMPLE_norm);
-#else
             redshift_int_fcollz = (int)floor( ( REDSHIFT_SAMPLE - determine_zpp_min )/zpp_bin_width );
             redshift_table_fcollz_diff = ( REDSHIFT_SAMPLE - determine_zpp_min - zpp_bin_width*(float)redshift_int_fcollz ) / zpp_bin_width;
             mean_f_coll_st = Fcollz_val[redshift_int_fcollz] + redshift_table_fcollz_diff *( Fcollz_val[redshift_int_fcollz+1] - Fcollz_val[redshift_int_fcollz] );
-#endif
             
             //redshift_int_fcollz = (int)floor( ( Z_HEAT_MAX - determine_zpp_min )/zpp_bin_width );
             
@@ -2937,7 +2919,6 @@ float ComputeIonisationBoxes(int sample_index, float REDSHIFT_SAMPLE, float PREV
     else {
         mean_f_coll_st = FgtrM_st(REDSHIFT_SAMPLE, M_MIN);
     }
-    
 #ifdef MINI_HALO
     if (mean_f_coll_st*ION_EFF_FACTOR + mean_f_coll_st_MINI*ION_EFF_FACTOR_MINI< HII_ROUND_ERR) // way too small to ionize anything...
 #else
@@ -3110,7 +3091,10 @@ float ComputeIonisationBoxes(int sample_index, float REDSHIFT_SAMPLE, float PREV
         LAST_FILTER_STEP = 0;
      
         // YQ: I don't think this line has any meaning, but whatever...
+		t0 = clock();
         initialiseSplinedSigmaM(M_MIN,1e16);
+		te = clock();
+		printf("initialiseSplinedSigmaM: %.6fs\n", ((double) (te-t0)) / CLOCKS_PER_SEC);
         
         first_step_R = 1;
         
@@ -3233,7 +3217,6 @@ float ComputeIonisationBoxes(int sample_index, float REDSHIFT_SAMPLE, float PREV
 #endif
             massofscaleR = RtoM(R);
             
-            
             min_density = max_density = 0.0;
             
             for (x=0; x<HII_DIM; x++){
@@ -3285,13 +3268,20 @@ float ComputeIonisationBoxes(int sample_index, float REDSHIFT_SAMPLE, float PREV
             
             // New in v1.4
             if(USE_MASS_DEPENDENT_ZETA) {
+				t0 = clock();
 #ifdef MINI_HALO
+#ifdef USE_KERAS
+                initialiseFcollSFR_spline(REDSHIFT_SAMPLE_norm,min_density,max_density,R,Mturn_interp_table,ALPHA_STAR_norm,ALPHA_ESC_norm,F_STAR10_norm,F_ESC10_norm,F_STAR7_MINI_norm);
+#else
                 initialiseGL_FcollSFR(NGL_SFR, M_MIN,massofscaleR);
                 initialiseFcollSFR_spline(REDSHIFT_SAMPLE,min_density,max_density,M_MIN,massofscaleR,Mturn_interp_table,ALPHA_STAR,ALPHA_ESC,F_STAR10,F_ESC10,Mlim_Fstar,Mlim_Fesc,F_STAR10_MINI,Mlim_Fstar_MINI);
+#endif
 #else
                 initialiseGL_FcollSFR(NGL_SFR, M_TURN/50.,massofscaleR);
                 initialiseFcollSFR_spline(REDSHIFT_SAMPLE,min_density,max_density,massofscaleR,M_TURN,ALPHA_STAR,ALPHA_ESC,F_STAR10,F_ESC10,Mlim_Fstar,Mlim_Fesc);
 #endif
+				te = clock();
+				printf("initialiseFcollSFR_spline: %.6fs\n", ((double) (te-t0)) / CLOCKS_PER_SEC);
             }
             else {
                 erfc_denom = 2.*(pow(sigma_z0(M_MIN), 2) - pow(sigma_z0(massofscaleR), 2) );
@@ -3365,13 +3355,13 @@ float ComputeIonisationBoxes(int sample_index, float REDSHIFT_SAMPLE, float PREV
                                         prev_Splined_Fcoll_left = prev_log10_Fcoll_spline_SFR[counter_R][index_left]*(1.-prev_dens_diff) + prev_log10_Fcoll_spline_SFR[counter_R][index_left+1]*prev_dens_diff;
                                         prev_Splined_Fcoll_right = prev_log10_Fcoll_spline_SFR[counter_R][index_right]*(1.-prev_dens_diff) + prev_log10_Fcoll_spline_SFR[counter_R][index_right+1]*prev_dens_diff;
                                         prev_Splined_Fcoll = prev_Splined_Fcoll_left * (1. - log10_Mmin_diff) + prev_Splined_Fcoll_right * log10_Mmin_diff;
-                                        prev_Splined_Fcoll = expf(prev_Splined_Fcoll);
                                         
                                         index_left = prev_overdense_int+log10_Mmin_MINI_int*NSFR_low;
                                         index_right = prev_overdense_int+(log10_Mmin_MINI_int+1)*NSFR_low;
                                         prev_Splined_Fcoll_MINI_left = prev_log10_Fcoll_spline_SFR_MINI[counter_R][index_left]*(1.-prev_dens_diff) + prev_log10_Fcoll_spline_SFR_MINI[counter_R][index_left+1]*prev_dens_diff;
                                         prev_Splined_Fcoll_MINI_right = prev_log10_Fcoll_spline_SFR_MINI[counter_R][index_right]*(1.-prev_dens_diff) + prev_log10_Fcoll_spline_SFR_MINI[counter_R][index_right+1]*prev_dens_diff;
                                         prev_Splined_Fcoll_MINI = prev_Splined_Fcoll_MINI_left * (1. - log10_Mmin_MINI_diff) + prev_Splined_Fcoll_MINI_right * log10_Mmin_MINI_diff;
+                                        prev_Splined_Fcoll = expf(prev_Splined_Fcoll);
                                         prev_Splined_Fcoll_MINI = expf(prev_Splined_Fcoll_MINI);
 
                                     }
@@ -3417,13 +3407,13 @@ float ComputeIonisationBoxes(int sample_index, float REDSHIFT_SAMPLE, float PREV
                                         Splined_Fcoll_left = log10_Fcoll_spline_SFR[index_left]*(1.-dens_diff) + log10_Fcoll_spline_SFR[index_left+1]*dens_diff;
                                         Splined_Fcoll_right = log10_Fcoll_spline_SFR[index_right]*(1.-dens_diff) + log10_Fcoll_spline_SFR[index_right+1]*dens_diff;
                                         Splined_Fcoll = Splined_Fcoll_left * (1. - log10_Mmin_diff) + Splined_Fcoll_right * log10_Mmin_diff;
-                                        Splined_Fcoll = expf(Splined_Fcoll);
                                         
                                         index_left = overdense_int+log10_Mmin_MINI_int*NSFR_low;
                                         index_right = overdense_int+(log10_Mmin_MINI_int+1)*NSFR_low;
                                         Splined_Fcoll_MINI_left = log10_Fcoll_spline_SFR_MINI[index_left]*(1.-dens_diff) + log10_Fcoll_spline_SFR_MINI[index_left+1]*dens_diff;
                                         Splined_Fcoll_MINI_right = log10_Fcoll_spline_SFR_MINI[index_right]*(1.-dens_diff) + log10_Fcoll_spline_SFR_MINI[index_right+1]*dens_diff;
                                         Splined_Fcoll_MINI = Splined_Fcoll_MINI_left * (1. - log10_Mmin_MINI_diff) + Splined_Fcoll_MINI_right * log10_Mmin_MINI_diff;
+                                        Splined_Fcoll = expf(Splined_Fcoll);
                                         Splined_Fcoll_MINI = expf(Splined_Fcoll_MINI);
                                     }
                                 }
@@ -5846,7 +5836,11 @@ void init_21cmMC_Ts_arrays() {
 #ifdef MINI_HALO
         Mturn_interp_table = (double *)calloc(LOG10MTURN_NUM, sizeof(double));
         for (i=0; i <LOG10MTURN_NUM; i++){
+#ifdef USE_KERAS
+          Mturn_interp_table[i] = ( LOG10MTURN_MIN + (double)i*LOG10MTURN_INT - HEIGHT_LOG10_MTURN ) / WIDTH_LOG10_MTURN + CENTER_LOG10_MTURN;
+#else
           Mturn_interp_table[i] = pow(10., LOG10MTURN_MIN + (double)i*LOG10MTURN_INT);
+#endif
         }
 #endif
         

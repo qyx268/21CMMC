@@ -54,7 +54,7 @@ if __name__ == '__main__':
     MINI_HALO = True
 
     # New in v1.6
-    PRISM_ON = True
+    PRISM_ON = False
     if PRISM_ON:
         from prism import Pipeline
         from PRISM_21CMMC.tocf_link import tocfLink, Likelihood21cmFast_prism
@@ -171,7 +171,7 @@ if __name__ == '__main__':
     # use EDGES width too
     USE_EDGES_FWHM = True
 
-    USE_NEST = True
+    USE_NEST = False
     ################### Setting up variables for performing the full spin temperature calculation (i.e. Ts.c) ####################################
 
 
@@ -1141,7 +1141,7 @@ if __name__ == '__main__':
     
         Likelihoodmodel21cmFast = Likelihood21cmFast_multiz(Redshifts_For_LF,multi_z_obs_Muv,multi_z_obs_phi,multi_z_obs_Error_phi,multi_z_mockobs_k,multi_z_mockobs_PS,multi_z_Error_k,multi_z_Error_PS,
                 Redshift,Redshifts_For_Prior,param_legend,Fiducial_Params,FlagOptions,param_string_names,NSplinePoints,TsCalc_z,foreground_cut,shot_noise_cut,IncludeLightCone,IncludeLF,MINI_HALO,
-                ModUncert,PriorLegend,NFVals_QSODamping,PDFVals_QSODamping)    
+                ModUncert,PriorLegend,NFVals_QSODamping,PDFVals_QSODamping, params)
 
     chain.addLikelihoodModule(Likelihoodmodel21cmFast)
 
