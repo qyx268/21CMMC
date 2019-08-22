@@ -1764,7 +1764,7 @@ inline double log10_Fcoll_spline_SFR_low_emulator(double input[]){
     for (ix = 0; ix < log10_Fcoll_spline_SFR_low_emu_Nx[idense]; ix++){
         result += log10_Fcoll_spline_SFR_low_emu_results[idense-1][ix] * log10_Fcoll_spline_SFR_low_emu_weights[idense][ix];
     }
-    result += log10_Fcoll_spline_SFR_low_emu_biases[idense][0] + 23.0258509299;//I have log(10) already but missed the +10 in the emulator calculation (LargeTable)...
+    result += log10_Fcoll_spline_SFR_low_emu_biases[idense][0];
     return result;
 }
 
@@ -1842,7 +1842,7 @@ inline double Fcoll_spline_SFR_high_emulator(double input[]){
     for (ix = 0; ix < Fcoll_spline_SFR_high_emu_Nx[idense]; ix++){
         result += Fcoll_spline_SFR_high_emu_results[idense-1][ix] * Fcoll_spline_SFR_high_emu_weights[idense][ix];
     }
-    result += Fcoll_spline_SFR_high_emu_biases[idense][0] + 10.;
+    result += Fcoll_spline_SFR_high_emu_biases[idense][0];
     return pow(10, result);
 }
 
@@ -1920,7 +1920,7 @@ inline double log10_Fcoll_spline_SFR_MINI_low_emulator(double input[]){
     for (ix = 0; ix < log10_Fcoll_spline_SFR_MINI_low_emu_Nx[idense]; ix++){
         result += log10_Fcoll_spline_SFR_MINI_low_emu_results[idense-1][ix] * log10_Fcoll_spline_SFR_MINI_low_emu_weights[idense][ix];
     }
-    result += log10_Fcoll_spline_SFR_MINI_low_emu_biases[idense][0] + 23.0258509299;//I have log(10) already but missed the +10 in the emulator calculation (LargeTable)...
+    result += log10_Fcoll_spline_SFR_MINI_low_emu_biases[idense][0];
     return result;
 }
 
@@ -1998,7 +1998,7 @@ inline double Fcoll_spline_SFR_MINI_high_emulator(double input[]){
     for (ix = 0; ix < Fcoll_spline_SFR_MINI_high_emu_Nx[idense]; ix++){
         result += Fcoll_spline_SFR_MINI_high_emu_results[idense-1][ix] * Fcoll_spline_SFR_MINI_high_emu_weights[idense][ix];
     }
-    result += Fcoll_spline_SFR_MINI_high_emu_biases[idense][0] + 10.;
+    result += Fcoll_spline_SFR_MINI_high_emu_biases[idense][0];
     return pow(10, result);
 }
 #endif
@@ -2645,10 +2645,10 @@ void initialiseFcollSFR_spline(float z_norm, float min_density, float max_densit
         Fcoll_spline_SFR_MINI[i+j*NSFR_high] = Fcoll_spline_SFR_MINI_high_emulator(Fstar7_MINI_norm, Alpha_star_norm, SIGMA8_norm, z_norm, log10_Mturn_norm[j], R_norm, Overdense_spline_SFR[i]);
         
         if(Fcoll_spline_SFR[i]<0.) {
-            Fcoll_spline_SFR[i]=pow(10.,-40.0);
+            Fcoll_spline_SFR[i]=2.30258509299e-40;
         }
         if(Fcoll_spline_SFR_MINI[i]<0.) {
-            Fcoll_spline_SFR_MINI[i]=pow(10.,-40.0);
+            Fcoll_spline_SFR_MINI[i]=2.30258509299e-40;
         }
       }
 	}
@@ -2699,10 +2699,10 @@ void initialiseFcollSFR_spline(float z_norm, float min_density, float max_densit
         Fcoll_spline_SFR_MINI[i+j*NSFR_high] = Fcoll_spline_SFR_MINI_high_emulator(input_MINI);
         
         if(Fcoll_spline_SFR[i]<0.) {
-            Fcoll_spline_SFR[i]=pow(10.,-40.0);
+            Fcoll_spline_SFR[i]=2.30258509299e-40;
         }
         if(Fcoll_spline_SFR_MINI[i]<0.) {
-            Fcoll_spline_SFR_MINI[i]=pow(10.,-40.0);
+            Fcoll_spline_SFR_MINI[i]=2.30258509299e-40;
         }
       }
 	}
@@ -3181,7 +3181,7 @@ void initialise_Xray_FgtrM_st_SFR_spline(int Nbin, float zmin, float zmax, float
     int i, j;
 	double z_X_val;
     double Fesc10_norm      = (0. - HEIGHT_LOG10_F_ESC10 ) / WIDTH_LOG10_F_ESC10 + CENTER_LOG10_F_ESC10;
-    double Alpha_esc_norm   = (1. - HEIGHT_ALPHA_ESC ) / WIDTH_ALPHA_ESC + CENTER_ALPHA_ESC;
+    double Alpha_esc_norm   = (0. - HEIGHT_ALPHA_ESC ) / WIDTH_ALPHA_ESC + CENTER_ALPHA_ESC;
     
     for (i=0; i<Nbin; i++){
         z_X_val = zmin + (double)i/((double)Nbin-1.)*(zmax - zmin);
@@ -3197,7 +3197,7 @@ void initialise_Xray_FgtrM_st_SFR_spline(int Nbin, float zmin, float zmax, float
     int i, j;
 	double z_X_val;
     double Fesc10_norm      = (0. - HEIGHT_LOG10_F_ESC10 ) / WIDTH_LOG10_F_ESC10 + CENTER_LOG10_F_ESC10;
-    double Alpha_esc_norm   = (1. - HEIGHT_ALPHA_ESC ) / WIDTH_ALPHA_ESC + CENTER_ALPHA_ESC;
+    double Alpha_esc_norm   = (0. - HEIGHT_ALPHA_ESC ) / WIDTH_ALPHA_ESC + CENTER_ALPHA_ESC;
 	double input[6];
     
 	input[0] = Fstar10_norm;input[1] =  Alpha_star_norm;input[2] =  Fesc10_norm;input[3] =  Alpha_esc_norm;input[4] =  SIGMA8_norm;
@@ -3270,7 +3270,7 @@ void initialise_Xray_Fcollz_SFR_Conditional_table(int Nfilter, float min_density
 
 	double Alpha_esc_norm, Fesc10_norm, R_norm;
 	Fesc10_norm      = (0. -  HEIGHT_LOG10_F_ESC10 ) / WIDTH_LOG10_F_ESC10 + CENTER_LOG10_F_ESC10;
-	Alpha_esc_norm   = (1. - HEIGHT_ALPHA_ESC ) / WIDTH_ALPHA_ESC + CENTER_ALPHA_ESC;
+	Alpha_esc_norm   = (0. - HEIGHT_ALPHA_ESC ) / WIDTH_ALPHA_ESC + CENTER_ALPHA_ESC;
     
     for (i=0; i<NSFR_high;i++) {
         Overdense_Xray_high_table[i] = overdense_large_low + (float)i/((float)NSFR_high-1.)*(overdense_large_high - overdense_large_low);
@@ -3299,18 +3299,18 @@ void initialise_Xray_Fcollz_SFR_Conditional_table(int Nfilter, float min_density
                 overdense_val = log10(1. + overdense_small_low) + (float)i/((float)NSFR_low-1.)*(log10(1.+overdense_small_high)-log10(1.+overdense_small_low));
 				overdense_val = (overdense_val - HEIGHT_LOG10_OVERDENSE_LOW_PLUS1 ) / WIDTH_LOG10_OVERDENSE_LOW_PLUS1 + CENTER_LOG10_OVERDENSE_LOW_PLUS1;
 				
-				log10_Fcollz_SFR_Xray_low_table[k][j][i] = log10_Fcoll_spline_SFR_low_emulator(Fstar10_norm, Alpha_star_norm, Fesc10_norm, Alpha_esc_norm, SIGMA8_norm, redshift_norm[j+Nfilter*k], log10_Mturn_norm[j+Nfilter*k], R_norm, overdense_val);
+				log10_Fcollz_SFR_Xray_low_table[k][j][i] = log10_Fcoll_spline_SFR_low_emulator(Fstar10_norm, Alpha_star_norm, Fesc10_norm, Alpha_esc_norm, SIGMA8_norm, redshift_norm[j+Nfilter*k], log10_Mturn_norm[j+Nfilter*k], R_norm, overdense_val) + 23.0258509299;
 				
 				for (q=0; q<LOG10MTURN_NUM; q++){
-			 	  log10_Fcollz_SFR_Xray_low_table_MINI[k][j][i+q*NSFR_low] = log10_Fcoll_spline_SFR_MINI_low_emulator(Fstar7_MINI_norm, Alpha_star_norm, SIGMA8_norm, redshift_norm[j+Nfilter*k], Mturn_interp_table[q], R_norm, overdense_val);
+			 	  log10_Fcollz_SFR_Xray_low_table_MINI[k][j][i+q*NSFR_low] = log10_Fcoll_spline_SFR_MINI_low_emulator(Fstar7_MINI_norm, Alpha_star_norm, SIGMA8_norm, redshift_norm[j+Nfilter*k], Mturn_interp_table[q], R_norm, overdense_val) + 23.0258509299;
 				}
             }
             
             for(i=0;i<NSFR_high;i++) {
-				Fcollz_SFR_Xray_high_table[k][j][i] = Fcoll_spline_SFR_high_emulator(Fstar10_norm, Alpha_star_norm, Fesc10_norm, Alpha_esc_norm, SIGMA8_norm, redshift_norm[j+Nfilter*k], log10_Mturn_norm[j+Nfilter*k], R_norm, Overdense_Xray_high_table[i]);
+				Fcollz_SFR_Xray_high_table[k][j][i] = Fcoll_spline_SFR_high_emulator(Fstar10_norm, Alpha_star_norm, Fesc10_norm, Alpha_esc_norm, SIGMA8_norm, redshift_norm[j+Nfilter*k], log10_Mturn_norm[j+Nfilter*k], R_norm, Overdense_Xray_high_table[i]) * 1e10;
                 
 				for (q=0; q<LOG10MTURN_NUM; q++){
-                  Fcollz_SFR_Xray_high_table_MINI[k][j][i+q*NSFR_high] = Fcoll_spline_SFR_MINI_high_emulator(Fstar7_MINI_norm, Alpha_star_norm, SIGMA8_norm, redshift_norm[j+Nfilter*k], Mturn_interp_table[q], R_norm, Overdense_Xray_high_table[i]);
+                  Fcollz_SFR_Xray_high_table_MINI[k][j][i+q*NSFR_high] = Fcoll_spline_SFR_MINI_high_emulator(Fstar7_MINI_norm, Alpha_star_norm, SIGMA8_norm, redshift_norm[j+Nfilter*k], Mturn_interp_table[q], R_norm, Overdense_Xray_high_table[i]) * 1e10;
 				}
             }
 //			te = clock();
@@ -3340,7 +3340,7 @@ void initialise_Xray_Fcollz_SFR_Conditional_table(int Nfilter, float min_density
 
 	double Alpha_esc_norm, Fesc10_norm, R_norm;
 	Fesc10_norm      = (0. -  HEIGHT_LOG10_F_ESC10 ) / WIDTH_LOG10_F_ESC10 + CENTER_LOG10_F_ESC10;
-	Alpha_esc_norm   = (1. - HEIGHT_ALPHA_ESC ) / WIDTH_ALPHA_ESC + CENTER_ALPHA_ESC;
+	Alpha_esc_norm   = (0. - HEIGHT_ALPHA_ESC ) / WIDTH_ALPHA_ESC + CENTER_ALPHA_ESC;
     
     for (i=0; i<NSFR_high;i++) {
         Overdense_Xray_high_table[i] = overdense_large_low + (float)i/((float)NSFR_high-1.)*(overdense_large_high - overdense_large_low);
@@ -3380,22 +3380,22 @@ void initialise_Xray_Fcollz_SFR_Conditional_table(int Nfilter, float min_density
 				
 			    input[8] = overdense_val;
 			    input_MINI[6] = overdense_val;
-				log10_Fcollz_SFR_Xray_low_table[k][j][i] = log10_Fcoll_spline_SFR_low_emulator(input);
+				log10_Fcollz_SFR_Xray_low_table[k][j][i] = log10_Fcoll_spline_SFR_low_emulator(input) + 23.0258509299;
 				
 				for (q=0; q<LOG10MTURN_NUM; q++){
 			      input_MINI[4] = Mturn_interp_table[q];
-			 	  log10_Fcollz_SFR_Xray_low_table_MINI[k][j][i+q*NSFR_low] = log10_Fcoll_spline_SFR_MINI_low_emulator(input_MINI);
+			 	  log10_Fcollz_SFR_Xray_low_table_MINI[k][j][i+q*NSFR_low] = log10_Fcoll_spline_SFR_MINI_low_emulator(input_MINI) + 23.0258509299;
 				}
             }
             
             for(i=0;i<NSFR_high;i++) {
 				input[8] = Overdense_Xray_high_table[i];
 				input_MINI[6] = Overdense_Xray_high_table[i];
-				Fcollz_SFR_Xray_high_table[k][j][i] = Fcoll_spline_SFR_high_emulator(input);
+				Fcollz_SFR_Xray_high_table[k][j][i] = Fcoll_spline_SFR_high_emulator(input) * 1e10;
                 
 				for (q=0; q<LOG10MTURN_NUM; q++){
 			      input_MINI[4] = Mturn_interp_table[q];
-                  Fcollz_SFR_Xray_high_table_MINI[k][j][i+q*NSFR_high] = Fcoll_spline_SFR_MINI_high_emulator(input_MINI);
+                  Fcollz_SFR_Xray_high_table_MINI[k][j][i+q*NSFR_high] = Fcoll_spline_SFR_MINI_high_emulator(input_MINI) * 1e10;
 				}
             }
 			//te = clock();

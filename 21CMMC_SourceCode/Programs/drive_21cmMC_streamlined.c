@@ -385,7 +385,7 @@ int main(int argc, char ** argv){
 	F_ESC10_norm = ( (double) PARAM_VALS[2] - HEIGHT_LOG10_F_ESC10 ) / WIDTH_LOG10_F_ESC10 + CENTER_LOG10_F_ESC10;
 	ALPHA_ESC_norm = ( (double) PARAM_VALS[3] - HEIGHT_ALPHA_ESC ) / WIDTH_ALPHA_ESC + CENTER_ALPHA_ESC;
 	F_ESC10_ONE_norm = ( 0.- HEIGHT_LOG10_F_ESC10 ) / WIDTH_LOG10_F_ESC10 + CENTER_LOG10_F_ESC10;
-	ALPHA_ESC_ZERO_norm = ( 1. - HEIGHT_ALPHA_ESC ) / WIDTH_ALPHA_ESC + CENTER_ALPHA_ESC;
+	ALPHA_ESC_ZERO_norm = ( 0. - HEIGHT_ALPHA_ESC ) / WIDTH_ALPHA_ESC + CENTER_ALPHA_ESC;
 #endif
     M_TURN = pow(10.,PARAM_VALS[4]);
     t_STAR = PARAM_VALS[5];
@@ -394,14 +394,14 @@ int main(int argc, char ** argv){
     if(USE_MASS_DEPENDENT_ZETA) ION_EFF_FACTOR = N_GAMMA_UV * F_STAR10 * F_ESC10;
     else ION_EFF_FACTOR = HII_EFF_FACTOR;
     
-	t0 = clock();
+//	t0 = clock();
 #ifdef MINI_HALO
     initialiseSplinedSigmaM_quicker(1e5/50.,1e20);
 #else
     initialiseSplinedSigmaM_quicker(M_TURN/50.,1e20);
 #endif
-	te = clock();
-	printf("initialiseSplinedSigmaM_quicker: %.6fs\n", ((double) (te-t0)) / CLOCKS_PER_SEC);
+//	te = clock();
+//	printf("initialiseSplinedSigmaM_quicker: %.6fs\n", ((double) (te-t0)) / CLOCKS_PER_SEC);
     
     // If inhomogeneous recombinations are set, need to switch to an upper limit on the maximum bubble horizon (this is set above).
     // The default choice is chosen to be 50 Mpc, as is default in 21cmFAST.
@@ -1473,7 +1473,7 @@ void ComputeTsBoxes() {
             }
 
             /* initialise interpolation of the mean collapse fraction for global reionization.*/
-	t0 = clock();
+//	t0 = clock();
 #ifdef MINI_HALO
 #ifdef USE_KERAS
 #ifndef USE_KERAS_INCELL
@@ -1489,11 +1489,11 @@ void ComputeTsBoxes() {
             
             initialise_Xray_FgtrM_st_SFR_spline(zpp_interp_points_SFR, determine_zpp_min, determine_zpp_max, M_TURN, ALPHA_STAR, F_STAR10);
 #endif
-	te = clock();
+	/*te = clock();
 #ifndef USE_KERAS_INCELL
 	printf("initialise_FgtrM_st_SFR_spline & initialise_Xray_FgtrM_st_SFR_spline: %.6fs\n", ((double) (te-t0)) / CLOCKS_PER_SEC);
 #endif
-            
+      */      
             zp_table = zp;
             counter = 0;
             for (i=0; i<N_USER_REDSHIFT; i++) {
@@ -1530,7 +1530,7 @@ void ComputeTsBoxes() {
             filtering scale, redshift and overdensity.
                Note that at a given zp, zpp values depends on the filtering scale R, i.e. f_coll(z(R),delta).
                Compute the conditional mass function, but assume f_{esc10} = 1 and \alpha_{esc} = 0. */
-	t0 = clock();
+//	t0 = clock();
 #ifdef MINI_HALO
 #ifdef USE_KERAS
 #ifndef USE_KERAS_INCELL
@@ -1542,11 +1542,12 @@ void ComputeTsBoxes() {
 #else
             initialise_Xray_Fcollz_SFR_Conditional_table(NUM_FILTER_STEPS_FOR_Ts,min_densities,max_densities,growth_interp_table,R_values, M_TURN, ALPHA_STAR, F_STAR10);
 #endif
-	te = clock();
+/*	te = clock();
 #ifdef USE_KERAS
 	printf("initialise_Xray_Fcollz_SFR_Conditional_table: %.6fs\n", ((double) (te-t0)) / CLOCKS_PER_SEC);
 #endif
-        }
+  */
+		}
         else {
             init_FcollTable(determine_zpp_min,determine_zpp_max);
             zpp_bin_width = (determine_zpp_max - determine_zpp_min)/((float)zpp_interp_points-1.0);
@@ -1776,18 +1777,16 @@ void ComputeTsBoxes() {
                 log10_Mcrit_LW_ave_table_fcollz = LOG10MTURN_MIN + LOG10MTURN_INT * (float)log10_Mcrit_LW_ave_int_fcollz;
 #endif
 
-                if (USE_MASS_DEPENDENT_ZETA) { 
+                if (USE_MASS_DEPENDENT_ZETA) {
                     // Using the interpolated values to update arrays of relevant quanties for the IGM spin temperature calculation
                     
 #ifdef USE_KERAS_INCELL
 					zpp_norm = ( zpp - HEIGHT_REDSHIFT ) / WIDTH_REDSHIFT + CENTER_REDSHIFT;
-					log10_Mturn_norm = (log10(atomic_cooling_threshold(zpp)) - HEIGHT_LOG10_MTURN ) / WIDTH_LOG10_MTURN + CENTER_LOG10_MTURN;
 #ifdef USE_CPP
-					Splined_Fcollzpp_X_mean = Fcollz_val_emulator(F_STAR10_norm, ALPHA_STAR_norm, F_ESC10_ONE_norm, ALPHA_ESC_ZERO_norm, SIGMA8_norm, zp_norm);
+					Splined_Fcollzpp_X_mean = Fcollz_val_emulator(F_STAR10_norm, ALPHA_STAR_norm, F_ESC10_ONE_norm, ALPHA_ESC_ZERO_norm, SIGMA8_norm, zpp_norm);
 #else
 					input_X[5] = zpp_norm;
-					input_large[5] = zpp_norm; input_large[6] =  log10_Mturn_norm;
-    	            Splined_Fcollzp_mean = Fcollz_val_emulator(input_X);
+    	            Splined_Fcollzpp_X_mean = Fcollz_val_emulator(input_X);
 #endif
 #else
                     redshift_int_fcollz_Xray = (int)floor( ( zpp - determine_zpp_min )/zpp_bin_width );
@@ -1807,8 +1806,7 @@ void ComputeTsBoxes() {
                     Splined_Fcollzpp_X_mean_MINI = Fcollz_val_MINI_emulator(F_STAR7_MINI_norm, ALPHA_STAR_norm, SIGMA8_norm, zpp_norm, log10_Mcrit_LW_ave_norm);
 #else
 					input_X_MINI[3] = zpp_norm; input_X_MINI[4] = log10_Mcrit_LW_ave_norm;
-					input_large_MINI[3] = zpp_norm;
-					Splined_Fcollzp_mean_MINI = Fcollz_val_MINI_emulator(input_X_MINI);
+					Splined_Fcollzpp_X_mean_MINI = Fcollz_val_MINI_emulator(input_X_MINI);
 #endif
 #else
                     index_left = redshift_int_fcollz_Xray + zpp_interp_points_SFR * log10_Mcrit_LW_ave_int_fcollz;
@@ -2088,9 +2086,11 @@ void ComputeTsBoxes() {
                     
 #ifdef USE_KERAS_INCELL
 					R_norm = ( log10(R_values[R_ct]/5.) - HEIGHT_LOG10_R_ON5 ) / WIDTH_LOG10_R_ON5 + CENTER_LOG10_R_ON5;
+					zpp_norm = ( zpp_for_evolve_list[R_ct] - HEIGHT_REDSHIFT ) / WIDTH_REDSHIFT + CENTER_REDSHIFT;
+					log10_Mturn_norm = (log10(atomic_cooling_threshold(zpp_for_evolve_list[R_ct])) - HEIGHT_LOG10_MTURN ) / WIDTH_LOG10_MTURN + CENTER_LOG10_MTURN;
 #ifndef USE_CPP
-					input_large[7] = R_norm; 
-					input_large_MINI[5] = R_norm; 
+					input_large[5] = zpp_norm; input_large[6] = log10_Mturn_norm; input_large[7] = R_norm; 
+					input_large_MINI[3] = zpp_norm; input_large_MINI[5] = R_norm; 
 #endif
 #else
                     fcoll_interp_min = log10(1. + min_densities[R_ct]*zpp_growth[R_ct]);
@@ -2142,10 +2142,10 @@ void ComputeTsBoxes() {
 #ifdef USE_KERAS_INCELL
 									curr_dens_norm = (log10f(curr_dens+1.) - HEIGHT_LOG10_OVERDENSE_LOW_PLUS1 ) / WIDTH_LOG10_OVERDENSE_LOW_PLUS1 + CENTER_LOG10_OVERDENSE_LOW_PLUS1;
 #ifdef USE_CPP
-									fcoll = log10_Fcoll_spline_SFR_low_emulator(F_STAR10_norm, ALPHA_STAR_norm, F_ESC10_ONE_norm, ALPHA_ESC_ZERO_norm, SIGMA8_norm, zpp_norm, log10_Mturn_norm, R_norm, curr_dens_norm);
+									fcoll = log10_Fcoll_spline_SFR_low_emulator(F_STAR10_norm, ALPHA_STAR_norm, F_ESC10_ONE_norm, ALPHA_ESC_ZERO_norm, SIGMA8_norm, zpp_norm, log10_Mturn_norm, R_norm, curr_dens_norm) + 23.0258509299;
 #else
 									input_large[8] = curr_dens_norm;
-									fcoll = log10_Fcoll_spline_SFR_low_emulator(input_large);
+									fcoll = log10_Fcoll_spline_SFR_low_emulator(input_large) + 23.0258509299;
 #endif
 #else
                                     dens_val = (log10f(curr_dens+1.) - fcoll_interp_min)*fcoll_interp_bin_width_inv;
@@ -2163,10 +2163,10 @@ void ComputeTsBoxes() {
 #ifdef MINI_HALO
 #ifdef USE_KERAS_INCELL
 #ifdef USE_CPP
-									fcoll_MINI = log10_Fcoll_spline_SFR_MINI_low_emulator(F_STAR7_MINI_norm, ALPHA_STAR_norm, SIGMA8_norm, zpp_norm, log10_Mcrit_LW_norm, R_norm, curr_dens_norm);
+									fcoll_MINI = log10_Fcoll_spline_SFR_MINI_low_emulator(F_STAR7_MINI_norm, ALPHA_STAR_norm, SIGMA8_norm, zpp_norm, log10_Mcrit_LW_norm, R_norm, curr_dens_norm) + 23.0258509299;
 #else
 									input_large_MINI[6] = curr_dens_norm;
-									fcoll_MINI = log10_Fcoll_spline_SFR_MINI_low_emulator(input_large_MINI);
+									fcoll_MINI = log10_Fcoll_spline_SFR_MINI_low_emulator(input_large_MINI) + 23.0258509299;
 #endif
 #else
                                     index_left = dens_int+log10_Mcrit_LW_int*NSFR_low;
@@ -2184,10 +2184,10 @@ void ComputeTsBoxes() {
 #ifdef USE_KERAS_INCELL
 									curr_dens_norm = (curr_dens - HEIGHT_OVERDENSE_HIGH ) / WIDTH_OVERDENSE_HIGH + CENTER_OVERDENSE_HIGH;
 #ifdef USE_CPP
-									fcoll = Fcoll_spline_SFR_high_emulator(F_STAR10_norm, ALPHA_STAR_norm, F_ESC10_norm, ALPHA_ESC_norm, SIGMA8_norm, zpp_norm, log10_Mturn_norm, R_norm, curr_dens_norm);
+									fcoll = Fcoll_spline_SFR_high_emulator(F_STAR10_norm, ALPHA_STAR_norm, F_ESC10_ONE_norm, ALPHA_ESC_ZERO_norm, SIGMA8_norm, zpp_norm, log10_Mturn_norm, R_norm, curr_dens_norm) * 1e10;
 #else
 									input_large[8] = curr_dens_norm;
-									fcoll = Fcoll_spline_SFR_high_emulator(input_large);
+									fcoll = Fcoll_spline_SFR_high_emulator(input_large) * 1e10;
 #endif
 #else
                                     dens_val = (curr_dens - fcoll_interp_high_min)*fcoll_interp_high_bin_width_inv;
@@ -2200,10 +2200,10 @@ void ComputeTsBoxes() {
 #ifdef MINI_HALO
 #ifdef USE_KERAS_INCELL
 #ifdef USE_CPP
-									fcoll_MINI = Fcoll_spline_SFR_MINI_high_emulator(F_STAR7_MINI_norm, ALPHA_STAR_norm, SIGMA8_norm, zpp_norm, log10_Mcrit_LW_norm, R_norm, curr_dens_norm);
+									fcoll_MINI = Fcoll_spline_SFR_MINI_high_emulator(F_STAR7_MINI_norm, ALPHA_STAR_norm, SIGMA8_norm, zpp_norm, log10_Mcrit_LW_norm, R_norm, curr_dens_norm) * 1e10;
 #else
 									input_large_MINI[6] = curr_dens_norm;
-									fcoll_MINI = Fcoll_spline_SFR_MINI_high_emulator(input_large_MINI);
+									fcoll_MINI = Fcoll_spline_SFR_MINI_high_emulator(input_large_MINI) * 1e10;
 #endif
 #else
                                     index_left = dens_int+log10_Mcrit_LW_int*NSFR_high;
@@ -3219,10 +3219,10 @@ float ComputeIonisationBoxes(int sample_index, float REDSHIFT_SAMPLE, float PREV
         LAST_FILTER_STEP = 0;
      
         // YQ: I don't think this line has any meaning, but whatever...
-		t0 = clock();
+//		t0 = clock();
         initialiseSplinedSigmaM(M_MIN,1e16);
-		te = clock();
-		printf("initialiseSplinedSigmaM: %.6fs\n", ((double) (te-t0)) / CLOCKS_PER_SEC);
+//		te = clock();
+//		printf("initialiseSplinedSigmaM: %.6fs\n", ((double) (te-t0)) / CLOCKS_PER_SEC);
         
         first_step_R = 1;
         
@@ -3405,7 +3405,7 @@ float ComputeIonisationBoxes(int sample_index, float REDSHIFT_SAMPLE, float PREV
             
             // New in v1.4
             if(USE_MASS_DEPENDENT_ZETA) {
-				t0 = clock();
+//				t0 = clock();
 #ifdef MINI_HALO
 #ifdef USE_KERAS
 #ifndef USE_KERAS_INCELL
@@ -3419,10 +3419,11 @@ float ComputeIonisationBoxes(int sample_index, float REDSHIFT_SAMPLE, float PREV
                 initialiseGL_FcollSFR(NGL_SFR, M_TURN/50.,massofscaleR);
                 initialiseFcollSFR_spline(REDSHIFT_SAMPLE,min_density,max_density,massofscaleR,M_TURN,ALPHA_STAR,ALPHA_ESC,F_STAR10,F_ESC10,Mlim_Fstar,Mlim_Fesc);
 #endif
-				te = clock();
+/*				te = clock();
 #ifdef USE_KERAS
 				printf("initialiseFcollSFR_spline: %.6fs\n", ((double) (te-t0)) / CLOCKS_PER_SEC);
 #endif
+*/
             }
             else {
                 erfc_denom = 2.*(pow(sigma_z0(M_MIN), 2) - pow(sigma_z0(massofscaleR), 2) );
