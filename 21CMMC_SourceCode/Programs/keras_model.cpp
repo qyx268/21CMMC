@@ -319,6 +319,12 @@ KerasModel Fcollz_val_emu("../Emulators/Keras/log10_Fcollz_val.txt", false);
 DataChunk *sample_Fcollz_val_MINI = new DataChunkFlat();
 KerasModel Fcollz_val_MINI_emu("../Emulators/Keras/log10_Fcollz_val_MINI.txt", false);
 
+DataChunk *sample_Fcollz_val_highZ = new DataChunkFlat();
+KerasModel Fcollz_val_highZ_emu("../Emulators/Keras/log10_Fcollz_val_highZ.txt", false);
+
+DataChunk *sample_Fcollz_val_MINI_highZ = new DataChunkFlat();
+KerasModel Fcollz_val_MINI_highZ_emu("../Emulators/Keras/log10_Fcollz_val_MINI_highZ.txt", false);
+
 DataChunk *sample_log10_Fcoll_spline_SFR_low = new DataChunkFlat();
 KerasModel log10_Fcoll_spline_SFR_low_emu("../Emulators/Keras/log10_Fcoll_spline_SFR_low.txt", false);
 
@@ -334,6 +340,8 @@ KerasModel Fcoll_spline_SFR_MINI_high_emu("../Emulators/Keras/log10_Fcoll_spline
 // TODO: This is faster than the below which has been commented
 extern "C" double Fcollz_val_emulator(double f_star10_norm, double alpha_star_norm, double f_esc10_norm, double alpha_esc_norm, double sigma_8_norm, double redshift_norm);
 extern "C" double Fcollz_val_MINI_emulator(double f_star7_mini_norm, double alpha_star_norm, double sigma_8_norm, double redshift_norm, double log10_Mmin_norm);
+extern "C" double Fcollz_val_highZ_emulator(double f_star10_norm, double alpha_star_norm, double f_esc10_norm, double alpha_esc_norm, double sigma_8_norm, double redshift_norm);
+extern "C" double Fcollz_val_MINI_highZ_emulator(double f_star7_mini_norm, double alpha_star_norm, double sigma_8_norm, double redshift_norm, double log10_Mmin_norm);
 extern "C" double log10_Fcoll_spline_SFR_low_emulator(double f_star10_norm, double alpha_star_norm, double f_esc10_norm, double alpha_esc_norm, double sigma_8_norm, double redshift_norm, double log10_Mmin_norm, double R_norm, double dens_norm);
 extern "C" double log10_Fcoll_spline_SFR_MINI_low_emulator(double f_star7_mini_norm, double alpha_star_norm, double sigma_8_norm, double redshift_norm, double log10_Mmin_norm, double R_norm, double dens_norm);
 extern "C" double Fcoll_spline_SFR_high_emulator(double f_star10_norm, double alpha_star_norm, double f_esc10_norm, double alpha_esc_norm, double sigma_8_norm, double redshift_norm, double log10_Mmin_norm, double R_norm, double dens_norm);
@@ -351,6 +359,17 @@ double Fcollz_val_MINI_emulator(double f_star7_mini_norm, double alpha_star_norm
 	return pow(10., Fcollz_val_MINI_emu.compute_output(sample_Fcollz_val_MINI)[0]);
 }
 
+// this is actualy log_10 and is returning linear
+double Fcollz_val_highZ_emulator(double f_star10_norm, double alpha_star_norm, double f_esc10_norm, double alpha_esc_norm, double sigma_8_norm, double redshift_norm){
+	sample_Fcollz_val_highZ->set_data1d({f_star10_norm,alpha_star_norm,f_esc10_norm,alpha_esc_norm,sigma_8_norm,redshift_norm});
+	return pow(10., Fcollz_val_highZ_emu.compute_output(sample_Fcollz_val_highZ)[0]);
+}
+
+// this is actualy log_10 and is returning linear
+double Fcollz_val_MINI_highZ_emulator(double f_star7_mini_norm, double alpha_star_norm, double sigma_8_norm, double redshift_norm, double log10_Mmin_norm){
+	sample_Fcollz_val_MINI_highZ->set_data1d({f_star7_mini_norm,alpha_star_norm,sigma_8_norm,redshift_norm, log10_Mmin_norm});
+	return pow(10., Fcollz_val_MINI_highZ_emu.compute_output(sample_Fcollz_val_MINI_highZ)[0]);
+}
 // this is actualy log_e and is returning log_e
 double log10_Fcoll_spline_SFR_low_emulator(double f_star10_norm, double alpha_star_norm, double f_esc10_norm, double alpha_esc_norm, double sigma_8_norm, double redshift_norm, double log10_Mmin_norm, double R_norm, double dens_norm){
 	sample_log10_Fcoll_spline_SFR_low->set_data1d({f_star10_norm, alpha_star_norm, f_esc10_norm, alpha_esc_norm, sigma_8_norm, redshift_norm, log10_Mmin_norm, R_norm, dens_norm});

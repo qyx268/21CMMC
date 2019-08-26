@@ -110,6 +110,8 @@ extern "C"
 #endif
 	double Fcollz_val_emulator(double f_star10_norm, double alpha_star_norm, double f_esc10_norm, double alpha_esc_norm, double sigma_8_norm, double redshift_norm);
 	double Fcollz_val_MINI_emulator(double f_star7_mini_norm, double alpha_star_norm, double sigma_8_norm, double redshift_norm, double log10_Mmin_norm);
+	double Fcollz_val_highZ_emulator(double f_star10_norm, double alpha_star_norm, double f_esc10_norm, double alpha_esc_norm, double sigma_8_norm, double redshift_norm);
+	double Fcollz_val_MINI_highZ_emulator(double f_star7_mini_norm, double alpha_star_norm, double sigma_8_norm, double redshift_norm, double log10_Mmin_norm);
 	double log10_Fcoll_spline_SFR_low_emulator(double f_star10_norm, double alpha_star_norm, double f_esc10_norm, double alpha_esc_norm, double sigma_8_norm, double redshift_norm, double log10_Mmin_norm, double R_norm, double dens_norm);
 	double log10_Fcoll_spline_SFR_MINI_low_emulator(double f_star7_mini_norm, double alpha_star_norm, double sigma_8_norm, double redshift_norm, double log10_Mmin_norm, double R_norm, double dens_norm);
 	double Fcoll_spline_SFR_high_emulator(double f_star10_norm, double alpha_star_norm, double f_esc10_norm, double alpha_esc_norm, double sigma_8_norm, double redshift_norm, double log10_Mmin_norm, double R_norm, double dens_norm);
@@ -147,13 +149,8 @@ static double FcollzX_val[zpp_interp_points_SFR];
 #ifdef MINI_HALO
 static double Fcollz_val_MINI[zpp_interp_points_SFR*LOG10MTURN_NUM];
 static double FcollzX_val_MINI[zpp_interp_points_SFR*LOG10MTURN_NUM];
-#ifdef USE_KERAS
-void initialise_FgtrM_st_SFR_spline(int Nbin, float zmin, float zmax, float Alpha_star_norm, float Alpha_esc_norm, float Fstar10_norm, float Fesc10_norm, float Fstar7_MINI_norm);
-void initialise_Xray_FgtrM_st_SFR_spline(int Nbin, float zmin, float zmax, float Alpha_star_norm, float Fstar10_norm, float Fstar7_MINI_norm);
-#else
 void initialise_FgtrM_st_SFR_spline(int Nbin, float zmin, float zmax, float Alpha_star, float Alpha_esc, float Fstar10, float Fesc10, float Fstar10_MINI, float Fesc10_MINI);
 void initialise_Xray_FgtrM_st_SFR_spline(int Nbin, float zmin, float zmax, float Alpha_star, float Fstar10, float Fstar10_MINI);
-#endif
 #ifdef USE_KERAS
 void initialise_Xray_Fcollz_SFR_Conditional_table(int Nfilter, float min_density[], float max_density[], float growthf[], float redshift_norm[], float R[], float log10_Mturn_norm[], float Alpha_star_norm, float Fstar10_norm, float Fstar7_MINI_norm);
 #else
@@ -1690,6 +1687,164 @@ inline double Fcollz_val_MINI_emulator(double input[]){
 }
 
 
+
+double **Fcollz_val_highZ_emu_weights, **Fcollz_val_highZ_emu_biases, **Fcollz_val_highZ_emu_results;
+int Fcollz_val_highZ_emu_Ndense, *Fcollz_val_highZ_emu_Nx, *Fcollz_val_highZ_emu_Ny;
+
+void construct_Fcollz_val_highZ_emu(){
+    FILE *fp;
+    int idense, ix, iy;
+
+    fp = fopen("../Emulators/Keras/log10_Fcollz_val_highZ.bin", "rb");
+    fread(&Fcollz_val_highZ_emu_Ndense, sizeof(int), 1, fp);
+    //printf("number of dense layer: %d\n", Fcollz_val_highZ_emu_Ndense);
+    Fcollz_val_highZ_emu_Nx      = (int*)     calloc(Fcollz_val_highZ_emu_Ndense,sizeof(int));
+    Fcollz_val_highZ_emu_Nx      = (int*)     calloc(Fcollz_val_highZ_emu_Ndense,sizeof(int));
+    Fcollz_val_highZ_emu_Ny      = (int*)     calloc(Fcollz_val_highZ_emu_Ndense,sizeof(int));
+    Fcollz_val_highZ_emu_Ny      = (int*)     calloc(Fcollz_val_highZ_emu_Ndense,sizeof(int));
+    Fcollz_val_highZ_emu_weights = (double**) calloc(Fcollz_val_highZ_emu_Ndense,sizeof(double*));
+    Fcollz_val_highZ_emu_biases  = (double**) calloc(Fcollz_val_highZ_emu_Ndense,sizeof(double*));
+    Fcollz_val_highZ_emu_results = (double**) calloc(Fcollz_val_highZ_emu_Ndense,sizeof(double*));
+
+    for (idense = 0; idense < Fcollz_val_highZ_emu_Ndense; idense ++){
+        fread(&Fcollz_val_highZ_emu_Nx[idense],     sizeof(int), 1, fp);
+        fread(&Fcollz_val_highZ_emu_Ny[idense],     sizeof(int), 1, fp);
+        //printf("layer %d: [%d %d]\n", idense+1, Fcollz_val_highZ_emu_Nx[idense], Fcollz_val_highZ_emu_Ny[idense]);
+        Fcollz_val_highZ_emu_weights[idense] = (double*) calloc(Fcollz_val_highZ_emu_Nx[idense] * Fcollz_val_highZ_emu_Ny[idense], sizeof(double));
+        Fcollz_val_highZ_emu_biases[idense]  = (double*) calloc(Fcollz_val_highZ_emu_Ny[idense], sizeof(double));
+        Fcollz_val_highZ_emu_results[idense] = (double*) calloc(Fcollz_val_highZ_emu_Ny[idense], sizeof(double));
+
+        fread(Fcollz_val_highZ_emu_weights[idense], sizeof(double), Fcollz_val_highZ_emu_Nx[idense] * Fcollz_val_highZ_emu_Ny[idense], fp);
+        fread(Fcollz_val_highZ_emu_biases[idense], sizeof(double), Fcollz_val_highZ_emu_Ny[idense], fp);
+        
+        /*
+        for (ix = 0; ix < Fcollz_val_highZ_emu_Nx[idense]; ix++){
+            for (iy = 0; iy < Fcollz_val_highZ_emu_Ny[idense]; iy++){
+                printf("%.9f\t",Fcollz_val_highZ_emu_weights[idense][ix*Fcollz_val_highZ_emu_Ny[idense] + iy]);
+            }
+            printf("\n");
+        }
+        for (iy = 0; iy < Fcollz_val_highZ_emu_Ny[idense]; iy++){
+            printf("%.9f\t",Fcollz_val_highZ_emu_biases[idense][iy]);
+        }
+        printf("\n");
+        */
+    }
+	fclose(fp);
+}
+
+inline double Fcollz_val_highZ_emulator(double input[]){
+    int idense=0, ix, iy;
+    double result = 0.;
+
+	//first layer
+    for (iy = 0; iy < Fcollz_val_highZ_emu_Ny[0]; iy++){
+        ix = 0; Fcollz_val_highZ_emu_results[idense][iy] = input[ix] * Fcollz_val_highZ_emu_weights[idense][ix*Fcollz_val_highZ_emu_Ny[idense] + iy];
+        for (ix = 1; ix < Fcollz_val_highZ_emu_Nx[idense]; ix++){
+            Fcollz_val_highZ_emu_results[idense][iy] += input[ix] * Fcollz_val_highZ_emu_weights[idense][ix*Fcollz_val_highZ_emu_Ny[idense] + iy];
+        }
+        Fcollz_val_highZ_emu_results[idense][iy] += Fcollz_val_highZ_emu_biases[idense][iy]; // add bias
+        if (Fcollz_val_highZ_emu_results[idense][iy] < 0)
+            Fcollz_val_highZ_emu_results[idense][iy] = exp(Fcollz_val_highZ_emu_results[idense][iy]) -1.; //NOTE: elu activation every dense expect for the last layer
+    }
+    for (idense = 1; idense < Fcollz_val_highZ_emu_Ndense-1; idense ++){
+        for (iy = 0; iy < Fcollz_val_highZ_emu_Ny[idense]; iy++){
+            ix = 0; Fcollz_val_highZ_emu_results[idense][iy] = Fcollz_val_highZ_emu_results[idense-1][ix] * Fcollz_val_highZ_emu_weights[idense][ix*Fcollz_val_highZ_emu_Ny[idense] + iy];
+            for (ix = 1; ix < Fcollz_val_highZ_emu_Nx[idense]; ix++){
+                Fcollz_val_highZ_emu_results[idense][iy] += Fcollz_val_highZ_emu_results[idense-1][ix] * Fcollz_val_highZ_emu_weights[idense][ix*Fcollz_val_highZ_emu_Ny[idense] + iy];
+            }
+            Fcollz_val_highZ_emu_results[idense][iy] += Fcollz_val_highZ_emu_biases[idense][iy];
+            if (Fcollz_val_highZ_emu_results[idense][iy] < 0)
+                Fcollz_val_highZ_emu_results[idense][iy] = exp(Fcollz_val_highZ_emu_results[idense][iy]) -1.; //NOTE: elu activation every dense expect for the last layer
+        }
+    }
+    // last layer; idense = Ndense - 1
+    for (ix = 0; ix < Fcollz_val_highZ_emu_Nx[idense]; ix++){
+        result += Fcollz_val_highZ_emu_results[idense-1][ix] * Fcollz_val_highZ_emu_weights[idense][ix];
+    }
+    result += Fcollz_val_highZ_emu_biases[idense][0];
+    return pow(10, result);
+}
+
+
+double **Fcollz_val_MINI_highZ_emu_weights, **Fcollz_val_MINI_highZ_emu_biases, **Fcollz_val_MINI_highZ_emu_results;
+int Fcollz_val_MINI_highZ_emu_Ndense, *Fcollz_val_MINI_highZ_emu_Nx, *Fcollz_val_MINI_highZ_emu_Ny;
+
+void construct_Fcollz_val_MINI_highZ_emu(){
+    FILE *fp;
+    int idense, ix, iy;
+
+    fp = fopen("../Emulators/Keras/log10_Fcollz_val_MINI_highZ.bin", "rb");
+    fread(&Fcollz_val_MINI_highZ_emu_Ndense, sizeof(int), 1, fp);
+    //printf("number of dense layer: %d\n", Fcollz_val_MINI_highZ_emu_Ndense);
+    Fcollz_val_MINI_highZ_emu_Nx      = (int*)     calloc(Fcollz_val_MINI_highZ_emu_Ndense,sizeof(int));
+    Fcollz_val_MINI_highZ_emu_Nx      = (int*)     calloc(Fcollz_val_MINI_highZ_emu_Ndense,sizeof(int));
+    Fcollz_val_MINI_highZ_emu_Ny      = (int*)     calloc(Fcollz_val_MINI_highZ_emu_Ndense,sizeof(int));
+    Fcollz_val_MINI_highZ_emu_Ny      = (int*)     calloc(Fcollz_val_MINI_highZ_emu_Ndense,sizeof(int));
+    Fcollz_val_MINI_highZ_emu_weights = (double**) calloc(Fcollz_val_MINI_highZ_emu_Ndense,sizeof(double*));
+    Fcollz_val_MINI_highZ_emu_biases  = (double**) calloc(Fcollz_val_MINI_highZ_emu_Ndense,sizeof(double*));
+    Fcollz_val_MINI_highZ_emu_results = (double**) calloc(Fcollz_val_MINI_highZ_emu_Ndense,sizeof(double*));
+
+    for (idense = 0; idense < Fcollz_val_MINI_highZ_emu_Ndense; idense ++){
+        fread(&Fcollz_val_MINI_highZ_emu_Nx[idense],     sizeof(int), 1, fp);
+        fread(&Fcollz_val_MINI_highZ_emu_Ny[idense],     sizeof(int), 1, fp);
+        //printf("layer %d: [%d %d]\n", idense+1, Fcollz_val_MINI_highZ_emu_Nx[idense], Fcollz_val_MINI_highZ_emu_Ny[idense]);
+        Fcollz_val_MINI_highZ_emu_weights[idense] = (double*) calloc(Fcollz_val_MINI_highZ_emu_Nx[idense] * Fcollz_val_MINI_highZ_emu_Ny[idense], sizeof(double));
+        Fcollz_val_MINI_highZ_emu_biases[idense]  = (double*) calloc(Fcollz_val_MINI_highZ_emu_Ny[idense], sizeof(double));
+        Fcollz_val_MINI_highZ_emu_results[idense] = (double*) calloc(Fcollz_val_MINI_highZ_emu_Ny[idense], sizeof(double));
+
+        fread(Fcollz_val_MINI_highZ_emu_weights[idense], sizeof(double), Fcollz_val_MINI_highZ_emu_Nx[idense] * Fcollz_val_MINI_highZ_emu_Ny[idense], fp);
+        fread(Fcollz_val_MINI_highZ_emu_biases[idense], sizeof(double), Fcollz_val_MINI_highZ_emu_Ny[idense], fp);
+        
+        /*
+        for (ix = 0; ix < Fcollz_val_MINI_highZ_emu_Nx[idense]; ix++){
+            for (iy = 0; iy < Fcollz_val_MINI_highZ_emu_Ny[idense]; iy++){
+                printf("%.9f\t",Fcollz_val_MINI_highZ_emu_weights[idense][ix*Fcollz_val_MINI_highZ_emu_Ny[idense] + iy]);
+            }
+            printf("\n");
+        }
+        for (iy = 0; iy < Fcollz_val_MINI_highZ_emu_Ny[idense]; iy++){
+            printf("%.9f\t",Fcollz_val_MINI_highZ_emu_biases[idense][iy]);
+        }
+        printf("\n");
+        */
+    }
+	fclose(fp);
+}
+
+inline double Fcollz_val_MINI_highZ_emulator(double input[]){
+    int idense=0, ix, iy;
+    double result = 0.;
+
+	//first layer
+    for (iy = 0; iy < Fcollz_val_MINI_highZ_emu_Ny[0]; iy++){
+        ix = 0; Fcollz_val_MINI_highZ_emu_results[idense][iy] = input[ix] * Fcollz_val_MINI_highZ_emu_weights[idense][ix*Fcollz_val_MINI_highZ_emu_Ny[idense] + iy];
+        for (ix = 1; ix < Fcollz_val_MINI_highZ_emu_Nx[idense]; ix++){
+            Fcollz_val_MINI_highZ_emu_results[idense][iy] += input[ix] * Fcollz_val_MINI_highZ_emu_weights[idense][ix*Fcollz_val_MINI_highZ_emu_Ny[idense] + iy];
+        }
+        Fcollz_val_MINI_highZ_emu_results[idense][iy] += Fcollz_val_MINI_highZ_emu_biases[idense][iy]; // add bias
+        if (Fcollz_val_MINI_highZ_emu_results[idense][iy] < 0)
+            Fcollz_val_MINI_highZ_emu_results[idense][iy] = exp(Fcollz_val_MINI_highZ_emu_results[idense][iy]) -1.; //NOTE: elu activation every dense expect for the last layer
+    }
+    for (idense = 1; idense < Fcollz_val_MINI_highZ_emu_Ndense-1; idense ++){
+        for (iy = 0; iy < Fcollz_val_MINI_highZ_emu_Ny[idense]; iy++){
+            ix = 0; Fcollz_val_MINI_highZ_emu_results[idense][iy] = Fcollz_val_MINI_highZ_emu_results[idense-1][ix] * Fcollz_val_MINI_highZ_emu_weights[idense][ix*Fcollz_val_MINI_highZ_emu_Ny[idense] + iy];
+            for (ix = 1; ix < Fcollz_val_MINI_highZ_emu_Nx[idense]; ix++){
+                Fcollz_val_MINI_highZ_emu_results[idense][iy] += Fcollz_val_MINI_highZ_emu_results[idense-1][ix] * Fcollz_val_MINI_highZ_emu_weights[idense][ix*Fcollz_val_MINI_highZ_emu_Ny[idense] + iy];
+            }
+            Fcollz_val_MINI_highZ_emu_results[idense][iy] += Fcollz_val_MINI_highZ_emu_biases[idense][iy];
+            if (Fcollz_val_MINI_highZ_emu_results[idense][iy] < 0)
+                Fcollz_val_MINI_highZ_emu_results[idense][iy] = exp(Fcollz_val_MINI_highZ_emu_results[idense][iy]) -1.; //NOTE: elu activation every dense expect for the last layer
+        }
+    }
+    // last layer; idense = Ndense - 1
+    for (ix = 0; ix < Fcollz_val_MINI_highZ_emu_Nx[idense]; ix++){
+        result += Fcollz_val_MINI_highZ_emu_results[idense-1][ix] * Fcollz_val_MINI_highZ_emu_weights[idense][ix];
+    }
+    result += Fcollz_val_MINI_highZ_emu_biases[idense][0];
+    return pow(10, result);
+}
+
 double **log10_Fcoll_spline_SFR_low_emu_weights, **log10_Fcoll_spline_SFR_low_emu_biases, **log10_Fcoll_spline_SFR_low_emu_results;
 int log10_Fcoll_spline_SFR_low_emu_Ndense, *log10_Fcoll_spline_SFR_low_emu_Nx, *log10_Fcoll_spline_SFR_low_emu_Ny;
 
@@ -3101,44 +3256,6 @@ void initialiseGL_FcollSFR_Xray(int n, float M_Min, float M_Max){
 
 
 #ifdef MINI_HALO
-#ifdef USE_KERAS
-#ifdef USE_CPP
-void initialise_FgtrM_st_SFR_spline(int Nbin, float zmin, float zmax, float Alpha_star_norm, float Alpha_esc_norm, float Fstar10_norm, float Fesc10_norm, float Fstar7_MINI_norm){
-    int i, j;
-	double z_val;
-
-    for (i=0; i<Nbin; i++){
-        z_val = zmin + (double)i/((double)Nbin-1.)*(zmax - zmin);
-		z_val = (z_val - HEIGHT_REDSHIFT ) / WIDTH_REDSHIFT + CENTER_REDSHIFT;
-		Fcollz_val[i] = Fcollz_val_emulator(Fstar10_norm, Alpha_star_norm, Fesc10_norm, Alpha_esc_norm, SIGMA8_norm, z_val);
-		for (j=0; j<LOG10MTURN_NUM; j++){
-			Fcollz_val_MINI[i+j*Nbin] = Fcollz_val_MINI_emulator(Fstar7_MINI_norm, Alpha_star_norm, SIGMA8_norm, z_val, Mturn_interp_table[j]);
-		}
-    }
-}
-#else
-void initialise_FgtrM_st_SFR_spline(int Nbin, float zmin, float zmax, float Alpha_star_norm, float Alpha_esc_norm, float Fstar10_norm, float Fesc10_norm, float Fstar7_MINI_norm){
-    int i, j;
-	double z_val;
-	double input[6], input_MINI[5];
-
-	input[0] = Fstar10_norm;input[1] =  Alpha_star_norm;input[2] =  Fesc10_norm;input[3] =  Alpha_esc_norm;input[4] =  SIGMA8_norm;
-    input_MINI[0] = Fstar7_MINI_norm;input_MINI[1] =  Alpha_star_norm;input_MINI[2] =  SIGMA8_norm;
-
-    for (i=0; i<Nbin; i++){
-        z_val = zmin + (double)i/((double)Nbin-1.)*(zmax - zmin);
-		z_val = (z_val - HEIGHT_REDSHIFT ) / WIDTH_REDSHIFT + CENTER_REDSHIFT;
-		input[5] =  z_val;
-		input_MINI[3] =  z_val;
-		Fcollz_val[i] = Fcollz_val_emulator(input);
-		for (j=0; j<LOG10MTURN_NUM; j++){
-			input_MINI[4] =  Mturn_interp_table[j];
-			Fcollz_val_MINI[i+j*Nbin] = Fcollz_val_MINI_emulator(input_MINI);
-		}
-    }
-}
-#endif
-#else
 void initialise_FgtrM_st_SFR_spline(int Nbin, float zmin, float zmax, float Alpha_star, float Alpha_esc, float Fstar10, float Fesc10, float Fstar10_MINI, float Fesc10_MINI){
     int i, j;
 	double z_val, Mcrit_atom_val;
@@ -3173,47 +3290,7 @@ void initialise_FgtrM_st_SFR_spline(int Nbin, float zmin, float zmax, float Alph
 		fwrite(Fcollz_val_MINI, sizeof(double), Nbin*LOG10MTURN_NUM, f); fclose(f);
 	}
 }
-#endif
 
-#ifdef USE_KERAS
-#ifdef USE_CPP
-void initialise_Xray_FgtrM_st_SFR_spline(int Nbin, float zmin, float zmax, float Alpha_star_norm, float Fstar10_norm, float Fstar7_MINI_norm){
-    int i, j;
-	double z_X_val;
-    double Fesc10_norm      = (0. - HEIGHT_LOG10_F_ESC10 ) / WIDTH_LOG10_F_ESC10 + CENTER_LOG10_F_ESC10;
-    double Alpha_esc_norm   = (0. - HEIGHT_ALPHA_ESC ) / WIDTH_ALPHA_ESC + CENTER_ALPHA_ESC;
-    
-    for (i=0; i<Nbin; i++){
-        z_X_val = zmin + (double)i/((double)Nbin-1.)*(zmax - zmin);
-		z_X_val = (z_X_val - HEIGHT_REDSHIFT ) / WIDTH_REDSHIFT + CENTER_REDSHIFT;
-		FcollzX_val[i] = Fcollz_val_emulator(Fstar10_norm, Alpha_star_norm, Fesc10_norm, Alpha_esc_norm, SIGMA8_norm, z_X_val);
-        for (j=0; j<LOG10MTURN_NUM; j++){
-          FcollzX_val_MINI[i+j*Nbin] = Fcollz_val_MINI[i+j*Nbin];
-		}
-    }
-}
-#else
-void initialise_Xray_FgtrM_st_SFR_spline(int Nbin, float zmin, float zmax, float Alpha_star_norm, float Fstar10_norm, float Fstar7_MINI_norm){
-    int i, j;
-	double z_X_val;
-    double Fesc10_norm      = (0. - HEIGHT_LOG10_F_ESC10 ) / WIDTH_LOG10_F_ESC10 + CENTER_LOG10_F_ESC10;
-    double Alpha_esc_norm   = (0. - HEIGHT_ALPHA_ESC ) / WIDTH_ALPHA_ESC + CENTER_ALPHA_ESC;
-	double input[6];
-    
-	input[0] = Fstar10_norm;input[1] =  Alpha_star_norm;input[2] =  Fesc10_norm;input[3] =  Alpha_esc_norm;input[4] =  SIGMA8_norm;
-
-    for (i=0; i<Nbin; i++){
-        z_X_val = zmin + (double)i/((double)Nbin-1.)*(zmax - zmin);
-		z_X_val = (z_X_val - HEIGHT_REDSHIFT ) / WIDTH_REDSHIFT + CENTER_REDSHIFT;
-		input[5] = z_X_val;
-		FcollzX_val[i] = Fcollz_val_emulator(input);
-        for (j=0; j<LOG10MTURN_NUM; j++){
-          FcollzX_val_MINI[i+j*Nbin] = Fcollz_val_MINI[i+j*Nbin];
-		}
-    }
-}
-#endif
-#else
 void initialise_Xray_FgtrM_st_SFR_spline(int Nbin, float zmin, float zmax, float Alpha_star, float Fstar10, float Fstar10_MINI){
     int i, j;
 	double z_X_val, Mcrit_atom_val;
@@ -3246,7 +3323,6 @@ void initialise_Xray_FgtrM_st_SFR_spline(int Nbin, float zmin, float zmax, float
 		//fwrite(FcollzX_val_MINI, sizeof(double), Nbin*LOG10MTURN_NUM, f); fclose(f);
 	}
 }
-#endif
 
 #ifdef USE_KERAS
 #ifdef USE_CPP
@@ -3302,7 +3378,7 @@ void initialise_Xray_Fcollz_SFR_Conditional_table(int Nfilter, float min_density
 				log10_Fcollz_SFR_Xray_low_table[k][j][i] = log10_Fcoll_spline_SFR_low_emulator(Fstar10_norm, Alpha_star_norm, Fesc10_norm, Alpha_esc_norm, SIGMA8_norm, redshift_norm[j+Nfilter*k], log10_Mturn_norm[j+Nfilter*k], R_norm, overdense_val) + 23.0258509299;
 				
 				for (q=0; q<LOG10MTURN_NUM; q++){
-			 	  log10_Fcollz_SFR_Xray_low_table_MINI[k][j][i+q*NSFR_low] = log10_Fcoll_spline_SFR_MINI_low_emulator(Fstar7_MINI_norm, Alpha_star_norm, SIGMA8_norm, redshift_norm[j+Nfilter*k], Mturn_interp_table[q], R_norm, overdense_val) + 23.0258509299;
+			 	  log10_Fcollz_SFR_Xray_low_table_MINI[k][j][i+q*NSFR_low] = log10_Fcoll_spline_SFR_MINI_low_emulator(Fstar7_MINI_norm, Alpha_star_norm, SIGMA8_norm, redshift_norm[j+Nfilter*k], Mturn_interp_table_norm[q], R_norm, overdense_val) + 23.0258509299;
 				}
             }
             
@@ -3310,7 +3386,7 @@ void initialise_Xray_Fcollz_SFR_Conditional_table(int Nfilter, float min_density
 				Fcollz_SFR_Xray_high_table[k][j][i] = Fcoll_spline_SFR_high_emulator(Fstar10_norm, Alpha_star_norm, Fesc10_norm, Alpha_esc_norm, SIGMA8_norm, redshift_norm[j+Nfilter*k], log10_Mturn_norm[j+Nfilter*k], R_norm, Overdense_Xray_high_table[i]) * 1e10;
                 
 				for (q=0; q<LOG10MTURN_NUM; q++){
-                  Fcollz_SFR_Xray_high_table_MINI[k][j][i+q*NSFR_high] = Fcoll_spline_SFR_MINI_high_emulator(Fstar7_MINI_norm, Alpha_star_norm, SIGMA8_norm, redshift_norm[j+Nfilter*k], Mturn_interp_table[q], R_norm, Overdense_Xray_high_table[i]) * 1e10;
+                  Fcollz_SFR_Xray_high_table_MINI[k][j][i+q*NSFR_high] = Fcoll_spline_SFR_MINI_high_emulator(Fstar7_MINI_norm, Alpha_star_norm, SIGMA8_norm, redshift_norm[j+Nfilter*k], Mturn_interp_table_norm[q], R_norm, Overdense_Xray_high_table[i]) * 1e10;
 				}
             }
 //			te = clock();
@@ -3383,7 +3459,7 @@ void initialise_Xray_Fcollz_SFR_Conditional_table(int Nfilter, float min_density
 				log10_Fcollz_SFR_Xray_low_table[k][j][i] = log10_Fcoll_spline_SFR_low_emulator(input) + 23.0258509299;
 				
 				for (q=0; q<LOG10MTURN_NUM; q++){
-			      input_MINI[4] = Mturn_interp_table[q];
+			      input_MINI[4] = Mturn_interp_table_norm[q];
 			 	  log10_Fcollz_SFR_Xray_low_table_MINI[k][j][i+q*NSFR_low] = log10_Fcoll_spline_SFR_MINI_low_emulator(input_MINI) + 23.0258509299;
 				}
             }
@@ -3394,7 +3470,7 @@ void initialise_Xray_Fcollz_SFR_Conditional_table(int Nfilter, float min_density
 				Fcollz_SFR_Xray_high_table[k][j][i] = Fcoll_spline_SFR_high_emulator(input) * 1e10;
                 
 				for (q=0; q<LOG10MTURN_NUM; q++){
-			      input_MINI[4] = Mturn_interp_table[q];
+			      input_MINI[4] = Mturn_interp_table_norm[q];
                   Fcollz_SFR_Xray_high_table_MINI[k][j][i+q*NSFR_high] = Fcoll_spline_SFR_MINI_high_emulator(input_MINI) * 1e10;
 				}
             }

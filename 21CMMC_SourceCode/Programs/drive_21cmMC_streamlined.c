@@ -190,8 +190,10 @@ int main(int argc, char ** argv){
 #ifdef USE_KERAS
 	SIGMA8_norm = ( (double) PARAM_COSMOLOGY_VALS[1] - HEIGHT_SIGMA8 ) / WIDTH_SIGMA8 + CENTER_SIGMA8;
 #ifndef USE_CPP
-	construct_Fcollz_val_emu();
-	construct_Fcollz_val_MINI_emu();
+	//construct_Fcollz_val_emu();
+	//construct_Fcollz_val_MINI_emu();
+	//construct_Fcollz_val_highZ_emu();
+	//construct_Fcollz_val_MINI_highZ_emu();
 	construct_log10_Fcoll_spline_SFR_low_emu();
 	construct_Fcoll_spline_SFR_high_emu();
 	construct_log10_Fcoll_spline_SFR_MINI_low_emu();
@@ -1475,15 +1477,8 @@ void ComputeTsBoxes() {
             /* initialise interpolation of the mean collapse fraction for global reionization.*/
 //	t0 = clock();
 #ifdef MINI_HALO
-#ifdef USE_KERAS
-#ifndef USE_KERAS_INCELL
-            initialise_FgtrM_st_SFR_spline(zpp_interp_points_SFR, determine_zpp_min, determine_zpp_max, ALPHA_STAR_norm, ALPHA_ESC_norm, F_STAR10_norm, F_ESC10_norm, F_STAR7_MINI_norm);
-            initialise_Xray_FgtrM_st_SFR_spline(zpp_interp_points_SFR, determine_zpp_min, determine_zpp_max, ALPHA_STAR_norm, F_STAR10_norm, F_STAR7_MINI_norm);
-#endif
-#else
             initialise_FgtrM_st_SFR_spline(zpp_interp_points_SFR, determine_zpp_min, determine_zpp_max, ALPHA_STAR, ALPHA_ESC, F_STAR10, F_ESC10, F_STAR10_MINI, F_ESC_MINI);
             initialise_Xray_FgtrM_st_SFR_spline(zpp_interp_points_SFR, determine_zpp_min, determine_zpp_max, ALPHA_STAR, F_STAR10, F_STAR10_MINI);
-#endif
 #else
             initialise_FgtrM_st_SFR_spline(zpp_interp_points_SFR, determine_zpp_min, determine_zpp_max, M_TURN, ALPHA_STAR, ALPHA_ESC, F_STAR10, F_ESC10);
             
@@ -3409,11 +3404,11 @@ float ComputeIonisationBoxes(int sample_index, float REDSHIFT_SAMPLE, float PREV
 #ifdef MINI_HALO
 #ifdef USE_KERAS
 #ifndef USE_KERAS_INCELL
-                initialiseFcollSFR_spline(REDSHIFT_SAMPLE_norm,min_density,max_density,R,Mturn_interp_table,ALPHA_STAR_norm,ALPHA_ESC_norm,F_STAR10_norm,F_ESC10_norm,F_STAR7_MINI_norm);
+                initialiseFcollSFR_spline(REDSHIFT_SAMPLE_norm,min_density,max_density,R,Mturn_interp_table_norm,ALPHA_STAR_norm,ALPHA_ESC_norm,F_STAR10_norm,F_ESC10_norm,F_STAR7_MINI_norm);
 #endif
 #else
                 initialiseGL_FcollSFR(NGL_SFR, M_MIN,massofscaleR);
-                initialiseFcollSFR_spline(REDSHIFT_SAMPLE,min_density,max_density,M_MIN,massofscaleR,Mturn_interp_table,ALPHA_STAR,ALPHA_ESC,F_STAR10,F_ESC10,Mlim_Fstar,Mlim_Fesc,F_STAR10_MINI,Mlim_Fstar_MINI);
+                initialiseFcollSFR_spline(REDSHIFT_SAMPLE,min_density,max_density,M_MIN,massofscaleR,Mturn_interp_table_norm,ALPHA_STAR,ALPHA_ESC,F_STAR10,F_ESC10,Mlim_Fstar,Mlim_Fesc,F_STAR10_MINI,Mlim_Fstar_MINI);
 #endif
 #else
                 initialiseGL_FcollSFR(NGL_SFR, M_TURN/50.,massofscaleR);
@@ -6039,12 +6034,14 @@ void init_21cmMC_Ts_arrays() {
         SFR_timescale_factor = (float *)calloc(NUM_FILTER_STEPS_FOR_Ts,sizeof(float));
 #ifdef MINI_HALO
         Mturn_interp_table = (double *)calloc(LOG10MTURN_NUM, sizeof(double));
+#ifdef USE_KERAS
+        Mturn_interp_table_norm = (double *)calloc(LOG10MTURN_NUM, sizeof(double));
+#endif
         for (i=0; i <LOG10MTURN_NUM; i++){
 #ifdef USE_KERAS
-          Mturn_interp_table[i] = ( LOG10MTURN_MIN + (double)i*LOG10MTURN_INT - HEIGHT_LOG10_MTURN ) / WIDTH_LOG10_MTURN + CENTER_LOG10_MTURN;
-#else
-          Mturn_interp_table[i] = pow(10., LOG10MTURN_MIN + (double)i*LOG10MTURN_INT);
+          Mturn_interp_table_norm[i] = ( LOG10MTURN_MIN + (double)i*LOG10MTURN_INT - HEIGHT_LOG10_MTURN ) / WIDTH_LOG10_MTURN + CENTER_LOG10_MTURN;
 #endif
+          Mturn_interp_table[i] = pow(10., LOG10MTURN_MIN + (double)i*LOG10MTURN_INT);
         }
 #endif
         
@@ -6367,6 +6364,9 @@ void destroy_21cmMC_Ts_arrays() {
         free(SFR_timescale_factor);
 #ifdef MINI_HALO
         free(Mturn_interp_table);
+#ifdef USE_KERAS
+        free(Mturn_interp_table_norm);
+#endif
 #endif
         
         free(zpp_interp_table);

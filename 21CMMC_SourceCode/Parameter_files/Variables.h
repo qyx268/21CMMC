@@ -193,6 +193,7 @@ int flag_generate_tables;
 #endif
 #ifdef USE_KERAS
 double SIGMA8_norm, F_STAR10_norm, ALPHA_STAR_norm, F_ESC10_norm, ALPHA_ESC_norm, ALPHA_ESC_ZERO_norm, F_ESC10_ONE_norm;
+double *Mturn_interp_table_norm;
 #ifdef MINI_HALO
 double F_STAR7_MINI_norm;
 #endif
