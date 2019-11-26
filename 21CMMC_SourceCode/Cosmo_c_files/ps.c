@@ -50,7 +50,7 @@ static gsl_spline *erfc_spline;
 #define NGL_SFR (int) 100
 #ifdef MINI_HALO
 #define LOG10MTURN_NUM (int) 50
-#define LOG10MTURN_MIN (double) 5.-9e-8
+#define LOG10MTURN_MIN (double) (5.-9e-8)
 #define LOG10MTURN_MAX (double) 10.
 #endif
 
