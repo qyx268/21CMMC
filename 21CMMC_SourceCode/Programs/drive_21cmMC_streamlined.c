@@ -3698,6 +3698,9 @@ float ComputeIonisationBoxes(int sample_index, float REDSHIFT_SAMPLE, float PREV
                             if (prev_Splined_Fcoll_MINI > 1.) prev_Splined_Fcoll_MINI = 1.;
                             if (prev_Splined_Fcoll_MINI < 0.) prev_Splined_Fcoll_MINI = 1e-40;
 
+							if (Splined_Fcoll < prev_Splined_Fcoll) Splined_Fcoll = prev_Splined_Fcoll;
+							if (Splined_Fcoll_MINI < prev_Splined_Fcoll_MINI) Splined_Fcoll_MINI = prev_Splined_Fcoll_MINI;
+
                             Fcoll[HII_R_INDEX(x,y,z)] = prev_Fcoll[counter_R][HII_R_INDEX(x,y,z)] + Splined_Fcoll - prev_Splined_Fcoll;
                             Fcoll_MINI[HII_R_INDEX(x,y,z)] = prev_Fcoll_MINI[counter_R][HII_R_INDEX(x,y,z)] + Splined_Fcoll_MINI - prev_Splined_Fcoll_MINI;
 
