@@ -1022,9 +1022,9 @@ void ComputeTsBoxes() {
     
     short dens_grid_int;
     
-    double Tk_ave, J_alpha_ave, xalpha_ave, J_alpha_tot, Xheat_ave, Xion_ave, nuprime, Ts_ave, lower_int_limit,Luminosity_converstion_factor,T_inv_TS_fast_inv, nfgave, nf_ave;
+    double Tk_ave, J_alpha_ave, xalpha_ave, J_alpha_tot, Xheat_ave, Xion_ave, nuprime, Ts_ave, lower_int_limit,Luminosity_converstion_factor,T_inv_TS_fast_inv, nfgave, nf_ave, J_alpha_tot_MINI;
 #ifdef MINI_HALO
-    double J_LW_ave, Luminosity_converstion_factor_MINI, J_alpha_tot_MINI, J_alpha_ave_MINI, J_LW_ave_MINI,dxheat_dzp_MINI,Xheat_ave_MINI;
+    double J_LW_ave, Luminosity_converstion_factor_MINI, J_alpha_ave_MINI, J_LW_ave_MINI,dxheat_dzp_MINI,Xheat_ave_MINI;
 #endif
     double dadia_dzp, dcomp_dzp, dxheat_dt, dxion_source_dt, dxion_sink_dt, T, x_e, dxe_dzp, n_b, dspec_dzp, dxheat_dzp, dxlya_dt, dstarlya_dt, fcoll_R;
     double Trad_fast,xc_fast,xc_inverse,TS_fast,TSold_fast,xa_tilde_fast,TS_prefactor,xa_tilde_prefactor,T_inv,T_inv_sq,xi_power,xa_tilde_fast_arg,Trad_fast_inv,TS_fast_inv,dcomp_dzp_prefactor;
@@ -2404,6 +2404,8 @@ void ComputeTsBoxes() {
 #ifdef MINI_HALO
                                 J_alpha_tot_MINI = dxlya_dt_box_MINI[box_ct] + dstarlya_dt_box_MINI[box_ct]; //not really d/dz, but the lya flux
                                 J_21_LW[box_ct] = dstarlyLW_dt_box[box_ct] + dstarlyLW_dt_box_MINI[box_ct];
+#else
+								J_alpha_tot_MINI = 0.;
 #endif
 
                                 // Note: to make the code run faster, the get_Ts function call to evaluate the spin temperature was replaced with the code below.
@@ -2658,8 +2660,8 @@ void ComputeTsBoxes() {
 #endif
             }
         
-#ifdef MINI_HALO
             if(OUTPUT_AVE) {
+#ifdef MINI_HALO
                 printf("zp = %.2f nf_ave = %e Ts_ave = %e x_e_ave = %e Tk_ave = %e J_alpha_ave = %e (%e) xalpha_ave = %e Xheat_ave = %e (%e) Xion_ave = %e J_LW_ave = %e (%e)\n",zp,nf_ave,Ts_ave,x_e_ave,Tk_ave,J_alpha_ave,J_alpha_ave_MINI,xalpha_ave,Xheat_ave,Xheat_ave_MINI,Xion_ave,J_LW_ave*1e-21, J_LW_ave_MINI * 1e-21);
 #else
                 printf("zp = %.2f nf_ave = %e Ts_ave = %e x_e_ave = %e Tk_ave = %e J_alpha_ave = %e xalpha_ave = %e Xheat_ave = %e Xion_ave = %e\n",zp,nf_ave,Ts_ave,x_e_ave,Tk_ave,J_alpha_ave,xalpha_ave,Xheat_ave,Xion_ave);
